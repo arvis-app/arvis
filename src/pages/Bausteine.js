@@ -1,0 +1,448 @@
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+const SPECIAL_FIRST = ['Notaufnahme','Aufnahme','Befunde','OP-Berichte','Verlauf','Entlassung','Sozialmedizin/Gutachten','Diverses']
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+function formatBausteinText(s) {
+  if (!s) return ''
+  s = s.replace(/\[X[X,\.×\-–\/+0-9]*\]/g, '_')
+  s = s.replace(/\[([^\]]+)\]/g, '($1)')
+  return s
+}
+
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
+}
+function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)) } catch {} }
+
+// ── Confirm Modal ──────────────────────────────────────────────────────────────
+function ConfirmModal({ opts, onOk, onCancel }) {
+  if (!opts) return null
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:1100,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{background:'var(--card)',borderRadius:16,padding:24,width:'100%',maxWidth:380,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          {opts.icon && <div style={{width:36,height:36,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:opts.iconBg||'var(--bg-3)'}} dangerouslySetInnerHTML={{__html:opts.icon}}/>}
+          <div>
+            <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>{opts.title}</div>
+            <div style={{fontSize:13,color:'var(--text-2)',marginTop:3,lineHeight:1.5,whiteSpace:'pre-line'}}>{opts.msg}</div>
+          </div>
+        </div>
+        <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+          <button className="btn-secondary" onClick={onCancel}>Abbrechen</button>
+          <button className="btn-action" onClick={onOk} style={{...(opts.btnStyle ? {background:'#dc2626'} : {})}}>{opts.btnLabel||'OK'}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Neu Baustein Modal ─────────────────────────────────────────────────────────
+function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }) {
+  const [titel, setTitel]       = useState('')
+  const [category, setCategory] = useState('')
+  const [text, setText]         = useState('')
+  const [keywords, setKeywords] = useState('')
+  const [error, setError]       = useState('')
+
+  useEffect(() => {
+    if (!open) return
+    if (editingBaustein) {
+      setTitel(editingBaustein.title || '')
+      setCategory(editingBaustein.category || '')
+      setText(editingBaustein.text || '')
+      setKeywords(editingBaustein.keywords || '')
+    } else {
+      setTitel(''); setCategory(categories[0]||''); setText(''); setKeywords('')
+    }
+    setError('')
+  }, [open, editingBaustein])
+
+  function handleSave() {
+    if (!titel.trim() || !text.trim()) { setError('Bitte Titel und Text ausfüllen.'); return }
+    onSave({ titel: titel.trim(), category, text: text.trim(), keywords: keywords.trim() })
+  }
+
+  if (!open) return null
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{background:'var(--card)',borderRadius:16,padding:24,width:'100%',maxWidth:520,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:14}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span style={{fontSize:16,fontWeight:700,color:'var(--text)'}}>{editingBaustein ? 'Baustein bearbeiten' : 'Neuen Baustein erstellen'}</span>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-3)',fontSize:20,lineHeight:1,padding:'2px 6px'}}>&times;</button>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:4}}>
+          <label style={{fontSize:12,fontWeight:600,color:'var(--text-2)'}}>Titel *</label>
+          <input value={titel} onChange={e=>setTitel(e.target.value)} type="text" placeholder="z.B. Allgemeine Anamnese"
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:14,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:4}}>
+          <label style={{fontSize:12,fontWeight:600,color:'var(--text-2)'}}>Kategorie *</label>
+          <select value={category} onChange={e=>setCategory(e.target.value)}
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:14,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}>
+            {categories.map(c=><option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:4}}>
+          <label style={{fontSize:12,fontWeight:600,color:'var(--text-2)'}}>Text *</label>
+          <textarea value={text} onChange={e=>setText(e.target.value)} rows={6} placeholder="Bausteintext eingeben…"
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:13,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',resize:'vertical',lineHeight:1.6}}/>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:4}}>
+          <label style={{fontSize:12,fontWeight:600,color:'var(--text-2)'}}>Schlüsselwörter <span style={{fontWeight:400,color:'var(--text-3)'}}>(optional, durch Komma getrennt)</span></label>
+          <input value={keywords} onChange={e=>setKeywords(e.target.value)} type="text" placeholder="z.B. anamnese, aufnahme, patient"
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:14,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
+        </div>
+        {error && <div style={{fontSize:12,color:'var(--orange)',padding:'6px 10px',background:'rgba(217,75,10,0.07)',borderRadius:6}}>{error}</div>}
+        <div style={{display:'flex',gap:8,justifyContent:'flex-end',marginTop:4}}>
+          <button className="btn-secondary" onClick={onClose}>Abbrechen</button>
+          <button className="btn-action" onClick={handleSave} style={{gap:6,display:'flex',alignItems:'center'}}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Speichern
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Main Bausteine ─────────────────────────────────────────────────────────────
+export default function Bausteine() {
+  const navigate = useNavigate()
+  const [search, setSearch]             = useState('')
+  const [activeCat, setActiveCat]       = useState(null)
+  const [selected, setSelected]         = useState(null)
+  const [custom, setCustom]             = useState(() => load('arvis_bausteine_custom', []))
+  const [favs, setFavs]                 = useState(() => load('arvis_bausteine_favs', []))
+  const [basket, setBasket]             = useState([])
+  const [neuOpen, setNeuOpen]           = useState(false)
+  const [editingB, setEditingB]         = useState(null)
+  const [confirm, setConfirm]           = useState(null)
+  const [toast, setToast]               = useState('')
+  const [suggestion, setSuggestion]     = useState('')
+  const [dataReady, setDataReady]       = useState(!!window.BAUSTEINE_DATA)
+
+  // Attendre que bausteine_data.js soit chargé
+  useEffect(() => {
+    if (window.BAUSTEINE_DATA) { setDataReady(true); return }
+    const interval = setInterval(() => {
+      if (window.BAUSTEINE_DATA) { setDataReady(true); clearInterval(interval) }
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
+
+  const allData = useMemo(() => {
+    if (!window.BAUSTEINE_DATA) return custom
+    const forkedIds = custom.filter(b=>b.forked_from).map(b=>b.forked_from)
+    const base = window.BAUSTEINE_DATA.filter(b=>!forkedIds.includes(b.id))
+    return [...base, ...custom]
+  }, [custom, dataReady])
+
+  const categories = useMemo(() => {
+    const allCats = [...new Set(allData.map(b=>b.category))]
+    const special = SPECIAL_FIRST.filter(c=>allCats.includes(c))
+    const rest = allCats.filter(c=>!SPECIAL_FIRST.includes(c)).sort()
+    return [...special, ...rest]
+  }, [allData])
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim()
+    return allData.filter(b => {
+      const mc = !activeCat ? true
+        : activeCat==='Favoriten' ? favs.includes(b.id)
+        : activeCat==='MeineBausteine' ? !!b.custom
+        : b.category===activeCat
+      const mq = !q || b.title.toLowerCase().includes(q) || (q.length>=4 && b.keywords && b.keywords.toLowerCase().includes(q))
+      return mc && mq
+    }).slice(0, 80)
+  }, [allData, activeCat, search, favs, custom])
+
+  function showToast(msg) { setToast(msg); setTimeout(()=>setToast(''),2200) }
+
+  // ── Search autocomplete ────────────────────────────────────
+  function handleSearchInput(e) {
+    const q = e.target.value
+    setSearch(q)
+    if (q.length < 2) { setSuggestion(''); return }
+    const ql = q.toLowerCase()
+    const words = {}
+    allData.forEach(b => b.title.split(/\s+/).forEach(w => {
+      if (w.toLowerCase().startsWith(ql) && w.length > q.length) words[w] = 1
+    }))
+    const suggs = Object.keys(words)
+    setSuggestion(suggs.length > 0 ? suggs[0] : '')
+  }
+
+  function handleSearchKeydown(e) {
+    if ((e.key==='Tab'||e.key==='ArrowRight') && suggestion) {
+      e.preventDefault()
+      setSearch(suggestion)
+      setSuggestion('')
+    }
+  }
+
+  // ── Favourites ─────────────────────────────────────────────
+  function toggleFav(b) {
+    const isFav = favs.includes(b.id)
+    if (!isFav) {
+      const newFavs = [...favs, b.id]
+      setFavs(newFavs); save('arvis_bausteine_favs', newFavs)
+    } else {
+      setConfirm({
+        title:'Aus Favoriten entfernen',
+        msg:`"${b.title}" aus den Favoriten entfernen?`,
+        icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+        iconBg:'var(--orange-ghost)',
+        btnLabel:'Entfernen',
+        onOk: () => {
+          const newFavs = favs.filter(id=>id!==b.id)
+          setFavs(newFavs); save('arvis_bausteine_favs', newFavs); setConfirm(null)
+        }
+      })
+    }
+  }
+
+  // ── Custom CRUD ────────────────────────────────────────────
+  function handleSaveNeu({ titel, category, text, keywords }) {
+    if (editingB) {
+      const existingIdx = custom.findIndex(b=>b.id===editingB.id)
+      let saved
+      if (existingIdx !== -1) {
+        const updated = [...custom]
+        updated[existingIdx] = {...updated[existingIdx], title:titel, category, text, keywords}
+        saved = updated[existingIdx]
+        setCustom(updated); save('arvis_bausteine_custom', updated)
+      } else {
+        saved = {id:'custom_'+Date.now(), title:titel, category, text, keywords, custom:true, forked_from:editingB.id}
+        const updated = [...custom, saved]
+        setCustom(updated); save('arvis_bausteine_custom', updated)
+      }
+      setSelected(saved)
+      showToast('Baustein gespeichert')
+    } else {
+      const newB = {id:'custom_'+Date.now(), title:titel, category, text, keywords, custom:true}
+      const updated = [...custom, newB]
+      setCustom(updated); save('arvis_bausteine_custom', updated)
+      setSelected(newB)
+    }
+    setNeuOpen(false); setEditingB(null)
+  }
+
+  function handleDelete(b) {
+    const isForked = !!b.forked_from
+    setConfirm({
+      title:'Baustein löschen',
+      msg: isForked ? 'Ihre persönliche Version wird gelöscht.\nDer Originalbaustein wird wiederhergestellt.' : `"${b.title}" wird endgültig gelöscht.`,
+      icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>',
+      iconBg:'rgba(220,38,38,0.1)',
+      btnLabel:'Löschen',
+      btnStyle:'danger',
+      onOk: () => {
+        const updated = custom.filter(c=>c.id!==b.id)
+        setCustom(updated); save('arvis_bausteine_custom', updated)
+        const newFavs = favs.filter(id=>id!==b.id)
+        setFavs(newFavs); save('arvis_bausteine_favs', newFavs)
+        setSelected(null); setConfirm(null)
+      }
+    })
+  }
+
+  // ── Copy ───────────────────────────────────────────────────
+  function copyBaustein() {
+    if (!selected) return
+    navigator.clipboard.writeText(formatBausteinText(selected.text))
+    showToast('Kopiert ✓')
+  }
+
+  // ── Basket ─────────────────────────────────────────────────
+  function addToBasket() {
+    if (!selected) return
+    if (basket.find(b=>b.id===selected.id)) { showToast('Bereits im Warenkorb'); return }
+    setBasket(prev=>[...prev, selected])
+    showToast('Zum Warenkorb hinzugefügt')
+  }
+
+  function removeFromBasket(id) { setBasket(prev=>prev.filter(b=>b.id!==id)) }
+  function clearBasket() { setBasket([]) }
+
+  function sendBasketToBrief() {
+    if (!basket.length) return
+    const text = basket.map(b=>b.text).join('\n\n')
+    localStorage.setItem('arvis_brief_input', text)
+    navigate('/briefschreiber')
+  }
+
+  function sendDirectToBrief() {
+    if (!selected) return
+    localStorage.setItem('arvis_brief_input', formatBausteinText(selected.text))
+    navigate('/briefschreiber')
+  }
+
+  const isFav = selected && favs.includes(selected.id)
+
+  return (
+    <div className="page active">
+      {/* Header */}
+      <div className="page-header">
+        <div>
+          <div className="page-title">Bausteine</div>
+          <div className="page-date">Vorgefertigte Textbausteine - einfügen per Klick</div>
+        </div>
+        <button className="btn-action" onClick={()=>{setEditingB(null);setNeuOpen(true)}} style={{gap:6,display:'flex',alignItems:'center'}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Neu
+        </button>
+      </div>
+
+      <div style={{display:'flex',gap:16,alignItems:'flex-start',padding:'0 28px 28px'}}>
+
+        {/* LEFT: Search + List */}
+        <div style={{flex:2,display:'flex',flexDirection:'column',gap:12,minWidth:0,position:'sticky',top:16,height:'calc(100vh - 225px)',minHeight:340}}>
+
+          {/* Search */}
+          <div id="bausteineSearchBox" style={{position:'relative',background:'var(--card)',border:'1.5px solid var(--border)',borderRadius:12,overflow:'hidden',boxShadow:'var(--shadow)'}}>
+            <input
+              type="text" placeholder="Suchen…" autoComplete="off"
+              value={search}
+              onChange={handleSearchInput}
+              onKeyDown={handleSearchKeydown}
+              style={{position:'relative',zIndex:1,width:'100%',padding:'10px 14px',border:'none',outline:'none',fontSize:15,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',background:'transparent',color:'var(--text)',boxSizing:'border-box'}}
+            />
+            {suggestion && search && (
+              <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,padding:'10px 14px',fontSize:15,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text-3)',pointerEvents:'none',whiteSpace:'pre',overflow:'hidden',boxSizing:'border-box',zIndex:2}}>
+                <span style={{visibility:'hidden'}}>{search}</span>{suggestion.slice(search.length)}
+              </div>
+            )}
+          </div>
+
+          {/* Category select */}
+          <div style={{position:'relative',width:'100%',border:'2px solid var(--orange)',borderRadius:10,overflow:'hidden',background:'var(--card)'}}>
+            <select
+              value={activeCat||''}
+              onChange={e=>setActiveCat(e.target.value||null)}
+              style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'11px 40px 11px 14px',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text)',fontWeight:700,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
+              <option value="">Alle Kategorien</option>
+              <option value="Favoriten">★ Favoriten</option>
+              <option value="MeineBausteine">✎ Meine Bausteine</option>
+              {categories.map(c=><option key={c} value={c}>{c}</option>)}
+            </select>
+            <svg style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',pointerEvents:'none'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+
+          {/* List */}
+          <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',minHeight:0,background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,boxShadow:'var(--shadow)'}}>
+            {filtered.length===0 && (
+              <div style={{padding:32,textAlign:'center',color:'var(--text-3)',fontSize:13}}>Keine Ergebnisse</div>
+            )}
+            {filtered.map(b=>(
+              <div key={b.id}
+                className={`baustein-item${selected?.id===b.id?' selected':''}`}
+                onClick={()=>setSelected(b)}>
+                <div className="baustein-item-title" style={{display:'flex',alignItems:'center',gap:4}}>
+                  {b.title}
+                  {favs.includes(b.id) && <span style={{color:'var(--orange)',fontSize:10}} title="Favorit">★</span>}
+                  {b.custom && <span style={{fontSize:9,fontWeight:700,color:'var(--orange)',background:'var(--orange-ghost)',borderRadius:4,padding:'1px 5px'}}>MEIN</span>}
+                </div>
+                <div className="baustein-item-cat">{b.category}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT: Preview + Basket */}
+        <div style={{flex:3,display:'flex',flexDirection:'column',gap:12,minWidth:0,paddingBottom:8,maxHeight:'calc(100vh - 225px)'}}>
+
+          {/* Preview */}
+          <div style={{border:'1px solid var(--border)',borderRadius:12,padding:16,background:'var(--card)',boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flex:1,minHeight:0}}>
+            {!selected && (
+              <div style={{minHeight:218,color:'var(--text-2)',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>Baustein auswählen</div>
+            )}
+            {selected && (
+              <div style={{display:'flex',flexDirection:'column',flex:1,minHeight:0}}>
+                <div className="baustein-preview-header">
+                  <div>
+                    <div className="baustein-preview-title">{selected.title}</div>
+                    <div className="baustein-preview-cat">{selected.category}{selected.custom ? '  ·  Mein Baustein' : ''}</div>
+                  </div>
+                  <div style={{display:'flex',gap:6}}>
+                    <button className="result-action-btn" onClick={copyBaustein} title="Kopieren">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                    <button className="result-action-btn" onClick={()=>toggleFav(selected)} title={isFav?'Aus Favoriten entfernen':'Zu Favoriten hinzufügen'} style={{color:isFav?'var(--orange)':''}}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill={isFav?'var(--orange)':'none'} stroke={isFav?'var(--orange)':'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </button>
+                    <button className="result-action-btn" onClick={()=>{setEditingB(selected);setNeuOpen(true)}} title="Bearbeiten" style={{color:'var(--orange)'}}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                    {selected.custom && (
+                      <button className="result-action-btn" onClick={()=>handleDelete(selected)} title="Löschen" style={{color:'#dc2626'}}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="baustein-preview-text" style={{overflowY:'auto',flex:1}}>{formatBausteinText(selected.text)}</div>
+                <div style={{display:'flex',gap:8,marginTop:16}}>
+                  <button className="btn-action" onClick={addToBasket} style={{flex:1,justifyContent:'center',display:'flex',gap:6}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Zum Warenkorb
+                  </button>
+                  <button className="btn-action" onClick={sendDirectToBrief} style={{flex:1,justifyContent:'center',display:'flex',gap:6}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    An Brief Schreiber
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Basket */}
+          {basket.length > 0 && (
+            <div style={{border:'1px solid var(--border)',background:'var(--card)',borderRadius:12,padding:14,boxShadow:'var(--shadow)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                <span className="baustein-basket-title">Warenkorb</span>
+                <span className="baustein-basket-count">{basket.length} Baustein{basket.length>1?'e':''}</span>
+                <button className="result-action-btn" onClick={clearBasket} style={{marginLeft:'auto',width:'auto',padding:'0 10px',fontSize:12,fontWeight:600,fontFamily:'DM Sans,sans-serif'}}>Leeren</button>
+              </div>
+              <div className="baustein-basket-items" style={{maxHeight:220,overflowY:'auto'}}>
+                {basket.map(b=>(
+                  <div key={b.id} className="baustein-basket-item">
+                    <span className="baustein-basket-item-title" onClick={()=>setSelected(b)}>{b.title}</span>
+                    <span className="baustein-basket-remove" onClick={()=>removeFromBasket(b.id)}>&#215;</span>
+                  </div>
+                ))}
+              </div>
+              <button className="btn-action" onClick={sendBasketToBrief} style={{width:'100%',justifyContent:'center',display:'flex',gap:6,marginTop:8}}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                An Brief Schreiber senden
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modals */}
+      <NeuBausteinModal
+        open={neuOpen}
+        editingBaustein={editingB}
+        categories={categories}
+        onSave={handleSaveNeu}
+        onClose={()=>{setNeuOpen(false);setEditingB(null)}}
+      />
+
+      <ConfirmModal
+        opts={confirm}
+        onOk={()=>confirm?.onOk?.()}
+        onCancel={()=>setConfirm(null)}
+      />
+
+      {/* Toast */}
+      {toast && <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',background:'var(--orange)',color:'white',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+    </div>
+  )
+}

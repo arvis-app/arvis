@@ -1,25 +1,57 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import LoginPage   from './pages/LoginPage'
+import AppLayout   from './components/AppLayout'
+import Dashboard   from './pages/Dashboard'
+import Scan        from './pages/Scan'
+import BriefSchreiber from './pages/BriefSchreiber'
+import Bausteine   from './pages/Bausteine'
+import Uebersetzung from './pages/Uebersetzung'
+import Dateien     from './pages/Dateien'
+import Profil      from './pages/Profil'
+import './App.css'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+function PrivateRoute({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) return <div className="app-loader"><div className="spinner" /></div>
+  return user ? children : <Navigate to="/login" replace />
 }
 
-export default App;
+function PublicRoute({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) return <div className="app-loader"><div className="spinner" /></div>
+  return user ? <Navigate to="/dashboard" replace /> : children
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={
+        <PublicRoute><LoginPage /></PublicRoute>
+      } />
+      <Route path="/" element={
+        <PrivateRoute><AppLayout /></PrivateRoute>
+      }>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard"    element={<Dashboard />} />
+        <Route path="scan"         element={<Scan />} />
+        <Route path="briefschreiber" element={<BriefSchreiber />} />
+        <Route path="bausteine"    element={<Bausteine />} />
+        <Route path="uebersetzung" element={<Uebersetzung />} />
+        <Route path="dateien"      element={<Dateien />} />
+        <Route path="profil"       element={<Profil />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
+  )
+}
