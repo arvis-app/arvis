@@ -1,0 +1,1958 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arvis — Ihr digitaler Klinik-Begleiter</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #D94B0A;
+  --orange-light: #E8500A;
+  --orange-dark: #B83208;
+  --orange-ghost: #FDEAE0;
+  --orange-ghost-dark: #D94B0A18;
+  --success: #22C55E;
+  --error: #EF4444;
+
+  /* Light mode */
+  --bg: #FFFFFF;
+  --bg-2: #F5F5F7;
+  --bg-3: #EBEBED;
+  --text: #1C1C1E;
+  --text-2: #3A3A3C;
+  --text-3: #8E8E93;
+  --border: #E5E5EA;
+  --card: #FFFFFF;
+  --card-shadow: 0 2px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+  --nav-bg: rgba(255,255,255,0.85);
+  --hero-glow: radial-gradient(ellipse 80% 50% at 50% -10%, #D94B0A22, transparent);
+}
+
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  transition: background 0.3s, color 0.3s;
+  overflow-x: hidden;
+}
+
+/* ─── NAVBAR ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.nav-logo {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 20px; font-weight: 800;
+  color: var(--text);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-logo .dot { color: var(--orange); }
+.nav-logo-icon {
+  width: 32px; height: 32px;
+  background: var(--orange);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+.nav-links {
+  display: flex; gap: 32px; list-style: none;
+}
+.nav-links a {
+  font-size: 14px; font-weight: 500;
+  color: var(--text-3); text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-right { display: flex; align-items: center; gap: 12px; }
+
+
+.btn-login {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.btn-login:hover { background: var(--bg-2); }
+
+.btn-primary {
+  padding: 9px 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--orange);
+  color: white;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(217,75,10,0.35);
+}
+.btn-primary:hover {
+  background: var(--orange-dark);
+  box-shadow: 0 4px 20px rgba(217,75,10,0.5);
+  transform: translateY(-1px);
+}
+
+/* ─── HERO ─── */
+.hero {
+  padding: 140px 40px 100px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--hero-glow);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--orange-ghost);
+  border: 1px solid #D94B0A30;
+  color: var(--orange-dark);
+  font-size: 13px; font-weight: 600;
+  margin-bottom: 32px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero h1 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(40px, 6vw, 76px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  max-width: 900px;
+  margin: 0 auto 24px;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+
+.hero h1 .highlight {
+  color: var(--orange);
+  position: relative;
+}
+
+.hero-sub {
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--text-3);
+  max-width: 560px;
+  margin: 0 auto 48px;
+  font-weight: 300;
+  line-height: 1.7;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+
+.hero-cta {
+  display: flex; gap: 14px;
+  justify-content: center; align-items: center;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s ease 0.3s both;
+}
+
+.btn-hero-primary {
+  padding: 16px 36px;
+  border-radius: 14px;
+  background: var(--orange);
+  color: white;
+  font-size: 16px; font-weight: 700;
+  border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 8px 30px rgba(217,75,10,0.4);
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-hero-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(217,75,10,0.55);
+}
+
+.btn-hero-secondary {
+  padding: 16px 36px;
+  border-radius: 14px;
+  background: var(--bg-2);
+  color: var(--text);
+  font-size: 16px; font-weight: 600;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.btn-hero-secondary:hover { background: var(--bg-3); }
+
+.hero-stats {
+  display: flex; gap: 48px;
+  justify-content: center;
+  margin-top: 72px;
+  padding-top: 48px;
+  border-top: 1px solid var(--border);
+  animation: fadeUp 0.6s ease 0.4s both;
+  flex-wrap: wrap;
+}
+.stat-item { text-align: center; }
+.stat-num {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 32px; font-weight: 800;
+  color: var(--orange);
+}
+.stat-label { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+
+/* ─── MOCKUP ─── */
+.mockup-section {
+  padding: 0 40px 100px;
+  display: flex; justify-content: center;
+}
+
+.mockup-container {
+  width: 100%; max-width: 1000px;
+  background: var(--bg-2);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--card-shadow), 0 40px 100px rgba(0,0,0,0.1);
+  animation: fadeUp 0.8s ease 0.5s both;
+}
+
+.mockup-bar {
+  background: var(--bg-3);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.mockup-dots { display: flex; gap: 6px; }
+.mockup-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+.mockup-url {
+  flex: 1; text-align: center;
+  font-size: 12px; color: var(--text-3);
+  background: var(--bg-2);
+  padding: 5px 16px; border-radius: 6px;
+  border: 1px solid var(--border);
+  max-width: 300px; margin: 0 auto;
+}
+
+.mockup-dashboard {
+  display: grid; grid-template-columns: 180px 1fr;
+  min-height: 420px;
+}
+
+.mockup-sidebar {
+  background: var(--bg-3);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+}
+.mockup-sidebar-logo {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 15px; font-weight: 800;
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.mockup-sidebar-logo span { color: var(--orange); }
+.mockup-nav-item {
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-3);
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mockup-nav-item.active {
+  background: var(--orange-ghost);
+  color: var(--orange);
+  border-right: 2px solid var(--orange);
+}
+
+.mockup-main {
+  padding: 24px;
+  background: var(--bg);
+}
+.mockup-main-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px; font-weight: 700;
+  margin-bottom: 16px; color: var(--text);
+}
+.mockup-calendar {
+  background: var(--bg-2);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+.mockup-cal-header {
+  display: flex; justify-content: space-between;
+  font-size: 13px; font-weight: 600;
+  color: var(--text); margin-bottom: 12px;
+}
+.mockup-cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 4px; font-size: 11px; text-align: center;
+}
+.mockup-cal-day { padding: 6px 4px; border-radius: 6px; color: var(--text-3); }
+.mockup-cal-day.today {
+  background: var(--orange);
+  color: white; font-weight: 700;
+}
+.mockup-cal-day.has-event { color: var(--text); font-weight: 600; }
+
+.mockup-right {
+  padding: 20px;
+  border-left: 1px solid var(--border);
+  background: var(--bg);
+}
+.mockup-right-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--text); margin-bottom: 12px;
+}
+.mockup-patient {
+  background: var(--bg-2);
+  border-radius: 8px; padding: 10px 12px;
+  margin-bottom: 8px; border: 1px solid var(--border);
+}
+.mockup-patient-row {
+  display: flex; justify-content: space-between;
+  font-size: 12px;
+}
+.mockup-patient-name { font-weight: 600; color: var(--text); }
+.mockup-patient-room {
+  background: var(--orange-ghost);
+  color: var(--orange-dark);
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+}
+.mockup-patient-note {
+  font-size: 11px; color: var(--text-3);
+  margin-top: 4px;
+}
+
+/* ─── SECTIONS ─── */
+section { padding: 100px 40px; }
+
+.section-tag {
+  display: inline-block;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 16px;
+}
+
+.section-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 800; line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  max-width: 700px; margin-bottom: 20px;
+}
+
+.section-sub {
+  font-size: 18px; color: var(--text-3);
+  max-width: 540px; line-height: 1.7;
+  font-weight: 300;
+}
+
+/* ─── FEATURES GRID ─── */
+.features-section {
+  background: var(--bg-2);
+}
+
+.features-header { text-align: center; margin-bottom: 64px; }
+.features-header .section-title { margin: 0 auto 16px; }
+.features-header .section-sub { margin: 0 auto; }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1100px; margin: 0 auto;
+}
+
+.feature-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.25s, box-shadow 0.25s;
+  position: relative; overflow: hidden;
+}
+.feature-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--orange), var(--orange-light));
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+.feature-card:hover::before { opacity: 1; }
+
+.feature-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: var(--orange-ghost);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 20px;
+}
+
+.feature-card h3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 19px; font-weight: 700;
+  color: var(--text); margin-bottom: 10px;
+}
+.feature-card p {
+  font-size: 14px; color: var(--text-3);
+  line-height: 1.65;
+}
+.feature-tag {
+  display: inline-block; margin-top: 16px;
+  font-size: 11px; font-weight: 700;
+  padding: 4px 12px; border-radius: 999px;
+  background: var(--orange-ghost);
+  color: var(--orange-dark);
+}
+
+/* feature card large */
+.feature-card-large {
+  grid-column: span 2;
+}
+
+/* ─── SCAN SECTION ─── */
+.scan-section {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 64px; align-items: center;
+}
+
+.scan-mockup {
+  background: var(--bg-2);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+.scan-mock-header {
+  background: var(--bg-3);
+  padding: 12px 20px;
+  font-size: 13px; font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.scan-mock-toggle {
+  display: flex; gap: 4px;
+  background: var(--bg);
+  padding: 3px; border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.scan-mock-toggle span {
+  font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 6px; cursor: pointer;
+  color: var(--text-3);
+}
+.scan-mock-toggle span.on {
+  background: var(--orange);
+  color: white;
+}
+
+.scan-mock-body {
+  display: grid; grid-template-columns: 1fr 1fr;
+  min-height: 240px;
+}
+.scan-mock-left {
+  padding: 16px;
+  border-right: 1px solid var(--border);
+}
+.scan-mock-img {
+  background: var(--bg-3);
+  border-radius: 10px; border: 2px dashed var(--border);
+  height: 160px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; color: var(--text-3); font-size: 12px;
+}
+.scan-mock-crop-tool {
+  margin-top: 10px; display: flex; gap: 6px;
+}
+.scan-mock-crop-btn {
+  flex: 1; padding: 7px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px; font-size: 11px;
+  font-weight: 600; color: var(--text-2);
+  text-align: center; cursor: pointer;
+}
+.scan-mock-crop-btn.primary {
+  background: var(--orange); color: white; border-color: var(--orange);
+}
+
+.scan-mock-right { padding: 16px; }
+.scan-mock-result-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--text-3); letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.scan-mock-lines { display: flex; flex-direction: column; gap: 6px; }
+.scan-mock-line {
+  height: 10px; border-radius: 999px;
+  background: var(--bg-3);
+}
+.scan-mock-line.orange { background: linear-gradient(90deg, var(--orange), var(--orange-light)); }
+
+.scan-copy-btn {
+  margin-top: 12px; width: 100%;
+  padding: 8px;
+  background: var(--orange-ghost);
+  border: none; border-radius: 8px;
+  font-size: 12px; font-weight: 700;
+  color: var(--orange-dark); cursor: pointer;
+}
+
+/* ─── ÜBERSETZUNG ─── */
+.ubers-section {
+  background: var(--bg-2);
+}
+.ubers-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 64px; align-items: center;
+}
+
+.ubers-mockup {
+  background: var(--card);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  padding: 28px;
+  box-shadow: var(--card-shadow);
+}
+.ubers-search {
+  display: flex; gap: 8px; margin-bottom: 20px;
+}
+.ubers-input {
+  flex: 1; padding: 12px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text); font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.ubers-input:focus { border-color: var(--orange); }
+.ubers-search-btn {
+  padding: 12px 18px;
+  background: var(--orange); color: white;
+  border: none; border-radius: 10px;
+  font-size: 14px; cursor: pointer;
+}
+
+.ubers-lang-chips {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.lang-chip {
+  padding: 5px 12px; border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+  border: 1px solid var(--border);
+  color: var(--text-3); cursor: pointer;
+  background: var(--bg-2);
+  transition: all 0.15s;
+}
+.lang-chip.active {
+  background: var(--orange); color: white; border-color: var(--orange);
+}
+
+.ubers-result {
+  background: var(--bg-2);
+  border-radius: 12px; padding: 16px;
+  border: 1px solid var(--border);
+}
+.ubers-result-row {
+  display: flex; justify-content: space-between;
+  align-items: center; padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ubers-result-row:last-child { border-bottom: none; }
+.ubers-lang-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--text-3); letter-spacing: 0.08em;
+  text-transform: uppercase; width: 80px;
+}
+.ubers-term { font-size: 14px; font-weight: 500; color: var(--text); }
+.ubers-copy { font-size: 11px; color: var(--orange); cursor: pointer; font-weight: 600; }
+
+/* ─── HOW IT WORKS ─── */
+.how-section { max-width: 900px; margin: 0 auto; }
+.how-header { text-align: center; margin-bottom: 64px; }
+.how-header .section-title { margin: 0 auto 16px; }
+.steps {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 24px; position: relative;
+}
+.steps::before {
+  content: '';
+  position: absolute; top: 32px; left: 10%; right: 10%; height: 2px;
+  background: linear-gradient(90deg, var(--orange), var(--orange-light));
+  opacity: 0.3;
+}
+.step { text-align: center; position: relative; }
+.step-num {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--orange-ghost);
+  border: 3px solid var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 22px; font-weight: 800; color: var(--orange);
+  margin: 0 auto 20px;
+}
+.step h4 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 16px; font-weight: 700;
+  color: var(--text); margin-bottom: 8px;
+}
+.step p { font-size: 13px; color: var(--text-3); line-height: 1.6; }
+
+/* ─── DATENSCHUTZ ─── */
+.dsgvo-section {
+  background: var(--bg-2);
+}
+.dsgvo-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+}
+.dsgvo-badges {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px;
+}
+.dsgvo-badge {
+  background: var(--card);
+  border-radius: 14px; padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+}
+.dsgvo-badge-icon { font-size: 28px; margin-bottom: 10px; }
+.dsgvo-badge-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px;
+}
+.dsgvo-badge-text { font-size: 12px; color: var(--text-3); line-height: 1.5; }
+
+.dsgvo-visual {
+  background: var(--card);
+  border-radius: 20px; padding: 36px;
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+  text-align: center;
+}
+.dsgvo-shield { font-size: 80px; margin-bottom: 20px; display: block; }
+.dsgvo-visual h3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 12px;
+}
+.dsgvo-visual p { font-size: 14px; color: var(--text-3); line-height: 1.7; }
+.section-dark .dsgvo-visual { background: var(--card); }
+.section-dark .dsgvo-visual h3 { color: var(--text) !important; }
+.section-dark .dsgvo-visual p { color: var(--text-3) !important; }
+
+/* ─── PRICING ─── */
+.pricing-section { max-width: 1100px; margin: 0 auto; }
+.pricing-header { text-align: center; margin-bottom: 64px; }
+.pricing-header .section-title { margin: 0 auto 16px; }
+
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 420px)); gap: 24px;
+  justify-content: center;
+}
+.pricing-card {
+  background: var(--card);
+  border-radius: 20px; padding: 36px;
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.25s;
+}
+.pricing-card:hover { transform: translateY(-4px); }
+.pricing-card.featured {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: white;
+  box-shadow: 0 20px 60px rgba(217,75,10,0.4);
+}
+.pricing-plan {
+  font-size: 15px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 12px;
+}
+.pricing-card.featured .pricing-plan { color: rgba(255,255,255,0.7); }
+.pricing-price {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 48px; font-weight: 800; color: var(--text); margin-bottom: 4px;
+}
+.pricing-card.featured .pricing-price { color: white; }
+.pricing-period { font-size: 14px; color: var(--text-3); margin-bottom: 28px; }
+.pricing-card.featured .pricing-period { color: rgba(255,255,255,0.7); }
+.pricing-features { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.pricing-features li {
+  font-size: 14px; color: var(--text-2);
+  display: flex; align-items: center; gap: 10px;
+}
+.pricing-card.featured .pricing-features li { color: rgba(255,255,255,0.9); }
+.pricing-check { color: var(--success); font-weight: 700; }
+.pricing-card.featured .pricing-check { color: white; }
+.pricing-cta {
+  margin-top: 32px; width: 100%; padding: 14px;
+  border-radius: 12px; border: none;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.pricing-cta-default {
+  background: var(--bg-2); color: var(--text);
+  border: 1px solid var(--border);
+}
+.pricing-cta-default:hover { background: var(--bg-3); }
+.pricing-cta-featured {
+  background: white; color: var(--orange);
+}
+.pricing-cta-featured:hover { background: #fff5; }
+
+/* ─── CTA SECTION ─── */
+.cta-section {
+  padding: 100px 40px;
+  text-align: center;
+}
+.cta-inner {
+  max-width: 700px; margin: 0 auto;
+  background: linear-gradient(135deg, #D94B0A, #E8500A);
+  border-radius: 28px; padding: 72px 48px;
+  box-shadow: 0 30px 80px rgba(217,75,10,0.4);
+}
+.cta-inner h2 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800; color: white; margin-bottom: 16px;
+  line-height: 1.15;
+}
+.cta-inner p { font-size: 18px; color: rgba(255,255,255,0.8); margin-bottom: 40px; }
+.btn-cta-white {
+  padding: 16px 40px;
+  background: white; color: var(--orange);
+  border: none; border-radius: 14px;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  transition: all 0.2s;
+}
+.btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.2); }
+
+/* ─── FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 48px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 20px;
+}
+.footer-logo {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px; font-weight: 800; color: var(--text);
+}
+.footer-logo span { color: var(--orange); }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a {
+  font-size: 13px; color: var(--text-3);
+  text-decoration: none; transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--text); }
+.footer-copy { font-size: 12px; color: var(--text-3); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0; transform: translateY(32px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .hero { padding: 120px 20px 80px; }
+  section { padding: 72px 20px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .feature-card-large { grid-column: span 1; }
+  .scan-section, .ubers-inner, .dsgvo-inner { grid-template-columns: 1fr; gap: 40px; }
+  .steps { grid-template-columns: 1fr 1fr; }
+  .steps::before { display: none; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .mockup-dashboard { grid-template-columns: 1fr; }
+  .mockup-sidebar { display: none; }
+  footer { flex-direction: column; text-align: center; }
+  .hero-stats { gap: 28px; }
+}
+
+/* Sections avec fond dégradé orange */
+.section-dark {
+  background: linear-gradient(145deg, #1a0a05, #2d1008, #D94B0A) !important;
+  color: white;
+}
+.section-dark .section-tag { color: rgba(255,255,255,0.7); }
+.section-dark .section-title { color: white; }
+.section-dark .section-sub { color: rgba(255,255,255,0.7); }
+.section-dark h2, .section-dark h3, .section-dark h4 { color: white; }
+.section-dark p { color: rgba(255,255,255,0.75); }
+.section-dark .step { }
+.section-dark .step-num { background: var(--orange); color: white; border-color: var(--orange); }
+.section-dark .step h4 { color: white; }
+.section-dark .step p { color: rgba(255,255,255,0.7); }
+.section-dark .dsgvo-badge { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+.section-dark .dsgvo-badge-title { color: white; }
+.section-dark .dsgvo-badge-text { color: rgba(255,255,255,0.7); }
+.section-dark::before {
+  content: '';
+  position: absolute; top: -100px; right: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(217,75,10,0.3), transparent 70%);
+  border-radius: 50%; pointer-events: none;
+}
+
+
+@media (max-width: 768px) {
+  .features-grid { grid-template-columns: 1fr !important; }
+  .features-grid > div[style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+  .features-row-3 { grid-template-columns: 1fr 1fr !important; }
+  .features-row-3 > div { min-width: 0; overflow: hidden; }
+  .features-row-3 > div:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) {
+  .features-row-3 { grid-template-columns: 1fr !important; }
+  .features-row-3 > div:last-child { grid-column: auto; }
+}
+@media (max-width: 1024px) {
+  .features-grid > div[style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* Feature cards : adapter les couleurs au thème */
+.features-grid > div h3,
+.features-grid > div p,
+.features-grid > div h4,
+.features-grid > div h2,
+.features-grid > div > div > div h3,
+.features-grid > div > div > div h4 {
+  color: var(--text) !important;
+}
+.features-grid > div p {
+  color: var(--text-3) !important;
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    Med<span class="dot">Assist</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#scan">Scan & KI</a></li>
+    <li><a href="#briefschreiber">Brief Schreiber</a></li>
+    <li><a href="#datenschutz">Datenschutz</a></li>
+    <li><a href="#preise">Preise</a></li>
+  </ul>
+  <div class="nav-right">
+        <button class="btn-login" onclick="goToLogin()">Anmelden</button>
+    <button class="btn-primary" onclick="goToLogin()">Registrieren</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="var(--orange)" stroke="none"><polygon points="12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9"/></svg> KI-Assistent für Klinikärzte</div>
+  <h1>Mehr Zeit für<br/>Ihre <span class="highlight">Patienten.</span><br/>Weniger Papierkram.</h1>
+  <p class="hero-sub">Die KI ist jetzt in der Klinik angekommen. Arvis ist Ihr persönlicher KI-Assistent für medizinische Dokumentation — entwickelt für Ärzte, die keine Zeit für Papierkram haben.</p>
+  <div class="hero-cta">
+    <button class="btn-hero-primary" onclick="goToLogin()">Jetzt kostenlos testen</button>
+    <button class="btn-hero-secondary" onclick="goToLogin()">Demo ansehen</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">Von Ärzten</div>
+      <div class="stat-label">entwickelt</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">47 Min</div>
+      <div class="stat-label">gespart pro Tag</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">Datenschutz</div>
+      <div class="stat-label">DSGVO-konform</div>
+    </div>
+  </div>
+</section>
+
+<!-- MOCKUP -->
+<div class="mockup-section">
+  <div class="mockup-container reveal">
+      <!-- Browser bar -->
+      <div class="mockup-bar">
+        <div class="mockup-dots">
+          <div class="mockup-dot" style="background:#FF5F57"></div>
+          <div class="mockup-dot" style="background:#FEBC2E"></div>
+          <div class="mockup-dot" style="background:#28C840"></div>
+        </div>
+        <div class="mockup-url">arvis.de/dashboard</div>
+      </div>
+
+      <!-- Topbar -->
+      <div style="display:flex;align-items:center;gap:12px;padding:0 16px;height:44px;background:var(--bg-2);border-bottom:1px solid var(--border);">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;color:var(--text);width:160px;display:flex;align-items:center;gap:6px;">
+          <div style="width:22px;height:22px;background:var(--orange);border-radius:6px;display:flex;align-items:center;justify-content:center;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          Med<span style="color:var(--orange);">Assist</span>
+        </div>
+        <div style="margin-left:auto;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-dark));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;">DM</div>
+      </div>
+
+      <div class="mockup-dashboard">
+        <!-- Sidebar -->
+        <div class="mockup-sidebar">
+          <div style="padding:10px 0;">
+            <div style="padding:4px 12px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px;">Hauptmenü</div>
+            <div class="mockup-nav-item active">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard
+            </div>
+            <div class="mockup-nav-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Scan & Analyse
+            </div>
+            <div class="mockup-nav-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Brief Schreiber
+            </div>
+            <div class="mockup-nav-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="11" height="4" rx="1"/><rect x="3" y="17" width="14" height="4" rx="1"/></svg> Bausteine
+            </div>
+            <div class="mockup-nav-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Übersetzung
+            </div>
+            <div style="padding:4px 12px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin:8px 0 4px;">Persönlich</div>
+            <div class="mockup-nav-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Meine Dateien
+            </div>
+            <div class="mockup-nav-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg> Mein Profil
+            </div>
+          </div>
+          <!-- User at bottom -->
+          <div style="margin-top:auto;padding:10px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-dark));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">DM</div>
+            <div style="font-size:10px;">
+              <div style="font-weight:600;color:var(--text);">Dr. D. Müller</div>
+              <div style="color:var(--text-3);">Krankenhaus</div>
+            </div>
+            <span style="margin-left:auto;color:var(--text-3);font-size:11px;">⇥</span>
+          </div>
+        </div>
+
+        <!-- Main: greeting + 2 col grid (kalender | patienten) -->
+        <div class="mockup-main" style="display:flex;flex-direction:column;gap:14px;">
+          <!-- Header row -->
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div>
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:var(--text);">Guten Abend, Müller</div>
+              <div style="font-size:12px;color:var(--text-3);margin-top:3px;">Samstag, 14. März 2026</div>
+            </div>
+            <button style="background:var(--orange);color:white;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Scan starten</button>
+          </div>
+
+          <!-- Two column grid: Kalender + Patienten -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;">
+
+            <!-- Kalender card -->
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span style="font-size:14px;font-weight:700;color:var(--text);">Kalender</span>
+                </div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;">
+                  <button style="width:20px;height:20px;border:1px solid var(--border);border-radius:5px;background:var(--bg-2);color:var(--text-2);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
+                  <span style="font-size:12px;font-weight:600;color:var(--text);">März 2026</span>
+                  <button style="width:20px;height:20px;border:1px solid var(--border);border-radius:5px;background:var(--bg-2);color:var(--text-2);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;">→</button>
+                </div>
+                <button style="width:24px;height:24px;border:none;border-radius:6px;background:var(--orange);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+              </div>
+              <!-- Cal grid -->
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;">
+                <div style="font-size:11px;font-weight:700;color:var(--text-3);padding:3px;">Mo</div><div style="font-size:11px;font-weight:700;color:var(--text-3);padding:3px;">Di</div><div style="font-size:11px;font-weight:700;color:var(--text-3);padding:3px;">Mi</div><div style="font-size:11px;font-weight:700;color:var(--text-3);padding:3px;">Do</div><div style="font-size:11px;font-weight:700;color:var(--text-3);padding:3px;">Fr</div><div style="font-size:11px;font-weight:700;color:var(--text-3);padding:3px;">Sa</div><div style="font-size:11px;font-weight:700;color:var(--text-3);padding:3px;">So</div>
+                <div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">23</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">24</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">25</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">26</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">27</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">28</div><div style="font-size:11px;color:var(--text);padding:4px;">1</div>
+                <div style="font-size:11px;color:var(--text);padding:4px;">2</div><div style="font-size:11px;color:var(--text);padding:4px;">3</div><div style="font-size:11px;color:var(--text);padding:4px;">4</div><div style="font-size:11px;color:var(--text);padding:4px;">5</div><div style="font-size:11px;color:var(--text);padding:4px;">6</div><div style="font-size:11px;color:var(--text);padding:4px;">7</div><div style="font-size:11px;color:var(--text);padding:4px;">8</div>
+                <div style="font-size:11px;color:var(--text);padding:4px;">9</div><div style="font-size:11px;color:var(--text);padding:4px;">10</div><div style="font-size:11px;color:var(--text);padding:4px;">11</div><div style="font-size:11px;color:var(--text);padding:4px;">12</div><div style="font-size:11px;color:var(--text);padding:4px;">13</div><div style="font-size:11px;font-weight:700;color:white;background:var(--orange);border-radius:5px;padding:4px;">14</div><div style="font-size:11px;color:var(--text);padding:4px;">15</div>
+                <div style="font-size:11px;color:var(--text);padding:4px;">16</div><div style="font-size:11px;color:var(--text);padding:4px;">17</div><div style="font-size:11px;color:var(--text);padding:4px;">18</div><div style="font-size:11px;color:var(--text);padding:4px;">19</div><div style="font-size:11px;color:var(--text);padding:4px;">20</div><div style="font-size:11px;color:var(--text);padding:4px;">21</div><div style="font-size:11px;color:var(--text);padding:4px;">22</div>
+                <div style="font-size:11px;color:var(--text);padding:4px;">23</div><div style="font-size:11px;color:var(--text);padding:4px;">24</div><div style="font-size:11px;color:var(--text);padding:4px;">25</div><div style="font-size:11px;color:var(--text);padding:4px;">26</div><div style="font-size:11px;color:var(--text);padding:4px;">27</div><div style="font-size:11px;color:var(--text);padding:4px;">28</div><div style="font-size:11px;color:var(--text);padding:4px;">29</div>
+                <div style="font-size:11px;color:var(--text);padding:4px;">30</div><div style="font-size:11px;color:var(--text);padding:4px;">31</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">1</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">2</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">3</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">4</div><div style="font-size:11px;color:var(--text-3);opacity:0.4;padding:4px;">5</div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:12px;font-weight:600;color:var(--orange);">Heute</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <div style="background:var(--orange-ghost);border:1px solid rgba(217,75,10,0.3);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--orange);display:flex;align-items:center;gap:12px;"><span style="flex-shrink:0;">09:00</span><span>Visite Station 3</span></div>
+                <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--text-2);display:flex;align-items:center;gap:12px;"><span style="flex-shrink:0;">14:00</span><span>Röntgen-Besprechung</span></div>
+                <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--text-2);display:flex;align-items:center;gap:12px;"><span style="flex-shrink:0;">16:30</span><span>Post-op Kontrolle Zi. 101</span></div>
+              </div>
+            </div>
+
+            <!-- Patienten card -->
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span style="font-size:14px;font-weight:700;color:var(--text);">Patienten</span>
+                <button style="margin-left:auto;width:24px;height:24px;border:none;border-radius:6px;background:var(--orange);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+              </div>
+              <div style="display:grid;grid-template-columns:36px 110px 1fr;gap:8px;padding:0 2px;">
+                <span style="font-size:13px;font-weight:700;color:var(--text-3);">Zi.</span>
+                <span style="font-size:13px;font-weight:700;color:var(--text-3);">Name</span>
+                <span style="font-size:13px;font-weight:700;color:var(--text-3);">Notiz</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:grid;grid-template-columns:36px 110px 1fr;gap:8px;padding:5px 2px;align-items:center;">
+                  <span style="font-size:10px;font-weight:700;background:#FDEAE0;color:#B83208;padding:2px 4px;border-radius:3px;text-align:center;">101</span>
+                  <span style="font-size:11px;font-weight:600;color:var(--text);">Müller, H.</span>
+                  <span style="font-size:10px;color:var(--text-3);line-height:1.4;">Post-OP Tag 2<br/>Wundkontrolle heute</span>
+                </div>
+                <div style="display:grid;grid-template-columns:36px 110px 1fr;gap:8px;padding:5px 4px;border-radius:7px;align-items:center;background:#FDEAE0;">
+                  <span style="font-size:10px;font-weight:700;background:var(--orange);color:white;padding:2px 4px;border-radius:3px;text-align:center;">204</span>
+                  <span style="font-size:11px;font-weight:600;color:var(--text);">Schmidt, A.</span>
+                  <span style="font-size:10px;color:var(--text-3);line-height:1.4;">EKG 14:00<br/>Labor ausstehend</span>
+                </div>
+                <div style="display:grid;grid-template-columns:36px 110px 1fr;gap:8px;padding:5px 2px;align-items:center;">
+                  <span style="font-size:10px;font-weight:700;background:#FDEAE0;color:#B83208;padding:2px 4px;border-radius:3px;text-align:center;">312</span>
+                  <span style="font-size:11px;font-weight:600;color:var(--text);">Weber, K.</span>
+                  <span style="font-size:10px;color:var(--text-3);line-height:1.4;">Aufnahme heute<br/>V.a. Appendizitis</span>
+                </div>
+                <div style="display:grid;grid-template-columns:36px 110px 1fr;gap:8px;padding:5px 2px;align-items:center;">
+                  <span style="font-size:10px;font-weight:700;background:#FDEAE0;color:#B83208;padding:2px 4px;border-radius:3px;text-align:center;">415</span>
+                  <span style="font-size:11px;font-weight:600;color:var(--text);">Braun, E.</span>
+                  <span style="font-size:10px;color:var(--text-3);line-height:1.4;">Labor morgen früh<br/>Antibiose i.v. läuft</span>
+                </div>
+                <div style="display:grid;grid-template-columns:36px 110px 1fr;gap:8px;padding:5px 2px;align-items:center;">
+                  <span style="font-size:10px;font-weight:700;background:#FDEAE0;color:#B83208;padding:2px 4px;border-radius:3px;text-align:center;">508</span>
+                  <span style="font-size:11px;font-weight:600;color:var(--text);">Klein, R.</span>
+                  <span style="font-size:10px;color:var(--text-3);line-height:1.4;">Entlassung morgen<br/>Arztbrief ausstehend</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features-section section-dark" style="position:relative;overflow:hidden;" id="features">
+  <div class="features-header reveal">
+    <div class="section-tag">Features</div>
+    <h2 class="section-title">Alles, was Sie im Klinikalltag brauchen</h2>
+    <p class="section-sub">Acht integrierte Tools — entwickelt von Medizinern, für Mediziner.</p>
+  </div>
+    <div class="features-grid" style="max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+  <!-- RANGÉE 1 : Scan | Brief Schreiber -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Scan & Analyse</h3></div>
+    <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">Fotografieren Sie einen Arztbrief, schwärzen Sie sensible Daten — KI-Analyse mit 🔴🟡🟢 Prioritäten oder OCR-Text in Sekunden.</p>
+    <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">KI-gestützt · DSGVO-konform</span>
+    <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:16px;flex:1;">
+  <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:9px 12px;display:flex;align-items:center;gap:6px;">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:10px;font-weight:700;color:var(--text);">Scan &amp; Analyse</span>
+  </div>
+  <!-- scan-steps exact -->
+  <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap;row-gap:4px;">
+    <div style="display:flex;align-items:center;gap:4px;opacity:1;">
+      <div style="width:20px;height:20px;border-radius:50%;background:#22C55E;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</div>
+      <span style="font-size:9px;color:#15803D;font-weight:500;">Laden</span>
+    </div>
+    <div style="flex:1;height:1px;background:#22C55E;min-width:8px;"></div>
+    <div style="display:flex;align-items:center;gap:4px;opacity:1;">
+      <div style="width:20px;height:20px;border-radius:50%;background:#22C55E;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">2</div>
+      <span style="font-size:9px;color:#15803D;">Anonym.</span>
+    </div>
+    <div style="flex:1;height:1px;background:#22C55E;min-width:8px;"></div>
+    <div style="display:flex;align-items:center;gap:4px;opacity:1;">
+      <div style="width:20px;height:20px;border-radius:50%;background:#22C55E;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">3</div>
+      <span style="font-size:9px;color:#15803D;">Analyse</span>
+    </div>
+    <div style="flex:1;height:1px;background:var(--orange);min-width:8px;"></div>
+    <div style="display:flex;align-items:center;gap:4px;opacity:1;">
+      <div style="width:20px;height:20px;border-radius:50%;background:var(--orange);color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">4</div>
+      <span style="font-size:9px;color:var(--text);font-weight:500;">Ergebnis</span>
+    </div>
+  </div>
+  <div style="padding:10px 12px;display:flex;flex-direction:column;flex:1;">
+    <!-- Simule une image de PDF scanné -->
+    <div style="background:var(--bg-2);border:1.5px dashed var(--border);border-radius:8px;padding:8px;margin-bottom:8px;display:flex;gap:8px;">
+      <!-- mini PDF simulé -->
+      <div style="width:52px;flex-shrink:0;background:var(--bg-3);border-radius:5px;border:1px solid var(--border);padding:4px 3px;display:flex;flex-direction:column;gap:2px;">
+        <div style="height:4px;border-radius:2px;background:var(--bg-3);width:90%;"></div>
+        <div style="height:4px;border-radius:2px;background:var(--bg-3);width:70%;"></div>
+        <div style="height:3px;border-radius:2px;background:var(--bg-3);width:80%;"></div>
+        <div style="height:5px;border-radius:2px;background:rgba(0,0,0,0.6);width:85%;margin:1px 0;"></div>
+        <div style="height:3px;border-radius:2px;background:var(--bg-3);width:75%;"></div>
+        <div style="height:3px;border-radius:2px;background:var(--bg-3);width:60%;"></div>
+        <div style="height:4px;border-radius:2px;background:rgba(0,0,0,0.6);width:70%;"></div>
+        <div style="height:3px;border-radius:2px;background:var(--bg-3);width:80%;"></div>
+      </div>
+      <!-- résultat KI avec vrais bullets -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:9px;font-weight:800;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin-bottom:2px;">Hauptdiagnose</div>
+        <div style="font-size:8px;color:var(--text-2);">Herzinsuffizienz NYHA III, Z.n. STEMI</div>
+        <div style="font-size:8px;color:var(--text-2);margin-bottom:1px;">Lap. Appendektomie (post-op Tag 2)</div>
+        <div style="font-size:9px;font-weight:800;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin:3px 0 2px;">⚠ Nicht übersehen</div>
+        <div style="font-size:8px;color:#DC2626;background:rgba(220,38,38,0.15);border-left:2px solid rgba(220,38,38,0.5);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🔴 Antikoagulation fehlt bei VHF</div>
+        <div style="font-size:8px;color:#B45309;background:rgba(217,119,6,0.12);border-left:2px solid rgba(217,119,6,0.4);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🟡 ACE-Hemmer nicht dokumentiert</div>
+        <div style="font-size:8px;color:#15803D;background:rgba(22,163,74,0.1);border-left:2px solid rgba(22,163,74,0.35);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🟢 Nierenwerte kontrollieren</div>
+        <div style="font-size:8px;color:#15803D;background:rgba(22,163,74,0.1);border-left:2px solid rgba(22,163,74,0.35);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🟢 Post-op Wunde kontrollieren</div>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">AI Brief Schreiber</h3></div>
+    <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">KI korrigiert, reformuliert und optimiert Ihre medizinischen Briefe auf professionellem Niveau.</p>
+    <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">Korrektur · Umformulierung · Zusammenfassung</span>
+    <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:16px;flex:1;">
+  <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:9px 12px;display:flex;align-items:center;gap:8px;">
+  </div>
+  <div style="padding:10px 12px;display:flex;flex-direction:column;flex:1;">
+    <!-- brief-modes exact -->
+    <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;row-gap:4px;">
+      <span style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px;border-radius:8px;border:1.5px solid var(--orange);background:var(--orange);color:white;font-size:9px;font-weight:600;">
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Korrektur
+      </span>
+      <span style="padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-2);color:var(--text-3);font-size:9px;font-weight:600;">Umformulierung</span>
+      <span style="padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-2);color:var(--text-3);font-size:9px;font-weight:600;">Zusammenfassung</span>
+    </div>
+    <!-- 2 panneaux brief-panel exact -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px;">
+        <div style="font-size:8px;font-weight:700;color:var(--text-3);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;">Ihr Text</div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <div style="height:5px;border-radius:3px;background:var(--bg-3);width:95%;"></div>
+          <div style="height:5px;border-radius:3px;background:var(--bg-3);width:78%;"></div>
+          <div style="height:5px;border-radius:3px;background:var(--bg-3);width:88%;"></div>
+          <div style="height:5px;border-radius:3px;background:var(--bg-3);width:65%;"></div>
+          <div style="height:5px;border-radius:3px;background:var(--bg-3);width:82%;"></div>
+          <div style="height:5px;border-radius:3px;background:var(--bg-3);width:70%;"></div>
+        </div>
+      </div>
+      <div style="background:var(--bg-2);border:1px solid var(--orange);border-radius:8px;padding:7px;">
+        <div style="font-size:8px;font-weight:700;color:var(--orange);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;">KI-Ergebnis</div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:100%;"></div>
+          <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:84%;"></div>
+          <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:93%;"></div>
+          <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:72%;"></div>
+          <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:88%;"></div>
+          <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:79%;"></div>
+        </div>
+      </div>
+    </div>
+    <!-- brief-opt-btns Stil/Länge -->
+    <div style="display:flex;gap:3px;margin-top:6px;flex-wrap:wrap;row-gap:3px;">
+      <span style="font-size:8px;padding:3px 6px;border-radius:5px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-3);">Telegrafisch</span>
+      <span style="font-size:8px;padding:3px 6px;border-radius:5px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-3);">Präzise</span>
+      <span style="font-size:8px;padding:3px 6px;border-radius:5px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-3);">Narrativ</span>
+    </div>
+    <!-- AI result preview block -->
+    <div style="margin-top:7px;background:rgba(217,75,10,0.07);border:1px solid rgba(217,75,10,0.3);border-radius:7px;padding:7px 9px;">
+      <div style="font-size:8px;font-weight:700;color:var(--orange);margin-bottom:4px;display:flex;align-items:center;gap:3px;"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> KI-Ergebnis bereit</div>
+      <div style="font-size:8px;color:var(--text-2);line-height:1.55;">Pat. wurde notfallmäßig aufgenommen. Diagnose: akute Appendizitis. Laparoskopische Appendektomie komplikationslos erfolgt. Entlassung in stabilem AZ.</div>
+    </div>
+    <!-- copy button -->
+    <div style="margin-top:6px;background:var(--orange);border-radius:6px;padding:5px 8px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span style="font-size:8px;font-weight:700;color:white;">Kopieren</span>
+    </div>
+  </div>
+</div>
+  </div>
+
+  <!-- RANGÉE 2 : Bausteine | Übersetzung -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="11" height="4" rx="1"/><rect x="3" y="17" width="14" height="4" rx="1"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Bausteine</h3></div>
+    <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">1.550+ vorgefertigte medizinische Textbausteine — suchen, auswählen, anpassen und per Klick einfügen.</p>
+    <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">1.550+ Bausteine · Personalisierbar</span>
+    <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:12px;flex:1;">
+  <!-- layout 2 colonnes -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;height:100%;">
+
+    <!-- Colonne gauche : search + liste -->
+    <div style="border-right:1px solid var(--border);display:flex;flex-direction:column;">
+      <!-- search -->
+      <div style="padding:7px 8px;border-bottom:1px solid var(--border);background:var(--card);">
+        <div style="display:flex;align-items:center;gap:5px;background:var(--bg-2);border:1px solid var(--border);border-radius:7px;padding:4px 7px;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span style="font-size:9px;color:var(--text-3);">Suchen...</span>
+        </div>
+      </div>
+      <!-- dropdown -->
+      <div style="padding:5px 8px;border-bottom:1px solid var(--border);background:var(--card);">
+        <div style="border:1.5px solid var(--orange);border-radius:6px;padding:3px 7px;font-size:8px;font-weight:700;color:var(--orange);display:flex;justify-content:space-between;">Alle Kategorien <span>▾</span></div>
+      </div>
+      <!-- liste -->
+      <div style="display:flex;flex-direction:column;overflow:hidden;">
+        <div style="background:#FDEAE0;border-bottom:1px solid var(--border);padding:6px 8px;">
+          <div style="font-size:9px;font-weight:600;color:var(--text);">Notaufnahme per RTW</div>
+          <div style="font-size:8px;color:#B83208;margin-top:1px;text-transform:uppercase;letter-spacing:0.05em;">Aufnahme</div>
+        </div>
+        <div style="border-bottom:1px solid var(--border);padding:6px 8px;">
+          <div style="font-size:9px;font-weight:600;color:var(--text-2);">Selbstvorstellung Notaufnahme</div>
+          <div style="font-size:8px;color:var(--text-3);margin-top:1px;text-transform:uppercase;letter-spacing:0.05em;">Aufnahme</div>
+        </div>
+        <div style="border-bottom:1px solid var(--border);padding:6px 8px;">
+          <div style="font-size:9px;font-weight:600;color:var(--text-2);">Akute Dyspnoe</div>
+          <div style="font-size:8px;color:var(--text-3);margin-top:1px;text-transform:uppercase;letter-spacing:0.05em;">Aufnahme</div>
+        </div>
+        <div style="border-bottom:1px solid var(--border);padding:6px 8px;">
+          <div style="font-size:9px;font-weight:600;color:var(--text-2);">Sturz mit Verletzung</div>
+          <div style="font-size:8px;color:var(--text-3);margin-top:1px;text-transform:uppercase;letter-spacing:0.05em;">Aufnahme</div>
+        </div>
+        <div style="padding:6px 8px;">
+          <div style="font-size:9px;font-weight:600;color:var(--text-2);">Vorhofflimmern Management</div>
+          <div style="font-size:8px;color:var(--text-3);margin-top:1px;text-transform:uppercase;letter-spacing:0.05em;">Kardiologie</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne droite : détail + warenkorb -->
+    <div style="display:flex;flex-direction:column;background:var(--card);">
+      <!-- détail -->
+      <div style="padding:8px 10px;border-bottom:1px solid var(--border);flex:1;">
+        <div style="font-size:10px;font-weight:700;color:var(--text);margin-bottom:2px;">Notaufnahme per RTW</div>
+        <div style="font-size:8px;font-weight:700;color:#B83208;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Aufnahme</div>
+        <div style="font-size:8px;color:var(--text-2);line-height:1.55;">Der Patient wurde mit dem Rettungswagen in die Notaufnahme eingeliefert. Laut Notarztprotokoll war der Patient am Einsatzort bewusstseinsklar und orientiert, klagte jedoch über (Hauptbeschwerde). Vitalzeichen bei Übergabe: Blutdruck (_) mmHg, Herzfrequenz (_)/min, SpO₂ (_)% unter Raumluft, Temperatur (_)°C. Erstversorgung durch den Notarzt erfolgte, darunter venöser Zugang und (Maßnahme). Nach Übergabe Aufnahme auf die internistische Station zur weiteren Diagnostik und Behandlung.</div>
+        <!-- boutons -->
+        <div style="display:flex;gap:4px;margin-top:7px;">
+          <div style="flex:1;padding:4px 0;background:var(--orange);border-radius:6px;text-align:center;font-size:8px;font-weight:700;color:white;">+ Warenkorb</div>
+          <div style="flex:1;padding:4px 0;background:var(--orange);border-radius:6px;text-align:center;font-size:8px;font-weight:700;color:white;">✎ Brief</div>
+        </div>
+      </div>
+      <!-- warenkorb -->
+      <div style="padding:7px 10px;background:var(--bg-2);border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span style="font-size:9px;font-weight:700;color:var(--orange);">Warenkorb</span>
+          <span style="font-size:8px;font-weight:700;color:var(--orange);">3 Bausteine</span>
+          <span style="margin-left:auto;font-size:8px;color:var(--text-3);">Leeren</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:5px;">
+          <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-2);background:var(--card);border:1px solid var(--border);border-radius:5px;padding:3px 6px;"><span>Notaufnahme per RTW</span><span style="color:var(--text-3);">×</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-2);background:var(--card);border:1px solid var(--border);border-radius:5px;padding:3px 6px;"><span>Akute Dyspnoe</span><span style="color:var(--text-3);">×</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-2);background:var(--card);border:1px solid var(--border);border-radius:5px;padding:3px 6px;"><span>CTA: Lungenembolie</span><span style="color:var(--text-3);">×</span></div>
+        </div>
+        <div style="background:var(--orange);border-radius:6px;padding:5px;text-align:center;font-size:8px;font-weight:700;color:white;">✎ An Brief Schreiber senden</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+  </div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Übersetzung</h3></div>
+    <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">Jeder Begriff doppelt: als <strong style="color:#B83208;">Fachbegriff</strong> und in <strong style="color:#B83208;">Allgemeinsprache</strong> — damit Ihre Patienten Sie wirklich verstehen. 1.585 Begriffe in 6 Sprachen.</p>
+    <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">Fach- und Allgemeinbegriffe · 6 Sprachen</span>
+    <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:12px;flex:1;">
+  <!-- search + lang toggles -->
+  <div style="background:var(--bg-2);border-bottom:1px solid var(--border);padding:7px 10px;">
+    <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:5px 8px;">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span style="font-size:10px;color:var(--text-3);">Begriff suchen...</span>
+    </div>
+    <!-- ueb-lang-toggles exacts -->
+    <div style="display:flex;gap:3px;">
+      <span style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 2px;border-radius:6px;border:1.5px solid var(--orange);background:#FDEAE0;color:#B83208;font-size:8px;font-weight:700;"><svg width="14" height="10" viewBox="0 0 14 10" style="border-radius:1px;flex-shrink:0"><rect width="14" height="10" fill="#ED2939"/><rect width="9.33" height="10" fill="white"/><rect width="4.67" height="10" fill="#002395"/></svg>FR</span>
+      <span style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 2px;border-radius:6px;border:1.5px solid var(--orange);background:#FDEAE0;color:#B83208;font-size:8px;font-weight:700;"><svg width="14" height="10" viewBox="0 0 14 10" style="border-radius:1px;flex-shrink:0"><rect width="14" height="10" fill="#012169"/><line x1="0" y1="0" x2="14" y2="10" stroke="white" stroke-width="2.5"/><line x1="14" y1="0" x2="0" y2="10" stroke="white" stroke-width="2.5"/><line x1="0" y1="0" x2="14" y2="10" stroke="#C8102E" stroke-width="1.2"/><line x1="14" y1="0" x2="0" y2="10" stroke="#C8102E" stroke-width="1.2"/><rect x="5.5" y="0" width="3" height="10" fill="white"/><rect x="0" y="3.5" width="14" height="3" fill="white"/><rect x="6" y="0" width="2" height="10" fill="#C8102E"/><rect x="0" y="4" width="14" height="2" fill="#C8102E"/></svg>EN</span>
+      <span style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:2px 2px;border-radius:6px;border:1.5px solid var(--orange);background:#FDEAE0;color:#B83208;font-size:8px;font-weight:700;"><svg width="14" height="10" viewBox="0 0 14 10" style="border-radius:1px;flex-shrink:0"><rect width="14" height="10" fill="#AA151B"/><rect y="2.5" width="14" height="5" fill="#F1BF00"/></svg>ES</span>
+      <span style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:2px 2px;border-radius:6px;border:1.5px solid var(--orange);background:#FDEAE0;color:#B83208;font-size:8px;font-weight:700;"><svg width="14" height="10" viewBox="0 0 14 10" style="border-radius:1px;flex-shrink:0"><rect width="14" height="10" fill="#D52B1E"/><rect width="14" height="6.67" fill="#0039A6"/><rect width="14" height="3.33" fill="white"/></svg>RU</span>
+      <span style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:2px 2px;border-radius:6px;border:1.5px solid var(--orange);background:#FDEAE0;color:#B83208;font-size:8px;font-weight:700;"><svg width="14" height="10" viewBox="0 0 14 10" style="border-radius:1px;flex-shrink:0"><rect width="14" height="10" fill="#FFD700"/><rect width="14" height="5" fill="#005BBB"/></svg>UK</span>
+    </div>
+  </div>
+  <!-- layout 2 colonnes : liste | détail -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;">
+    <!-- ueb-list -->
+    <div style="border-right:1px solid var(--border);display:flex;flex-direction:column;">
+      <div style="border-bottom:1px solid var(--border);padding:6px 10px;background:rgba(217,75,10,0.18);">
+        <div style="font-size:11px;font-weight:600;color:var(--text);">Appendizitis (f.)</div>
+        <div style="font-size:9px;color:var(--text-3);font-style:italic;">Blinddarmentzündung (f.)</div>
+        <div style="font-size:8px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:0.08em;margin-top:1px;">Chirurgie</div>
+      </div>
+      <div style="border-bottom:1px solid var(--border);padding:6px 10px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-2);">Hypertonie (f.)</div>
+        <div style="font-size:9px;color:var(--text-3);font-style:italic;">Bluthochdruck (m.)</div>
+      </div>
+      <div style="border-bottom:1px solid var(--border);padding:6px 10px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-2);">Pneumonie (f.)</div>
+        <div style="font-size:9px;color:var(--text-3);font-style:italic;">Lungenentzündung (f.)</div>
+      </div>
+      <div style="border-bottom:1px solid var(--border);padding:6px 10px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-2);">Tachykardie (f.)</div>
+        <div style="font-size:9px;color:var(--text-3);font-style:italic;">Herzrasen (n.)</div>
+      </div>
+      <div style="padding:6px 10px;flex:1;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-2);">Fraktur (f.)</div>
+        <div style="font-size:9px;color:var(--text-3);font-style:italic;">Knochenbruch (m.)</div>
+      </div>
+    </div>
+    <!-- ueb-detail exact -->
+    <div style="padding:3px 8px;display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid var(--border);">
+        <svg width="16" height="11" viewBox="0 0 16 11" style="border-radius:2px;flex-shrink:0"><rect width="16" height="11" fill="#1a1a1a"/><rect y="3.67" width="16" height="3.67" fill="#DD0000"/><rect y="7.33" width="16" height="3.67" fill="#FFCE00"/></svg>
+        <span style="font-size:9px;font-weight:700;color:#B83208;width:60px;">Fachbegriff</span>
+        <span style="font-size:10px;color:var(--text);font-weight:700;">Appendizitis <span style="color:var(--text-3);font-weight:400;">(f.)</span></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid var(--border);">
+        <svg width="16" height="11" viewBox="0 0 16 11" style="border-radius:2px;flex-shrink:0"><rect width="16" height="11" fill="#1a1a1a"/><rect y="3.67" width="16" height="3.67" fill="#DD0000"/><rect y="7.33" width="16" height="3.67" fill="#FFCE00"/></svg>
+        <span style="font-size:9px;font-weight:700;color:var(--text-3);width:60px;">Allgemein</span>
+        <span style="font-size:10px;color:var(--text);font-weight:600;">Blinddarmentzündung <span style="color:var(--text-3);font-weight:400;">(f.)</span></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid var(--border);">
+        <svg width="16" height="11" viewBox="0 0 16 11" style="border-radius:2px;flex-shrink:0"><rect width="16" height="11" fill="#ED2939"/><rect width="10.67" height="11" fill="white"/><rect width="5.33" height="11" fill="#002395"/></svg>
+        <span style="font-size:9px;font-weight:700;color:var(--text-3);width:60px;">Français</span>
+        <span style="font-size:10px;color:var(--text);font-weight:600;">Appendicite</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid var(--border);">
+        <svg width="16" height="11" viewBox="0 0 16 11" style="border-radius:2px;flex-shrink:0"><rect width="16" height="11" fill="#012169"/><line x1="0" y1="0" x2="16" y2="11" stroke="white" stroke-width="2.8"/><line x1="16" y1="0" x2="0" y2="11" stroke="white" stroke-width="2.8"/><line x1="0" y1="0" x2="16" y2="11" stroke="#C8102E" stroke-width="1.4"/><line x1="16" y1="0" x2="0" y2="11" stroke="#C8102E" stroke-width="1.4"/><rect x="6" y="0" width="4" height="11" fill="white"/><rect x="0" y="3.5" width="16" height="4" fill="white"/><rect x="7" y="0" width="2" height="11" fill="#C8102E"/><rect x="0" y="4.5" width="16" height="2" fill="#C8102E"/></svg>
+        <span style="font-size:9px;font-weight:700;color:var(--text-3);width:60px;">English</span>
+        <span style="font-size:10px;color:var(--text);font-weight:600;">Appendicitis</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid var(--border);">
+        <svg width="16" height="11" viewBox="0 0 16 11" style="border-radius:2px;flex-shrink:0"><rect width="16" height="11" fill="#AA151B"/><rect y="2.75" width="16" height="5.5" fill="#F1BF00"/></svg>
+        <span style="font-size:9px;font-weight:700;color:var(--text-3);width:60px;">Español</span>
+        <span style="font-size:10px;color:var(--text);font-weight:600;">Apendicitis</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid var(--border);">
+        <svg width="16" height="11" viewBox="0 0 16 11" style="border-radius:2px;flex-shrink:0"><rect width="16" height="11" fill="#D52B1E"/><rect width="16" height="7.33" fill="#0039A6"/><rect width="16" height="3.67" fill="white"/></svg>
+        <span style="font-size:9px;font-weight:700;color:var(--text-3);width:60px;">Русский</span>
+        <span style="font-size:10px;color:var(--text);font-weight:600;">Аппендицит</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;padding:5px 0;">
+        <svg width="16" height="11" viewBox="0 0 16 11" style="border-radius:2px;flex-shrink:0"><rect width="16" height="11" fill="#FFD700"/><rect width="16" height="5.5" fill="#005BBB"/></svg>
+        <span style="font-size:9px;font-weight:700;color:var(--text-3);width:60px;">Українська</span>
+        <span style="font-size:10px;color:var(--text);font-weight:600;">Апендицит</span>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+
+  <!-- RANGÉE 3 : Dateien | Agenda | Patienten (3 colonnes) -->
+  <div class="features-row-3" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;">
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Meine Dateien</h3></div>
+      <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">Persönlicher digitaler Speicher — Dokumente, Notizen und Dateien in Ordnern organisieren.</p>
+      <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">Ende-zu-Ende verschlüsselt</span>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:12px;flex:1;">
+  <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:9px 12px;display:flex;align-items:center;gap:8px;">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:10px;font-weight:700;color:var(--text);">Meine Dateien</span>
+  </div>
+  <div style="padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:1;align-content:start;min-width:0;overflow:hidden;">
+    <!-- folder orange-ghost -->
+    <div style="background:rgba(217,75,10,0.2);border:1px solid var(--orange);border-radius:9px;padding:8px 4px;text-align:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 3px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <div style="font-size:8px;font-weight:600;color:var(--orange);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Kardio</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 4px;text-align:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 3px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <div style="font-size:8px;font-weight:600;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Neuro</div>
+    </div>
+    <!-- note -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 4px;text-align:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.4" style="display:block;margin:0 auto 3px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <div style="font-size:8px;font-weight:600;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Visite</div>
+    </div>
+    <!-- PDF rouge -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 4px;text-align:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D63B3B" stroke-width="1.4" style="display:block;margin:0 auto 3px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div style="font-size:8px;font-weight:600;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Brief.pdf</div>
+    </div>
+    <!-- 2ème rangée -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 4px;text-align:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 3px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <div style="font-size:8px;font-weight:600;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chirurgie</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 4px;text-align:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D63B3B" stroke-width="1.4" style="display:block;margin:0 auto 3px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div style="font-size:8px;font-weight:600;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Protokoll.pdf</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 4px;text-align:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 3px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <div style="font-size:8px;font-weight:600;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Onkologie</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 4px;text-align:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D63B3B" stroke-width="1.4" style="display:block;margin:0 auto 3px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div style="font-size:8px;font-weight:600;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Scan_01.pdf</div>
+    </div>
+  </div>
+</div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Agenda</h3></div>
+      <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">Kalender für Termine und Kontrolluntersuchungen — direkt im Dashboard.</p>
+      <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">Persönlich</span>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:12px;flex:1;">
+  <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:9px 12px;display:flex;align-items:center;gap:8px;">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:10px;font-weight:700;color:var(--text);">Agenda</span>
+    <span style="font-size:10px;font-weight:600;color:var(--text-3);margin-left:auto;">März 2026</span>
+  </div>
+  <div style="padding:10px 12px;display:flex;flex-direction:column;flex:1;">
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;font-size:8px;text-align:center;margin-bottom:5px;">
+      <span style="color:var(--text-3);font-weight:600;">Mo</span><span style="color:var(--text-3);font-weight:600;">Di</span><span style="color:var(--text-3);font-weight:600;">Mi</span><span style="color:var(--text-3);font-weight:600;">Do</span><span style="color:var(--text-3);font-weight:600;">Fr</span><span style="color:var(--text-3);font-weight:600;">Sa</span><span style="color:var(--text-3);font-weight:600;">So</span>
+      <span style="padding:3px;color:var(--text-3);">10</span>
+      <span style="padding:3px;color:var(--text-3);">11</span>
+      <span style="padding:3px;color:var(--text-3);">12</span>
+      <span style="padding:3px;background:var(--orange);color:white;border-radius:4px;font-weight:700;">13</span>
+      <span style="padding:3px;color:var(--text-2);font-weight:600;">14</span>
+      <span style="padding:3px;color:var(--text-3);">15</span>
+      <span style="padding:3px;color:var(--text-3);">16</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
+      <div style="background:rgba(217,75,10,0.2);border:1px solid rgba(217,75,10,0.4);border-radius:7px;padding:5px 8px;">
+        <div style="font-size:9px;font-weight:600;color:var(--orange);">09:00 Visite Station 3</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:7px;padding:5px 8px;">
+        <div style="font-size:9px;font-weight:600;color:var(--text-3);">14:00 Röntgen-Besprechung</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:7px;padding:5px 8px;">
+        <div style="font-size:9px;font-weight:600;color:var(--text-3);">16:30 Post-op Kontrolle Zi. 101</div>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Patientenliste</h3></div>
+      <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">Übersicht mit Zimmer, Name und Notizen — nur lokal, keine Daten gespeichert.</p>
+      <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">Keine Daten gespeichert</span>
+      <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:12px;flex:1;">
+  <div style="background:var(--bg-2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:auto 1fr 1fr;gap:0 8px;padding:6px 10px;align-items:center;">
+    <span style="font-size:9px;font-weight:700;color:var(--text);">Zi.</span>
+    <span style="font-size:9px;font-weight:700;color:var(--text);">Name</span>
+    <span style="font-size:9px;font-weight:700;color:var(--text);">Notiz</span>
+  </div>
+  <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:0 8px;padding:7px 10px;border-bottom:1px solid var(--border);align-items:center;flex:1;">
+    <span style="background:#FDEAE0;color:#B83208;padding:1px 4px;border-radius:4px;font-size:8px;font-weight:700;white-space:nowrap;min-width:28px;text-align:center;display:inline-block;">101</span>
+    <span style="font-size:10px;font-weight:600;color:var(--text);">Müller, H.</span>
+    <span style="font-size:9px;color:var(--text-3);">Post-OP Tag 2</span>
+  </div>
+  <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:0 8px;padding:7px 10px;border-bottom:1px solid var(--border);background:#FDEAE0;align-items:center;">
+    <span style="background:var(--orange);color:white;padding:1px 4px;border-radius:4px;font-size:8px;font-weight:700;white-space:nowrap;min-width:28px;text-align:center;display:inline-block;">204</span>
+    <span style="font-size:10px;font-weight:600;color:var(--text);">Schmidt, A.</span>
+    <span style="font-size:9px;color:var(--text-3);">Kontrolle EKG</span>
+  </div>
+  <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:0 8px;padding:7px 10px;align-items:center;flex:1;">
+    <span style="background:#FDEAE0;color:#B83208;padding:1px 4px;border-radius:4px;font-size:8px;font-weight:700;white-space:nowrap;min-width:28px;text-align:center;display:inline-block;">312</span>
+    <span style="font-size:10px;font-weight:600;color:var(--text);">Weber, K.</span>
+    <span style="font-size:9px;color:var(--text-3);">Aufnahme heute</span>
+  </div>
+  <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:0 8px;padding:7px 10px;border-top:1px solid var(--border);align-items:center;">
+    <span style="background:#FDEAE0;color:#B83208;padding:1px 4px;border-radius:4px;font-size:8px;font-weight:700;white-space:nowrap;min-width:28px;text-align:center;display:inline-block;">415</span>
+    <span style="font-size:10px;font-weight:600;color:var(--text);">Braun, E.</span>
+    <span style="font-size:9px;color:var(--text-3);">Labor morgen</span>
+  </div>
+  <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:0 8px;padding:7px 10px;border-top:1px solid var(--border);align-items:center;">
+    <span style="background:#FDEAE0;color:#B83208;padding:1px 4px;border-radius:4px;font-size:8px;font-weight:700;white-space:nowrap;min-width:28px;text-align:center;display:inline-block;">508</span>
+    <span style="font-size:10px;font-weight:600;color:var(--text);">Klein, R.</span>
+    <span style="font-size:9px;color:var(--text-3);">Entlassung morgen</span>
+  </div>
+</div>
+    </div>
+
+  </div>
+
+</div>
+
+</section>
+
+<!-- SCAN -->
+<section id="scan" style="padding:100px 40px;">
+  <div class="scan-section">
+    <div class="reveal">
+      <div class="section-tag">Scan & Analyse</div>
+      <h2 class="section-title">Foto. Schwärzen. Analysieren.</h2>
+      <p class="section-sub">Nehmen Sie ein Foto eines Arztbriefs, schwärzen Sie sensible Patientendaten mit einem Rechteck — und erhalten Sie in Sekunden eine vollständige KI-Analyse oder den reinen Text.</p>
+      <div style="margin-top:32px;display:flex;flex-direction:column;gap:16px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">1</div>
+          <div><strong style="color:var(--text);">Foto aufnehmen</strong><br/><span style="font-size:14px;color:var(--text-3);">Direkt vom Smartphone oder Datei hochladen</span></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">2</div>
+          <div><strong style="color:var(--text);">Anonymisieren</strong><br/><span style="font-size:14px;color:var(--text-3);">Rechteck über sensible Daten ziehen — automatisch geschwärzt</span></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">3</div>
+          <div><strong style="color:var(--text);">KI oder OCR wählen</strong><br/><span style="font-size:14px;color:var(--text-3);">Intelligente Analyse oder reiner Text-Export</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal" style="display:flex;flex-direction:column;align-items:center;gap:0;">
+
+      <!-- ── TÉLÉPHONE SEUL ── -->
+      <div style="display:flex;align-items:center;justify-content:center;margin-bottom:0;">
+        <!-- Téléphone -->
+        <div style="width:110px;height:200px;background:var(--bg-3);border-radius:20px;position:relative;box-shadow:0 0 0 1.5px var(--border),0 16px 40px rgba(0,0,0,0.15);flex-shrink:0;">
+          <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);width:30px;height:5px;background:var(--bg-3);border-radius:3px;"></div>
+          <div style="position:absolute;left:-3px;top:55px;width:3px;height:18px;background:#D0D0D0;border-radius:2px 0 0 2px;"></div>
+          <div style="position:absolute;left:-3px;top:78px;width:3px;height:18px;background:#D0D0D0;border-radius:2px 0 0 2px;"></div>
+          <div style="position:absolute;right:-3px;top:65px;width:3px;height:24px;background:#D0D0D0;border-radius:0 2px 2px 0;"></div>
+          <!-- Écran -->
+          <div style="position:absolute;top:18px;left:7px;right:7px;bottom:12px;background:#0a0a0a;border-radius:13px;overflow:hidden;">
+            <!-- UI caméra top -->
+            <div style="position:absolute;top:6px;left:0;right:0;padding:0 8px;display:flex;justify-content:space-between;align-items:center;z-index:3;">
+              <span style="font-size:7px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:0.1em;">SCAN</span>
+              <div style="position:absolute;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:#D94B0A;"></div>
+              <span style="font-size:7px;color:rgba(255,255,255,0.5);font-weight:600;">1×</span>
+            </div>
+            <!-- Feuille photographiée -->
+            <div style="position:absolute;top:20px;left:0;right:0;bottom:36px;display:flex;align-items:center;justify-content:center;">
+              <div style="width:68px;height:88px;background:#F5F4EE;border-radius:2px;transform:rotate(-2.5deg);box-shadow:3px 4px 14px rgba(0,0,0,0.6);padding:5px;display:flex;flex-direction:column;gap:2px;overflow:hidden;position:relative;">
+                <div style="position:absolute;inset:0;background:linear-gradient(130deg,rgba(255,255,255,0.18) 0%,transparent 55%);pointer-events:none;"></div>
+                <div style="height:3px;border-radius:1px;background:#AEAEB2;width:60%;"></div>
+                <div style="height:2px;border-radius:1px;background:var(--bg-3);width:42%;margin-bottom:3px;"></div>
+                <div style="height:4px;border-radius:1px;background:#1C1C1E;width:86%;margin-bottom:1px;"></div>
+                <div style="height:4px;border-radius:1px;background:#1C1C1E;width:62%;margin-bottom:4px;"></div>
+                <div style="height:3px;border-radius:1px;background:#6B6B6B;width:38%;"></div>
+                <div style="height:2px;border-radius:1px;background:var(--bg-3);width:90%;"></div>
+                <div style="height:2px;border-radius:1px;background:#D8D5CC;width:75%;"></div>
+                <div style="height:2px;border-radius:1px;background:var(--bg-3);width:84%;margin-bottom:3px;"></div>
+                <div style="height:3px;border-radius:1px;background:#6B6B6B;width:34%;"></div>
+                <div style="height:2px;border-radius:1px;background:var(--bg-3);width:88%;"></div>
+                <div style="height:2px;border-radius:1px;background:#D8D5CC;width:70%;"></div>
+                <div style="height:2px;border-radius:1px;background:var(--bg-3);width:80%;"></div>
+              </div>
+            </div>
+            <!-- Cadre de visée -->
+            <div style="position:absolute;top:20px;left:8px;right:8px;bottom:36px;pointer-events:none;">
+              <div style="position:absolute;top:0;left:0;width:11px;height:11px;border-top:2px solid #D94B0A;border-left:2px solid #D94B0A;"></div>
+              <div style="position:absolute;top:0;right:0;width:11px;height:11px;border-top:2px solid #D94B0A;border-right:2px solid #D94B0A;"></div>
+              <div style="position:absolute;bottom:0;left:0;width:11px;height:11px;border-bottom:2px solid #D94B0A;border-left:2px solid #D94B0A;"></div>
+              <div style="position:absolute;bottom:0;right:0;width:11px;height:11px;border-bottom:2px solid #D94B0A;border-right:2px solid #D94B0A;"></div>
+            </div>
+            <!-- Shutter -->
+            <div style="position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;">
+              <div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.75);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── WIFI ENTRE TÉLÉPHONE ET MOCKUP ── -->
+      <div style="display:flex;flex-direction:column;align-items:center;margin:14px 0 16px;position:relative;">
+        <!-- Ligne continue derrière tout -->
+        <div style="position:absolute;top:0;bottom:0;left:50%;width:2.5px;background:#D94B0A;transform:translateX(-50%);z-index:0;"></div>
+        <!-- Badge par-dessus la ligne -->
+        <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 20px;background:var(--bg-2);border:1px solid var(--border);border-radius:14px;margin:20px 0 20px;">
+          <svg width="36" height="33" viewBox="0 0 36 33" fill="none">
+            <path d="M1 10 Q18 -4 35 10" stroke="#D94B0A" stroke-width="4" stroke-linecap="round"/>
+            <path d="M6 15 Q18 6 30 15" stroke="#D94B0A" stroke-width="4" stroke-linecap="round"/>
+            <path d="M11 21 Q18 15 25 21" stroke="#D94B0A" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="18" cy="27" r="3.5" fill="#D94B0A"/>
+          </svg>
+          <div style="font-size:11px;font-weight:700;color:#D94B0A;white-space:nowrap;">Foto → Plattform</div>
+        </div>
+        <!-- Tête de flèche par-dessus la ligne, collée en bas -->
+        <svg width="14" height="10" viewBox="0 0 14 10" style="position:relative;z-index:1;display:block;"><path d="M1 1L7 9L13 1" fill="none" stroke="#D94B0A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+
+      <!-- Mockup Scan -->
+      <div class="scan-mockup" style="width:100%;">
+        <div class="scan-mock-header" style="pointer-events:none;">
+          <span>Scan & Analyse</span>
+          <div class="scan-mock-toggle" style="pointer-events:none;">
+            <span class="on"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="11"/><line x1="8" y1="15" x2="8" y2="17"/><line x1="12" y1="15" x2="12" y2="17"/><line x1="16" y1="15" x2="16" y2="17"/></svg> KI-Analyse</span>
+            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> OCR Text</span>
+          </div>
+        </div>
+        <div class="scan-mock-body" style="pointer-events:none;">
+          <div class="scan-mock-left">
+            <div class="scan-mock-img" style="background:#F9F9F9;padding:10px;text-align:left;position:relative;min-height:160px;display:flex;flex-direction:column;gap:3px;border:none;">
+              <div style="height:7px;border-radius:2px;background:var(--bg-3);width:75%;margin-bottom:2px;"></div>
+              <div style="height:5px;border-radius:2px;background:var(--bg-3);width:55%;margin-bottom:5px;"></div>
+              <div style="height:8px;border-radius:2px;background:#1C1C1E;width:82%;"></div>
+              <div style="height:8px;border-radius:2px;background:#1C1C1E;width:50%;margin-bottom:4px;"></div>
+              <div style="height:6px;border-radius:2px;background:#3A3A3C;width:38%;"></div>
+              <div style="height:5px;border-radius:2px;background:var(--bg-3);width:88%;"></div>
+              <div style="height:5px;border-radius:2px;background:var(--bg-3);width:72%;"></div>
+              <div style="height:5px;border-radius:2px;background:var(--bg-3);width:80%;margin-bottom:4px;"></div>
+              <div style="height:6px;border-radius:2px;background:#3A3A3C;width:32%;"></div>
+              <div style="height:5px;border-radius:2px;background:var(--bg-3);width:90%;"></div>
+              <div style="height:5px;border-radius:2px;background:var(--bg-3);width:65%;"></div>
+            </div>
+            <div class="scan-mock-crop-tool" style="pointer-events:none;">
+              <div class="scan-mock-crop-btn" style="background:#1C1C1E;color:white;border-color:var(--text);font-size:10px;display:flex;align-items:center;gap:4px;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="1"/></svg>
+                Bereich schwärzen
+              </div>
+              <div class="scan-mock-crop-btn primary" style="font-size:10px;pointer-events:none;display:flex;align-items:center;justify-content:center;">Analysieren</div>
+            </div>
+          </div>
+          <div class="scan-mock-right" style="pointer-events:none;">
+            <div class="scan-mock-result-label">KI-Analyse</div>
+            <div style="font-size:9px;font-weight:800;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin-bottom:4px;">Hauptdiagnose</div>
+            <div style="font-size:8px;color:var(--text-2);margin-bottom:8px;line-height:1.5;">Herzinsuffizienz NYHA III, Z.n. STEMI<br/>Lap. Appendektomie (post-op Tag 2)</div>
+            <div style="font-size:9px;font-weight:800;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin-bottom:5px;">⚠ Nicht übersehen</div>
+            <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;">
+              <div style="font-size:8px;color:#DC2626;background:rgba(220,38,38,0.12);border-left:2px solid rgba(220,38,38,0.5);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🔴 Antikoagulation fehlt bei VHF</div>
+              <div style="font-size:8px;color:#B45309;background:rgba(217,119,6,0.10);border-left:2px solid rgba(217,119,6,0.4);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🟡 ACE-Hemmer nicht dokumentiert</div>
+              <div style="font-size:8px;color:#15803D;background:rgba(22,163,74,0.09);border-left:2px solid rgba(22,163,74,0.35);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🟢 Nierenwerte kontrollieren</div>
+              <div style="font-size:8px;color:#15803D;background:rgba(22,163,74,0.09);border-left:2px solid rgba(22,163,74,0.35);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🟢 Post-op Wunde kontrollieren</div>
+            </div>
+            <button class="scan-copy-btn" style="pointer-events:none;opacity:0.6;font-size:10px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Kopieren · An Brief Schreiber
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- BRIEF SCHREIBER -->
+<section class="ubers-section section-dark" style="position:relative;overflow:hidden;" id="briefschreiber" style="padding:100px 40px;">
+  <div class="ubers-inner">
+    <div class="ubers-mockup reveal" style="padding:0;overflow:hidden;background:var(--bg-2);">
+
+      <!-- App header -->
+      <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;color:var(--text);">AI Brief Schreiber</div>
+          <div style="font-size:9px;color:var(--text-3);margin-top:1px;">KI korrigiert und reformuliert Ihre medizinischen Briefe</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--border);border-radius:8px;font-size:9px;font-weight:600;color:var(--text-3);background:var(--bg);">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+          Zurücksetzen
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="padding:10px 16px 0;display:flex;gap:6px;">
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:var(--orange);color:white;font-size:10px;font-weight:700;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Korrektur
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text-3);font-size:10px;font-weight:600;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+          Umformulierung
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text-3);font-size:10px;font-weight:600;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Zusammenfassung
+        </span>
+      </div>
+
+      <!-- Two panels -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 16px 14px;">
+
+        <!-- Left: Ihr Text -->
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:11px;font-weight:700;color:var(--text);">Ihr Text</span>
+            <span style="font-size:8px;color:var(--text-3);">147 Zeichen</span>
+          </div>
+          <div style="padding:10px 12px;font-size:8.5px;color:var(--text-2);line-height:1.65;flex:1;">Pat. 72J. w. Diab. typ2, Htn. Aufnahme wegen Sturz, Hüfte schmerzt re. Rö angeordnet. Kein Fraktur. BZ 14.2 erhöht. Metformin weiter. Ortho konsil.</div>
+          <div style="padding:8px 10px;border-top:1px solid var(--border);display:flex;gap:6px;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:9px;font-weight:600;color:var(--text-2);background:var(--bg);">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+              Diktieren
+            </div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;background:var(--orange);border-radius:8px;font-size:9px;font-weight:700;color:white;">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              KI analysieren
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: KI-Ergebnis -->
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--border);">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:11px;font-weight:700;color:var(--text);">KI-Ergebnis</span>
+          </div>
+          <div style="padding:10px 12px;font-size:8.5px;color:var(--text-2);line-height:1.65;flex:1;">72-jährige Patientin mit bekanntem Diabetes mellitus Typ 2 und arterieller Hypertonie. Stationäre Aufnahme nach Sturzereignis mit Schmerzen im Bereich der rechten Hüfte. Radiologisch kein Frakturnachweis. Blutzucker bei Aufnahme erhöht (14,2 mmol/l), Metformin wird fortgeführt. Orthopädisches Konsil angefordert.</div>
+          <div style="padding:8px 10px;border-top:1px solid var(--border);display:flex;gap:6px;">
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:6px;border:1px solid var(--border);border-radius:8px;font-size:9px;font-weight:600;color:var(--text-2);">Kopieren</div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:6px;background:rgba(217,75,10,0.1);border:1px solid rgba(217,75,10,0.3);border-radius:8px;font-size:9px;font-weight:700;color:var(--orange);">Speichern</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="section-tag">Brief Schreiber</div>
+      <h2 class="section-title">Schreiben. Korrigieren. Optimieren.</h2>
+      <p class="section-sub">Diktieren Sie Ihre Notizen, fügen Sie Rohtexte ein oder übernehmen Sie Textbausteine direkt aus den Bausteinen — Arvis korrigiert, reformuliert und strukturiert Ihren Arztbrief auf professionellem Niveau.</p>
+      <p style="margin-top:16px;font-size:18px;color:rgba(255,255,255,0.7);font-weight:300;line-height:1.7;">Drei Modi — <strong style="color:white;">Korrektur</strong>, <strong style="color:white;">Umformulierung</strong>, <strong style="color:white;">Zusammenfassung</strong> — und drei Stile für jeden Verwendungszweck. Arbeitet direkt mit dem <strong style="color:white;">Scan & Analyse</strong>-Modul zusammen: Scanergebnis per Klick in den Brief Schreiber übernehmen.</p>
+      <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px;">
+        <span style="padding:8px 16px;background:#EF4444;border-radius:10px;font-size:13px;font-weight:600;color:white;text-align:center;display:flex;align-items:center;justify-content:center;gap:7px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg> Diktieren</span>
+        <div style="display:flex;gap:10px;">
+          <span style="flex:1;padding:8px 16px;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--text);text-align:center;">Korrektur</span>
+          <span style="flex:1;padding:8px 16px;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--text);text-align:center;">Umformulierung</span>
+          <span style="flex:1;padding:8px 16px;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--text);text-align:center;">Zusammenfassung</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="padding:100px 40px;">
+  <div class="how-section">
+    <div class="how-header reveal">
+      <div class="section-tag">So funktioniert's</div>
+      <h2 class="section-title">In 4 Schritten einsatzbereit</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <h4>Registrieren</h4>
+        <p>Kostenloses Konto erstellen — in unter 2 Minuten.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">2</div>
+        <h4>Dashboard öffnen</h4>
+        <p>Kalender, Patienten und Tools sofort verfügbar.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">3</div>
+        <h4>Scannen & Analysieren</h4>
+        <p>Foto aufnehmen, anonymisieren, KI-Analyse starten.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">4</div>
+        <h4>Effizienter arbeiten</h4>
+        <p>Stunden sparen, mehr Zeit für Ihre Patienten.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATENSCHUTZ -->
+<section class="dsgvo-section section-dark" style="position:relative;overflow:hidden;" id="datenschutz" style="padding:100px 40px;">
+  <div class="dsgvo-inner">
+    <div class="reveal">
+      <div class="section-tag">Datenschutz & Sicherheit</div>
+      <h2 class="section-title">DSGVO-konform. Von Anfang an.</h2>
+      <p class="section-sub">Arvis speichert keine Patientendaten. Jeder Arzt hat ausschließlich Zugriff auf seine eigenen Inhalte.</p>
+      <div class="dsgvo-badges">
+        <div class="dsgvo-badge">
+          <div class="dsgvo-badge-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div class="dsgvo-badge-title">Keine Patientendaten</div>
+          <div class="dsgvo-badge-text">Keinerlei sensible Patienteninformationen werden gespeichert.</div>
+        </div>
+        <div class="dsgvo-badge">
+          <div class="dsgvo-badge-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="dsgvo-badge-title">Persönlicher Zugang</div>
+          <div class="dsgvo-badge-text">Jeder Nutzer sieht ausschließlich seine eigenen Daten.</div>
+        </div>
+        <div class="dsgvo-badge">
+          <div class="dsgvo-badge-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+          <div class="dsgvo-badge-title">DSGVO Deutschland</div>
+          <div class="dsgvo-badge-text">Vollständig konform mit deutschem Datenschutzrecht.</div>
+        </div>
+        <div class="dsgvo-badge">
+          <div class="dsgvo-badge-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="dsgvo-badge-title">Verschlüsselt</div>
+          <div class="dsgvo-badge-text">Ende-zu-Ende-Verschlüsselung für alle gespeicherten Inhalte.</div>
+        </div>
+      </div>
+    </div>
+    <div class="dsgvo-visual reveal" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="display:flex;justify-content:center;margin-bottom:20px;">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3>Ihre Daten gehören Ihnen</h3>
+      <p>Arvis wurde mit dem Grundsatz entwickelt, dass medizinische Werkzeuge höchste Datenschutzstandards erfüllen müssen. Kein Teilen. Kein Tracking. Keine Kompromisse.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:24px;">
+        <span style="padding:6px 14px;border-radius:999px;background:var(--orange-ghost);border:1px solid rgba(217,75,10,0.2);font-size:12px;font-weight:600;color:var(--orange-dark);">Ende-zu-Ende</span>
+        <span style="padding:6px 14px;border-radius:999px;background:var(--orange-ghost);border:1px solid rgba(217,75,10,0.2);font-size:12px;font-weight:600;color:var(--orange-dark);">Server in Deutschland</span>
+        <span style="padding:6px 14px;border-radius:999px;background:var(--orange-ghost);border:1px solid rgba(217,75,10,0.2);font-size:12px;font-weight:600;color:var(--orange-dark);">Kein Tracking</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section style="padding:100px 40px;" id="preise">
+  <div class="pricing-section">
+    <div class="pricing-header reveal">
+      <div class="section-tag">Preise</div>
+      <h2 class="section-title">Einfach. Transparent. Fair.</h2>
+      <p class="section-sub" style="margin:0 auto;">14 Tage kostenlos testen — kein Risiko.</p>
+      <!-- Toggle Monatlich / Jährlich -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:28px;">
+        <span id="labelMonatlich" style="font-size:14px;font-weight:600;color:var(--text);">Monatlich</span>
+        <div onclick="toggleBilling()" id="billingToggle" style="width:48px;height:26px;border-radius:999px;background:var(--orange);cursor:pointer;position:relative;transition:background 0.2s;">
+          <div id="billingThumb" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;transition:transform 0.2s;"></div>
+        </div>
+        <span id="labelJaehrlich" style="font-size:14px;font-weight:600;color:var(--text-3);">Jährlich <span style="background:#f0fdf4;color:#16a34a;font-size:13px;font-weight:700;padding:3px 9px;border-radius:999px;">–28%</span></span>
+      </div>
+      <script>
+        var _billingYearly = false
+        function toggleBilling() {
+          _billingYearly = !_billingYearly
+          document.getElementById('billingThumb').style.transform = _billingYearly ? 'translateX(22px)' : 'translateX(0)'
+          document.getElementById('labelMonatlich').style.color = _billingYearly ? 'var(--text-3)' : 'var(--text)'
+          document.getElementById('labelJaehrlich').style.color  = _billingYearly ? 'var(--text)'   : 'var(--text-3)'
+          document.getElementById('pricingPrice').textContent   = _billingYearly ? '249€' : '19€'
+          document.getElementById('pricingPeriod').innerHTML  = _billingYearly ? '/ Jahr · 14 Tage kostenlos testen' : '/ Monat für 3 Monate · danach 29 €<br>14 Tage kostenlos testen'
+          document.getElementById('pricingOldPrice').style.display      = _billingYearly ? 'none' : 'block'
+          document.getElementById('pricingBadge').style.display         = _billingYearly ? 'none' : 'inline'
+          document.getElementById('pricingDiscountBadge').style.display = _billingYearly ? 'none' : 'inline'
+        }
+      </script>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card featured reveal">
+        <div class="pricing-plan" style="display:flex;align-items:center;gap:8px;">Pro <span id="pricingBadge" style="font-size:11px;font-weight:700;background:#fff7ed;color:var(--orange);padding:3px 9px;border-radius:999px;letter-spacing:0.05em;text-transform:none;">Einführungsangebot</span></div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="pricing-price" id="pricingPrice">19€</div>
+          <div id="pricingOldPrice" style="font-size:18px;color:#f4a261;text-decoration:line-through;font-weight:600;">29€</div>
+          <span id="pricingDiscountBadge" style="background:white;color:var(--orange);font-size:13px;font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:0.02em;">–34%</span>
+        </div>
+        <div class="pricing-period" id="pricingPeriod">/ Monat für 3 Monate · danach 29 €<br>14 Tage kostenlos testen</div>
+        <ul class="pricing-features">
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Dashboard & Kalender</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Unbegrenzte Scans & KI-Analyse</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> AI Brief Schreiber</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Bausteine (personalisierbar)</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Übersetzer</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Meine Dateien (5 GB)</li>
+        </ul>
+        <button class="pricing-cta pricing-cta-featured" onclick="goToLogin()">14 Tage kostenlos testen</button>
+      </div>
+      <div class="pricing-card reveal" style="display:flex;flex-direction:column;">
+        <div class="pricing-plan">Klinik</div>
+        <div class="pricing-price">Auf Anfrage</div>
+        <div class="pricing-period">/ Klinik / Jahr</div>
+        <ul class="pricing-features" style="margin-top:22px;">
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Alles aus Pro</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Team-Verwaltung</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Dedizierter Support</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Onboarding</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> SLA-Garantie</li>
+          <li><span class="pricing-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Eigene Bausteine-Bibliothek</li>
+        </ul>
+        <button class="pricing-cta pricing-cta-default" style="margin-top:auto;" onclick="goToLogin()">Kontakt aufnehmen</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner reveal">
+    <h2>Bereit, effizienter zu arbeiten?</h2>
+
+    <button class="btn-cta-white" style="margin-top:32px;" onclick="goToLogin()">Jetzt kostenlos registrieren</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Med<span>Assist</span></div>
+  <div class="footer-links">
+    <a href="#">Impressum</a>
+    <a href="#">Datenschutz</a>
+    <a href="#">AGB</a>
+    <a href="#">Kontakt</a>
+  </div>
+  <div class="footer-copy">© 2026 Arvis. Alle Rechte vorbehalten.</div>
+</footer>
+
+<script>
+
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+reveals.forEach(r => observer.observe(r));
+
+// Lang chips interaction
+document.querySelectorAll('.lang-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+
+// Scan toggle
+document.querySelectorAll('.scan-mock-toggle span').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.scan-mock-toggle span').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  });
+});
+
+// Navigation to login (works standalone or embedded in iframe)
+function goToLogin() {
+  if (window.parent !== window) {
+    window.parent.postMessage('showLogin', '*');
+  } else {
+    window.location.href = 'arvis_dashboard.html';
+  }
+}
+
+</script>
+</body>
+</html>
