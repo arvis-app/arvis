@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabaseClient'
 
 // ── Markdown → HTML (fidèle à l'original) ─────────────────────────────────────
 function markdownToHtml(md) {
@@ -250,26 +251,20 @@ export default function Scan() {
 
   // ── AI Analysis ────────────────────────────────────────────────────────────
   async function runAIAnalysis(ocrText) {
-    const apiKey = localStorage.getItem('openai_api_key') || ''
-    if (!apiKey) throw new Error('Kein API-Key gespeichert. Bitte im Profil eintragen.')
     setLoadingText('KI analysiert Dokument...')
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-      body: JSON.stringify({
+    const { data, error } = await supabase.functions.invoke('ai-chat', {
+      body: {
         model: 'gpt-4o',
         max_tokens: 4000,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: 'Anonymisierter Dokumententext:\n\n' + ocrText }
         ]
-      })
+      }
     })
-    if (!response.ok) { const err = await response.json(); throw new Error(err.error?.message || 'API Fehler ' + response.status) }
-    const data = await response.json()
-    const content = data.choices?.[0]?.message?.content
-    if (!content) throw new Error('Leere Antwort vom Modell.')
-    return content
+    if (error || data?.error) throw new Error(error?.message || data?.error || 'API Fehler')
+    if (!data?.content) throw new Error('Leere Antwort vom Modell.')
+    return data.content
   }
 
   // ── Proceed to analysis ────────────────────────────────────────────────────

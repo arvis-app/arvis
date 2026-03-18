@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { supabase } from '../supabaseClient'
 
 function escHtml(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
@@ -144,8 +145,6 @@ export default function BriefSchreiber() {
 
   async function toggleDictation() {
     if (recording) { mediaRef.current?.stop(); setRecording(false); return }
-    const apiKey = localStorage.getItem('openai_api_key') || ''
-    if (!apiKey) { showToast('Bitte zuerst API-Key eingeben'); return }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       chunksRef.current = []
@@ -158,16 +157,13 @@ export default function BriefSchreiber() {
   }
 
   async function sendWhisper(chunks, mimeType) {
-    const apiKey = localStorage.getItem('openai_api_key'); if(!apiKey) return
     const ext = mimeType.includes('mp4')?'mp4':mimeType.includes('ogg')?'ogg':'webm'
     const fd = new FormData()
     fd.append('file', new Blob(chunks,{type:mimeType}), 'aufnahme.'+ext)
-    fd.append('model','whisper-1'); fd.append('language','de')
     fd.append('prompt','Arztbrief, medizinische Fachsprache, Diagnosen, Befunde, Therapie.')
     try {
-      const r = await fetch('https://api.openai.com/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey},body:fd})
-      const data = await r.json()
-      if (data.text) { insertAtCursor(data.text.trim()); showToast('Diktat eingefügt') }
+      const { data, error } = await supabase.functions.invoke('ai-whisper', { body: fd })
+      if (data?.text) { insertAtCursor(data.text.trim()); showToast('Diktat eingefügt') }
       else showToast('Transkription fehlgeschlagen')
     } catch(err) { showToast('Fehler: '+err.message) }
   }
@@ -188,18 +184,13 @@ export default function BriefSchreiber() {
   async function runAI() {
     const input = getBriefText(inputRef.current).trim()
     if (!input) { showToast('Bitte Text eingeben'); return }
-    const apiKey = localStorage.getItem('openai_api_key') || ''
-    if (!apiKey) { showToast('Kein API-Key. Bitte im Profil eintragen.'); return }
     setOrig(input); setState('loading')
     try {
-      const r = await fetch('https://api.openai.com/v1/chat/completions',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-        body: JSON.stringify({model:'gpt-4o',max_tokens:3000,messages:[{role:'system',content:SYS},{role:'user',content:buildPrompt(mode,style,length,input)}]})
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: { model:'gpt-4o', max_tokens:3000, messages:[{role:'system',content:SYS},{role:'user',content:buildPrompt(mode,style,length,input)}] }
       })
-      if (!r.ok) { const e=await r.json(); throw new Error(e.error?.message||'API Fehler '+r.status) }
-      const data = await r.json()
-      const content = data.choices?.[0]?.message?.content
+      if (error || data?.error) throw new Error(error?.message || data?.error || 'API Fehler')
+      const content = data?.content
       if (!content) throw new Error('Leere Antwort.')
       setResult(content.trim()); setState('result'); setDiffMode('result')
       showToast({korrektur:'Korrektur',umformulierung:'Umformulierung',zusammenfassung:'Zusammenfassung'}[mode]+' abgeschlossen')

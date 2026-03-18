@@ -29,7 +29,6 @@ export default function Profil() {
   const [hausnummer, setHausnummer] = useState('')
   const [plz,        setPlz]        = useState('')
   const [stadt,      setStadt]      = useState('')
-  const [apiKey,     setApiKey]     = useState('')
   const [photo,      setPhoto]      = useState(null)
 
   // Password fields
@@ -56,7 +55,6 @@ export default function Profil() {
     setPlz(profile.plz || '')
     setStadt(profile.stadt || '')
     if (profile.avatar_url) setPhoto(profile.avatar_url)
-    setApiKey(localStorage.getItem('openai_api_key') || '')
   }, [profile])
 
   function showToast(msg, light=true) { setToast({msg,light}); setTimeout(()=>setToast(null),2500) }
@@ -77,8 +75,6 @@ export default function Profil() {
     if (!email.trim()) errs.email = true
     setErrors(errs)
     if (Object.keys(errs).length) return
-
-    localStorage.setItem('openai_api_key', apiKey.trim())
 
     const { error } = await updateProfile({
       title:      titel,

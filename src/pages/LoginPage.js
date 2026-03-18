@@ -69,10 +69,11 @@ export default function LoginPage() {
 
   return (
     <div id="loginPage" style={{display:'grid'}}>
+
       {/* Left panel */}
       <div className="login-left">
         <div className="login-brand">
-          <div className="login-logo">
+          <a href="https://www.arvis-app.de/landing_page.html" className="login-logo" style={{textDecoration:'none',color:'inherit'}}>
             <div className="login-logo-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -80,7 +81,7 @@ export default function LoginPage() {
               </svg>
             </div>
             Arvis
-          </div>
+          </a>
           <div className="login-tagline">Ihr digitaler Klinik-Begleiter</div>
         </div>
         <div className="login-headline">

@@ -60,7 +60,9 @@ body {
   overflow: hidden;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  border-radius: 0;
 }
+.login-left, .login-right { border-radius: 0; }
 
 .login-left {
   background: linear-gradient(145deg, #1a0a05, #2d1008, #D94B0A);
