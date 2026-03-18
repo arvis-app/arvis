@@ -100,14 +100,14 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
 
   return (
     <div style={{display:'flex',flexDirection:'column',height:'100%'}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 16px',borderBottom:'1px solid var(--border)'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 10px',borderBottom:'1px solid var(--border)'}}>
         <input value={title} onChange={e=>{setTitle(e.target.value);autoSave(e.target.value,'')}}
           placeholder="Titel..."
           style={{flex:1,border:'none',background:'transparent',fontSize:16,fontWeight:700,color:'var(--text)',outline:'none',fontFamily:'Bricolage Grotesque,sans-serif'}}/>
         <div style={{display:'flex',gap:6}}>
-          <button className="btn-secondary" onClick={downloadDoc} style={{fontSize:12,height:32,padding:'0 10px',display:'flex',alignItems:'center',gap:4}}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            .doc
+          <button onClick={downloadDoc} style={{fontSize:12,height:32,padding:'0 10px',display:'flex',alignItems:'center',gap:5,background:'#2B579A',color:'white',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'DM Sans,sans-serif',fontWeight:600}}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Word
           </button>
           <button className="result-action-btn" onClick={onClose}>×</button>
         </div>
@@ -251,69 +251,61 @@ export default function Dateien() {
       <div className="page-header">
         <div>
           <div className="page-title">Meine Dateien</div>
-          <div className="page-date">Notizen · Bilder · PDFs · Dokumente</div>
+          <div className="page-date">Persönlicher Dokumentenspeicher</div>
         </div>
         <div style={{display:'flex',gap:8}}>
-          <button className="btn-secondary" onClick={()=>fileInputRef.current?.click()} style={{display:'flex',alignItems:'center',gap:6}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Hochladen
-          </button>
-          <button className="btn-secondary" onClick={()=>setFolderModal(true)} style={{display:'flex',alignItems:'center',gap:6}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          <button className="btn-secondary" onClick={()=>setFolderModal(true)}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
             Ordner
           </button>
-          <button className="btn-action" onClick={()=>setDetail({type:'note',note:null})} style={{display:'flex',alignItems:'center',gap:6}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <button className="btn-secondary" onClick={()=>setDetail({type:'note',note:null})}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             Notiz
           </button>
+          <button className="btn-action" onClick={()=>fileInputRef.current?.click()}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Hochladen
+          </button>
+          <input type="file" id="dateienFileInput" ref={fileInputRef} style={{display:'none'}} multiple onChange={e=>handleUpload(e.target.files)}/>
         </div>
       </div>
 
-      <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.txt,.md,.csv,.json" style={{display:'none'}} onChange={e=>handleUpload(e.target.files)}/>
 
-      <div style={{padding:'0 28px 28px'}}>
-        {/* Toolbar */}
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
-          {/* Breadcrumb */}
-          <div style={{flex:1,display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
-            {currentFolder && (
-              <button onClick={()=>{setCurrentFolder(path.length>1?path[path.length-2].id:null);setDetail(null)}}
-                style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-muted)',padding:'2px 4px',borderRadius:4,display:'flex',alignItems:'center'}}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              </button>
-            )}
-            <span onClick={()=>{setCurrentFolder(null);setDetail(null)}} style={{cursor:'pointer',fontSize:13,fontWeight:600,color:'var(--text)',display:'flex',alignItems:'center',gap:4}}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              Meine Dateien
-            </span>
-            {path.map(f=>(
-              <span key={f.id}>
-                <span style={{color:'var(--text-muted)',margin:'0 2px'}}>›</span>
-                <span onClick={()=>{setCurrentFolder(f.id);setDetail(null)}} style={{cursor:'pointer',fontSize:13,fontWeight:600,color:'var(--text)'}}>{f.name}</span>
-              </span>
-            ))}
+      <div>
+        {/* Search + view toggle */}
+        <div className="dateien-toolbar">
+          <div className="dateien-search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Datei oder Notiz suchen..." id="dateienSearch" value={search} onChange={e=>setSearch(e.target.value)}/>
           </div>
-          {/* Search */}
-          <div style={{position:'relative'}}>
-            <svg style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Suchen…"
-              style={{paddingLeft:32,paddingRight:12,paddingTop:7,paddingBottom:7,border:'1px solid var(--border)',borderRadius:8,fontSize:13,background:'var(--bg-card)',color:'var(--text)',outline:'none',width:160}}/>
-          </div>
-          {/* View toggle */}
-          <div style={{display:'flex',border:'1px solid var(--border)',borderRadius:8,overflow:'hidden'}}>
-            {[['grid','M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z'],['list','M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01']].map(([v,d])=>(
-              <button key={v} onClick={()=>setView(v)}
-                style={{width:32,height:32,border:'none',background:view===v?'var(--orange-ghost)':'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:view===v?'var(--orange)':'var(--text-muted)'}}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d.split(' ').map((p,i)=><path key={i} d={p}/>)}</svg>
-              </button>
-            ))}
+          <div className="dateien-view-toggle">
+            <button className={`dateien-view-btn${view==='grid'?' active':''}`} id="dateienViewGrid" onClick={()=>setView('grid')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </button>
+            <button className={`dateien-view-btn${view==='list'?' active':''}`} id="dateienViewList" onClick={()=>setView('list')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
           </div>
         </div>
 
-        {/* Layout */}
-        <div style={{display:'flex',gap:16,alignItems:'flex-start'}}>
-          {/* Grid/List */}
-          <div style={{flex:1,minWidth:0}}>
+        {/* Breadcrumb */}
+        <div className="dateien-breadcrumb" id="dateienBreadcrumb">
+          <span className={`dateien-bread-item${!currentFolder?' active':''}`} onClick={()=>{setCurrentFolder(null);setDetail(null)}} style={{cursor:'pointer',display:'flex',alignItems:'center',gap:4}}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            Meine Dateien
+          </span>
+          {path.map(f=>(
+            <span key={f.id} style={{display:'flex',alignItems:'center',gap:4}}>
+              <span style={{color:'var(--text-muted)',margin:'0 2px'}}>›</span>
+              <span className="dateien-bread-item" onClick={()=>{setCurrentFolder(f.id);setDetail(null)}} style={{cursor:'pointer'}}>{f.name}</span>
+            </span>
+          ))}
+        </div>
+
+        {/* Main layout */}
+        <div className={`dateien-layout${detail ? ' with-detail' : ''}`}>
+          {/* File grid/list */}
+          <div className="dateien-main">
             {isEmpty ? (
               <div style={{textAlign:'center',padding:'60px 20px',color:'var(--text-muted)',display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
                 {ICO.empty}
@@ -321,7 +313,7 @@ export default function Dateien() {
                 {!q && <div style={{fontSize:12,color:'var(--text-muted)'}}>Notiz erstellen oder Datei hochladen</div>}
               </div>
             ) : view==='grid' ? (
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:12}}>
+              <div id="dateienGrid" className="dateien-grid">
                 {folders.map(f=>(
                   <div key={f.id} className="dateien-item dateien-folder" onDoubleClick={()=>{setCurrentFolder(f.id);setDetail(null)}}
                     style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:12,padding:'16px 12px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
@@ -349,7 +341,7 @@ export default function Dateien() {
                 ))}
               </div>
             ) : (
-              <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:12,overflow:'hidden'}}>
+              <div id="dateienList" className="dateien-list-view">
                 <div style={{display:'grid',gridTemplateColumns:'1fr 120px 80px',gap:8,padding:'9px 16px',background:'var(--bg-3)',borderBottom:'1px solid var(--border)'}}>
                   {['Name','Geändert',''].map((h,i)=><span key={i} style={{fontSize:10,fontWeight:700,color:'var(--text-3)',letterSpacing:'0.1em',textTransform:'uppercase'}}>{h}</span>)}
                 </div>
@@ -382,57 +374,50 @@ export default function Dateien() {
             )}
           </div>
 
-          {/* Detail panel */}
+          {/* Detail / Note editor panel */}
           {detail && (
-            <div style={{width:400,flexShrink:0,background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,overflow:'hidden',height:'calc(100vh - 280px)',display:'flex',flexDirection:'column',boxShadow:'var(--shadow)'}}>
-              {detail.type==='note' && (
-                <NoteEditor note={detail.note} folderId={currentFolder} onSave={refresh} onClose={()=>setDetail(null)}/>
-              )}
-              {detail.type==='image' && (
-                <div style={{display:'flex',flexDirection:'column',height:'100%'}}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 16px',borderBottom:'1px solid var(--border)'}}>
-                    <span style={{fontSize:14,fontWeight:600,color:'var(--text)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{detail.note.title}</span>
-                    <div style={{display:'flex',gap:6}}>
-                      <button className="btn-secondary" onClick={()=>downloadFile(detail.note)} style={{fontSize:12,height:30,padding:'0 10px',display:'flex',alignItems:'center',gap:4}}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Download
-                      </button>
-                      <button className="result-action-btn" onClick={()=>setDetail(null)}>×</button>
-                    </div>
+            <div className="dateien-detail" id="dateienDetail" style={{display:'flex'}}>
+              {detail.type !== 'note' && (
+                <div className="dateien-detail-header">
+                  <div className="dateien-detail-title" id="dateienDetailTitle">{detail.note?.title || 'Dokument'}</div>
+                  <div style={{display:'flex',gap:6,flexShrink:0,alignItems:'center'}}>
+                    <button className="result-action-btn" id="dateienDetailDlBtn" onClick={()=>downloadFile(detail.note)} title="Herunterladen">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </button>
+                    <button className="result-action-btn" onClick={()=>setDetail(null)}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
                   </div>
+                </div>
+              )}
+              <div id="dateienDetailBody" style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+                {detail.type==='note' && (
+                  <NoteEditor note={detail.note} folderId={currentFolder} onSave={refresh} onClose={()=>setDetail(null)}/>
+                )}
+                {detail.type==='image' && (
                   <div style={{flex:1,overflow:'auto',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
                     <img src={detail.note.dataUrl} style={{maxWidth:'100%',maxHeight:'100%',borderRadius:8,objectFit:'contain'}} alt=""/>
                   </div>
-                </div>
-              )}
-              {detail.type==='pdf' && (
-                <div style={{display:'flex',flexDirection:'column',height:'100%'}}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 16px',borderBottom:'1px solid var(--border)'}}>
-                    <span style={{fontSize:14,fontWeight:600,color:'var(--text)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{detail.note.title}</span>
-                    <div style={{display:'flex',gap:6}}>
-                      <button className="btn-secondary" onClick={()=>downloadFile(detail.note)} style={{fontSize:12,height:30,padding:'0 10px',display:'flex',alignItems:'center',gap:4}}>Download</button>
-                      <button className="result-action-btn" onClick={()=>setDetail(null)}>×</button>
-                    </div>
-                  </div>
+                )}
+                {detail.type==='pdf' && (
                   <iframe src={detail.note.dataUrl} style={{flex:1,width:'100%',border:'none'}} title="PDF"/>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Folder modal */}
+      {/* New folder modal */}
       {folderModal && (
-        <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-          <div style={{background:'var(--card)',borderRadius:16,padding:24,width:'100%',maxWidth:340,margin:'0 16px',display:'flex',flexDirection:'column',gap:14}}>
-            <div style={{fontSize:16,fontWeight:700,color:'var(--text)'}}>Neuer Ordner</div>
-            <input value={newFolderName} onChange={e=>setNewFolderName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&createFolder()}
-              placeholder="Ordnername" autoFocus
-              style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:14,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
-            <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+        <div className="dateien-modal" id="dateienFolderModal" style={{display:'flex'}}>
+          <div className="dateien-modal-card">
+            <div className="dateien-modal-title">Neuer Ordner</div>
+            <input className="form-input" type="text" id="newFolderName" placeholder="Ordnername..." style={{marginBottom:12}}
+              value={newFolderName} onChange={e=>setNewFolderName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&createFolder()} autoFocus/>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn-action" style={{flex:1,justifyContent:'center'}} onClick={createFolder}>Erstellen</button>
               <button className="btn-secondary" onClick={()=>setFolderModal(false)}>Abbrechen</button>
-              <button className="btn-action" onClick={createFolder}>Erstellen</button>
             </div>
           </div>
         </div>
@@ -440,15 +425,14 @@ export default function Dateien() {
 
       {/* Rename modal */}
       {renameModal && (
-        <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-          <div style={{background:'var(--card)',borderRadius:16,padding:24,width:'100%',maxWidth:340,margin:'0 16px',display:'flex',flexDirection:'column',gap:14}}>
-            <div style={{fontSize:16,fontWeight:700,color:'var(--text)'}}>Umbenennen</div>
-            <input value={renameName} onChange={e=>setRenameName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&confirmRename()}
-              autoFocus
-              style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:14,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
-            <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+        <div className="dateien-modal" id="dateienRenameModal" style={{display:'flex'}}>
+          <div className="dateien-modal-card">
+            <div className="dateien-modal-title">Umbenennen</div>
+            <input className="form-input" type="text" id="dateienRenameInput" placeholder="Neuer Name..." style={{marginBottom:12}}
+              value={renameName} onChange={e=>setRenameName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&confirmRename()} autoFocus/>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn-action" style={{flex:1,justifyContent:'center'}} onClick={confirmRename}>Umbenennen</button>
               <button className="btn-secondary" onClick={()=>setRenameModal(null)}>Abbrechen</button>
-              <button className="btn-action" onClick={confirmRename}>Umbenennen</button>
             </div>
           </div>
         </div>
@@ -456,7 +440,7 @@ export default function Dateien() {
 
       <ConfirmModal opts={confirm} onOk={()=>confirm?.onOk?.()} onCancel={()=>setConfirm(null)}/>
 
-      {toast && <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',background:'var(--orange)',color:'white',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
 
       <style>{`.dateien-item:hover .dateien-item-actions { opacity: 1 !important; }`}</style>
     </div>

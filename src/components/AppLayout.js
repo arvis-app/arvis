@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -38,10 +38,15 @@ const personalItems = [
 
 export default function AppLayout() {
   const { profile, getInitials, getDisplayName, logout } = useAuth()
-  const [avatarOpen, setAvatarOpen]   = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [mobileOpen, setMobileOpen]   = useState(false)
-  const navigate = useNavigate()
+  const [mobileOpen,       setMobileOpen]       = useState(false)
+  const [avatarOpen,       setAvatarOpen]       = useState(false)
+  const avatarRef = useRef(null)
+  const navigate  = useNavigate()
+
+  const initials    = getInitials()
+  const displayName = getDisplayName()
+  const clinic      = profile?.clinic || 'Krankenhaus'
 
   async function handleLogout() {
     setAvatarOpen(false)
@@ -49,87 +54,99 @@ export default function AppLayout() {
     navigate('/login')
   }
 
-  const initials    = getInitials()
-  const displayName = getDisplayName()
-  const clinic      = profile?.clinic || 'Krankenhaus'
+  // Close avatar menu on outside click
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
 
   return (
     <div className={`app-layout${sidebarCollapsed ? ' sidebar-collapsed' : ''}${mobileOpen ? ' menu-open' : ''}`}>
 
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <div className="sidebar-logo-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </div>
-            <span className="sidebar-logo-text">Arvis</span>
+      {/* Topbar — grid-column 1/-1 */}
+      <header className="topbar">
+        <button className="mobile-menu-btn" onClick={() => setMobileOpen(v => !v)} aria-label="Menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+
+        <div className="topbar-logo">
+          <div className="topbar-logo-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           </div>
-          <button className="sidebar-collapse-btn" onClick={() => setSidebarCollapsed(v => !v)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
+          Arvis
         </div>
 
-        <div className="sidebar-user" onClick={() => { setAvatarOpen(false); navigate('/profil') }} style={{cursor:'pointer'}}>
-          <div className="sidebar-avatar">{initials}</div>
-          <div className="sidebar-user-info">
-            <div className="sidebar-user-name">{displayName}</div>
-            <div className="sidebar-user-role">{clinic}</div>
+        <button className="topbar-btn" onClick={() => setSidebarCollapsed(v => !v)} title="Sidebar ein-/ausblenden">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        </button>
+
+        <div className="topbar-right">
+          <div style={{position:'relative'}} ref={avatarRef}>
+            <div className="topbar-avatar" onClick={() => setAvatarOpen(v => !v)} style={{cursor:'pointer'}} title="Mein Profil">
+              {initials}
+            </div>
+            {avatarOpen && (
+              <div style={{position:'absolute',right:0,top:'calc(100% + 8px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:12,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
+                <div onClick={() => { setAvatarOpen(false); navigate('/profil') }}
+                  style={{padding:'11px 16px',fontSize:13,fontWeight:600,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
+                  onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Mein Profil
+                </div>
+                <div style={{height:1,background:'var(--border)',margin:'0 12px'}}/>
+                <div onClick={handleLogout}
+                  style={{padding:'11px 16px',fontSize:13,fontWeight:600,color:'#D94B0A',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
+                  onMouseOver={e=>e.currentTarget.style.background='rgba(217,75,10,0.07)'} onMouseOut={e=>e.currentTarget.style.background=''}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D94B0A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Abmelden
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        <nav className="sidebar-nav">
-          <div className="sidebar-section-title">Hauptmenü</div>
-          {navItems.map(item => (
-            <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
-              <span className="nav-item-icon">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-
-          <div className="sidebar-section-title">Persönlich</div>
-          {personalItems.map(item => (
-            <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
-              <span className="nav-item-icon">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
-
-      {/* Main content */}
-      <div className="main-content">
-        {/* Topbar mobile */}
-        <div className="topbar">
-          <button className="topbar-menu-btn" onClick={() => setMobileOpen(v => !v)}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-          <div className="topbar-logo">Arvis</div>
-          <div className="topbar-avatar" onClick={() => setAvatarOpen(v => !v)} style={{cursor:'pointer'}}>
-            {initials}
-          </div>
-        </div>
-
-        {/* Avatar dropdown */}
-        {avatarOpen && (
-          <div className="avatar-menu" onClick={() => setAvatarOpen(false)}>
-            <div onClick={() => { setAvatarOpen(false); navigate('/profil') }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              Mein Profil
-            </div>
-            <div onClick={handleLogout} style={{color:'#D94B0A'}}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              Abmelden
-            </div>
-          </div>
-        )}
-
-        {/* Page content */}
-        <Outlet />
-      </div>
+      </header>
 
       {/* Mobile overlay */}
       {mobileOpen && <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />}
+
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-section-title">Hauptmenü</div>
+        {navItems.map(item => (
+          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
+            <span className="nav-item-icon">{item.icon}</span>
+            {item.label}
+          </NavLink>
+        ))}
+
+        <div className="sidebar-section-title">Persönlich</div>
+        {personalItems.map(item => (
+          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
+            <span className="nav-item-icon">{item.icon}</span>
+            {item.label}
+          </NavLink>
+        ))}
+
+        <div className="sidebar-footer">
+          <div className="sidebar-user" onClick={handleLogout} style={{cursor:'pointer'}}>
+            <div className="sidebar-avatar">{initials}</div>
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">{displayName}</div>
+              <div className="sidebar-user-role">{clinic}</div>
+            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="main-content">
+        <Outlet />
+      </main>
+
     </div>
   )
 }

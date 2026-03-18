@@ -119,12 +119,31 @@ export default function Bausteine() {
   const [custom, setCustom]             = useState(() => load('arvis_bausteine_custom', []))
   const [favs, setFavs]                 = useState(() => load('arvis_bausteine_favs', []))
   const [basket, setBasket]             = useState([])
+  const basketListRef                   = useRef(null)
   const [neuOpen, setNeuOpen]           = useState(false)
   const [editingB, setEditingB]         = useState(null)
   const [confirm, setConfirm]           = useState(null)
+  const [copied, setCopied]             = useState(false)
   const [toast, setToast]               = useState('')
   const [suggestion, setSuggestion]     = useState('')
   const [dataReady, setDataReady]       = useState(!!window.BAUSTEINE_DATA)
+  const rightRef                        = useRef(null)
+  const [rightH, setRightH]             = useState(0)
+
+  // Sync left panel height with right panel
+  useEffect(() => {
+    if (!rightRef.current) return
+    const obs = new ResizeObserver(([e]) => setRightH(e.contentRect.height))
+    obs.observe(rightRef.current)
+    return () => obs.disconnect()
+  }, [])
+
+  // Scroll automatique vers le dernier élément du panier
+  useEffect(() => {
+    if (basketListRef.current && basket.length > 0) {
+      basketListRef.current.scrollTop = basketListRef.current.scrollHeight
+    }
+  }, [basket])
 
   // Attendre que bausteine_data.js soit chargé
   useEffect(() => {
@@ -161,7 +180,7 @@ export default function Bausteine() {
     }).slice(0, 80)
   }, [allData, activeCat, search, favs, custom])
 
-  function showToast(msg) { setToast(msg); setTimeout(()=>setToast(''),2200) }
+  function showToast(msg, light=true) { setToast({msg,light}); setTimeout(()=>setToast(null),2200) }
 
   // ── Search autocomplete ────────────────────────────────────
   function handleSearchInput(e) {
@@ -255,15 +274,15 @@ export default function Bausteine() {
   function copyBaustein() {
     if (!selected) return
     navigator.clipboard.writeText(formatBausteinText(selected.text))
-    showToast('Kopiert ✓')
+    setCopied(true); setTimeout(()=>setCopied(false), 1500)
   }
 
   // ── Basket ─────────────────────────────────────────────────
   function addToBasket() {
     if (!selected) return
-    if (basket.find(b=>b.id===selected.id)) { showToast('Bereits im Warenkorb'); return }
+    if (basket.find(b=>b.id===selected.id)) { showToast('Bereits im Warenkorb', true); return }
     setBasket(prev=>[...prev, selected])
-    showToast('Zum Warenkorb hinzugefügt')
+    showToast('Zum Warenkorb hinzugefügt', true)
   }
 
   function removeFromBasket(id) { setBasket(prev=>prev.filter(b=>b.id!==id)) }
@@ -298,10 +317,10 @@ export default function Bausteine() {
         </button>
       </div>
 
-      <div style={{display:'flex',gap:16,alignItems:'flex-start',padding:'0 28px 28px'}}>
+      <div style={{display:'flex',gap:16,alignItems:'flex-start',paddingTop:4}}>
 
         {/* LEFT: Search + List */}
-        <div style={{flex:2,display:'flex',flexDirection:'column',gap:12,minWidth:0,position:'sticky',top:16,height:'calc(100vh - 225px)',minHeight:340}}>
+        <div style={{flex:2,display:'flex',flexDirection:'column',gap:12,minWidth:0,height:basket.length>0?Math.max(560,rightH):560}}>
 
           {/* Search */}
           <div id="bausteineSearchBox" style={{position:'relative',background:'var(--card)',border:'1.5px solid var(--border)',borderRadius:12,overflow:'hidden',boxShadow:'var(--shadow)'}}>
@@ -354,10 +373,10 @@ export default function Bausteine() {
         </div>
 
         {/* RIGHT: Preview + Basket */}
-        <div style={{flex:3,display:'flex',flexDirection:'column',gap:12,minWidth:0,paddingBottom:8,maxHeight:'calc(100vh - 225px)'}}>
+        <div ref={rightRef} style={{flex:3,display:'flex',flexDirection:'column',gap:12,minWidth:0}}>
 
           {/* Preview */}
-          <div style={{border:'1px solid var(--border)',borderRadius:12,padding:16,background:'var(--card)',boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flex:1,minHeight:0}}>
+          <div style={{border:'1px solid var(--border)',borderRadius:12,padding:16,background:'var(--card)',boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flexShrink:0}}>
             {!selected && (
               <div style={{minHeight:218,color:'var(--text-2)',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>Baustein auswählen</div>
             )}
@@ -369,8 +388,11 @@ export default function Bausteine() {
                     <div className="baustein-preview-cat">{selected.category}{selected.custom ? '  ·  Mein Baustein' : ''}</div>
                   </div>
                   <div style={{display:'flex',gap:6}}>
-                    <button className="result-action-btn" onClick={copyBaustein} title="Kopieren">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <button className="result-action-btn" onClick={copyBaustein} title="Kopieren" style={copied?{color:'var(--orange)'}:{}}>
+                      {copied
+                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      }
                     </button>
                     <button className="result-action-btn" onClick={()=>toggleFav(selected)} title={isFav?'Aus Favoriten entfernen':'Zu Favoriten hinzufügen'} style={{color:isFav?'var(--orange)':''}}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill={isFav?'var(--orange)':'none'} stroke={isFav?'var(--orange)':'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -402,14 +424,14 @@ export default function Bausteine() {
 
           {/* Basket */}
           {basket.length > 0 && (
-            <div style={{border:'1px solid var(--border)',background:'var(--card)',borderRadius:12,padding:14,boxShadow:'var(--shadow)'}}>
-              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+            <div style={{border:'1px solid var(--border)',background:'var(--card)',borderRadius:12,padding:14,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flexShrink:0}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,flexShrink:0}}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                 <span className="baustein-basket-title">Warenkorb</span>
                 <span className="baustein-basket-count">{basket.length} Baustein{basket.length>1?'e':''}</span>
                 <button className="result-action-btn" onClick={clearBasket} style={{marginLeft:'auto',width:'auto',padding:'0 10px',fontSize:12,fontWeight:600,fontFamily:'DM Sans,sans-serif'}}>Leeren</button>
               </div>
-              <div className="baustein-basket-items" style={{maxHeight:220,overflowY:'auto'}}>
+              <div ref={basketListRef} className="baustein-basket-items" style={{overflowY:'auto'}}>
                 {basket.map(b=>(
                   <div key={b.id} className="baustein-basket-item">
                     <span className="baustein-basket-item-title" onClick={()=>setSelected(b)}>{b.title}</span>
@@ -442,7 +464,7 @@ export default function Bausteine() {
       />
 
       {/* Toast */}
-      {toast && <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',background:'var(--orange)',color:'white',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:toast.light?'var(--orange-ghost)':'var(--orange)',color:toast.light?'var(--orange)':'white',border:'none',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast.msg}</div>}
     </div>
   )
 }

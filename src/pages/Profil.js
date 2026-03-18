@@ -11,7 +11,7 @@ function EyeIcon() {
 
 export default function Profil() {
   const { profile, updateProfile, getInitials, getPlanInfo, logout } = useAuth()
-  const [toast, setToast]     = useState('')
+  const [toast, setToast]     = useState(null)
   const [errors, setErrors]   = useState({})
   const photoInputRef         = useRef(null)
 
@@ -38,6 +38,9 @@ export default function Profil() {
   const [pwConfirm,  setPwConfirm]  = useState('')
   const [showPw,     setShowPw]     = useState({old:false,new:false,confirm:false})
 
+  // Payment
+  const [paymentMethod, setPaymentMethod] = useState(null) // null | { brand:'Visa', last4:'4242' }
+
   // Modals
   const [showCancelModal, setShowCancelModal] = useState(false)
 
@@ -56,7 +59,7 @@ export default function Profil() {
     setApiKey(localStorage.getItem('openai_api_key') || '')
   }, [profile])
 
-  function showToast(msg) { setToast(msg); setTimeout(()=>setToast(''),2500) }
+  function showToast(msg, light=true) { setToast({msg,light}); setTimeout(()=>setToast(null),2500) }
 
   // ── Photo ──────────────────────────────────────────────────────────────────
   function handlePhoto(e) {
@@ -101,7 +104,7 @@ export default function Profil() {
     const { error } = await supabase.auth.updateUser({ password: pwNew })
     if (error) { showToast('Fehler: ' + error.message); return }
     setPwOld(''); setPwNew(''); setPwConfirm('')
-    showToast('✓ Passwort geändert')
+    showToast('Passwort geändert', true)
   }
 
   const initials = getInitials()
@@ -116,11 +119,11 @@ export default function Profil() {
         </div>
       </div>
 
-      <div style={{padding:'0 28px 28px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,alignItems:'start'}}>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,alignItems:'stretch'}}>
 
         {/* ── Linke Spalte: Persönliche Infos ── */}
         <div className="card" style={{display:'flex',flexDirection:'column'}}>
-          <div className="card-header">
+          <div className="card-header" style={{borderBottom:'1px solid var(--border)',paddingBottom:14,marginBottom:4}}>
             <div className="card-title" style={{display:'flex',alignItems:'center',gap:8}}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               Persönliche Informationen
@@ -130,8 +133,8 @@ export default function Profil() {
 
             {/* Avatar */}
             <div style={{display:'flex',alignItems:'center',gap:20}}>
-              <div onClick={()=>photoInputRef.current?.click()}
-                style={{width:96,height:96,borderRadius:'50%',background:'linear-gradient(135deg,var(--orange),var(--orange-dark))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:32,fontWeight:700,color:'white',flexShrink:0,cursor:'pointer',overflow:'hidden'}}>
+              <div id="profilAvatar" onClick={()=>photoInputRef.current?.click()}
+                style={{width:84,height:84,borderRadius:'50%',background:'linear-gradient(135deg,var(--orange),var(--orange-dark))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,fontWeight:700,color:'white',flexShrink:0,cursor:'pointer',overflow:'hidden'}}>
                 {photo ? <img src={photo} style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}} alt=""/> : initials}
               </div>
               <div>
@@ -183,13 +186,6 @@ export default function Profil() {
               <input type="text" className="form-input" value={klinik} onChange={e=>setKlinik(e.target.value)} placeholder="Universitätsklinikum Berlin"/>
             </div>
 
-            {/* API Key */}
-            <div className="form-group" style={{margin:0}}>
-              <label className="form-label">OpenAI API-Key</label>
-              <input type="password" className="form-input" value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="sk-..." style={{fontFamily:'monospace',fontSize:13}}/>
-              <div style={{fontSize:11,color:'var(--text-3)',marginTop:4}}>Wird nur lokal gespeichert — nie auf unseren Servern</div>
-            </div>
-
             <div style={{height:1,background:'var(--border)'}}/>
             <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>Rechnungsadresse</div>
 
@@ -217,8 +213,7 @@ export default function Profil() {
               </div>
             </div>
 
-            <div style={{flex:1}}/>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:8,borderTop:'1px solid var(--border)'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:8,borderTop:'1px solid var(--border)',marginTop:-6}}>
               <div style={{fontSize:11,color:'var(--text-3)'}}><span style={{color:'var(--orange)'}}>*</span> Pflichtfeld</div>
               <button className="btn-action" onClick={saveProfile} style={{padding:'10px 24px'}}>Speichern</button>
             </div>
@@ -226,14 +221,14 @@ export default function Profil() {
         </div>
 
         {/* ── Rechte Spalte: Abo + Passwort ── */}
-        <div style={{display:'flex',flexDirection:'column',gap:20}}>
+        <div style={{display:'flex',flexDirection:'column',gap:20,height:'100%'}}>
 
           {/* Abonnement */}
           <div className="card">
-            <div className="card-header">
+            <div className="card-header" style={{borderBottom:'1px solid var(--border)',paddingBottom:14,marginBottom:4}}>
               <div className="card-title" style={{display:'flex',alignItems:'center',gap:8}}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                Abonnement & Zahlung
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Abonnement &amp; Zahlung
               </div>
             </div>
             <div className="card-body" style={{display:'flex',flexDirection:'column',gap:16}}>
@@ -253,6 +248,39 @@ export default function Profil() {
                 <span style={{padding:'4px 12px',borderRadius:999,background:'var(--orange)',color:'white',fontSize:11,fontWeight:700}}>
                   {planInfo.plan==='pro' ? 'Aktiv' : planInfo.expired ? 'Abgelaufen' : 'Trial'}
                 </span>
+              </div>
+
+              {/* Zahlungsmittel */}
+              <div style={{paddingTop:12,borderTop:'1px solid var(--border)'}}>
+                <div style={{fontSize:12,fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--text-3)',marginBottom:10}}>Zahlungsmittel</div>
+                {paymentMethod ? (
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                      <div style={{width:38,height:24,borderRadius:5,background:'var(--bg-3)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                        <svg width="22" height="14" viewBox="0 0 22 14" fill="none"><rect width="22" height="14" rx="2" fill="#1a1a2e"/><rect y="3" width="22" height="4" fill="#e2b80a" opacity="0.8"/></svg>
+                      </div>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{paymentMethod.brand} •••• {paymentMethod.last4}</div>
+                        <div style={{fontSize:11,color:'var(--text-3)'}}>Standardzahlungsmittel</div>
+                      </div>
+                    </div>
+                    <button onClick={()=>showToast('Stripe-Integration folgt')} style={{padding:'6px 14px',borderRadius:8,border:'1px solid var(--border)',background:'var(--bg-2)',color:'var(--text)',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans,sans-serif'}}>
+                      Ändern
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                      <div style={{width:38,height:24,borderRadius:5,background:'var(--bg-3)',border:'1px dashed var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                      </div>
+                      <div style={{fontSize:13,color:'var(--text-3)'}}>Kein Zahlungsmittel hinterlegt</div>
+                    </div>
+                    <button onClick={()=>showToast('Stripe-Integration folgt')} style={{padding:'6px 14px',borderRadius:8,border:'none',background:'var(--orange)',color:'white',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans,sans-serif'}}>
+                      Hinzufügen
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Trial section */}
@@ -301,14 +329,14 @@ export default function Profil() {
           </div>
 
           {/* Passwort */}
-          <div className="card" style={{flex:1,display:'flex',flexDirection:'column'}}>
-            <div className="card-header">
+          <div className="card" id="passwortCard">
+            <div className="card-header" style={{borderBottom:'1px solid var(--border)',paddingBottom:14,marginBottom:4}}>
               <div className="card-title" style={{display:'flex',alignItems:'center',gap:8}}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 Passwort ändern
               </div>
             </div>
-            <div className="card-body" style={{display:'flex',flexDirection:'column',gap:14,flex:1}}>
+            <div className="card-body" style={{display:'flex',flexDirection:'column',gap:14}}>
               {[
                 {id:'old',  label:'Aktuelles Passwort', val:pwOld,    set:setPwOld,    ph:'••••••••'},
                 {id:'new',  label:'Neues Passwort',     val:pwNew,    set:setPwNew,    ph:'Min. 6 Zeichen'},
@@ -322,7 +350,6 @@ export default function Profil() {
                   </div>
                 </div>
               ))}
-              <div style={{flex:1}}/>
               <div style={{display:'flex',justifyContent:'flex-end',paddingTop:8,borderTop:'1px solid var(--border)'}}>
                 <button className="btn-action" onClick={savePassword} style={{padding:'10px 24px'}}>Passwort ändern</button>
               </div>
@@ -353,7 +380,7 @@ export default function Profil() {
         </div>
       )}
 
-      {toast && <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',background:'var(--orange)',color:'white',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:toast.light?'var(--orange-ghost)':'var(--orange)',color:toast.light?'var(--orange)':'white',border:'none',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast.msg}</div>}
     </div>
   )
 }

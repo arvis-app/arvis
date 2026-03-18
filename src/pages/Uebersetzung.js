@@ -9,16 +9,16 @@ const UEB_LANGS = [
 ]
 
 const FLAG_SVG = {
-  de: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;vertical-align:middle;display:inline-block;flex-shrink:0"><rect width="22" height="15" fill="#1a1a1a"/><rect y="5" width="22" height="5" fill="#DD0000"/><rect y="10" width="22" height="5" fill="#FFCE00"/></svg>',
-  en: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;vertical-align:middle;display:inline-block;flex-shrink:0"><rect width="22" height="15" fill="#012169"/><line x1="0" y1="0" x2="22" y2="15" stroke="white" stroke-width="3.5"/><line x1="22" y1="0" x2="0" y2="15" stroke="white" stroke-width="3.5"/><line x1="0" y1="0" x2="22" y2="15" stroke="#C8102E" stroke-width="1.8"/><line x1="22" y1="0" x2="0" y2="15" stroke="#C8102E" stroke-width="1.8"/><rect x="8.5" y="0" width="5" height="15" fill="white"/><rect x="0" y="5" width="22" height="5" fill="white"/><rect x="9.5" y="0" width="3" height="15" fill="#C8102E"/><rect x="0" y="6" width="22" height="3" fill="#C8102E"/></svg>',
-  fr: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;vertical-align:middle;display:inline-block;flex-shrink:0"><rect width="22" height="15" fill="#ED2939"/><rect width="14.67" height="15" fill="white"/><rect width="7.33" height="15" fill="#002395"/></svg>',
-  ru: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;vertical-align:middle;display:inline-block;flex-shrink:0"><rect width="22" height="15" fill="#D52B1E"/><rect width="22" height="10" fill="#0039A6"/><rect width="22" height="5" fill="white"/></svg>',
-  uk: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;vertical-align:middle;display:inline-block;flex-shrink:0"><rect width="22" height="15" fill="#FFD700"/><rect width="22" height="7.5" fill="#005BBB"/></svg>',
-  es: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;vertical-align:middle;display:inline-block;flex-shrink:0"><rect width="22" height="15" fill="#AA151B"/><rect y="3.75" width="22" height="7.5" fill="#F1BF00"/></svg>',
+  de: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;display:block;flex-shrink:0"><rect width="22" height="15" fill="#1a1a1a"/><rect y="5" width="22" height="5" fill="#DD0000"/><rect y="10" width="22" height="5" fill="#FFCE00"/></svg>',
+  en: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;display:block;flex-shrink:0"><rect width="22" height="15" fill="#012169"/><line x1="0" y1="0" x2="22" y2="15" stroke="white" stroke-width="3.5"/><line x1="22" y1="0" x2="0" y2="15" stroke="white" stroke-width="3.5"/><line x1="0" y1="0" x2="22" y2="15" stroke="#C8102E" stroke-width="1.8"/><line x1="22" y1="0" x2="0" y2="15" stroke="#C8102E" stroke-width="1.8"/><rect x="8.5" y="0" width="5" height="15" fill="white"/><rect x="0" y="5" width="22" height="5" fill="white"/><rect x="9.5" y="0" width="3" height="15" fill="#C8102E"/><rect x="0" y="6" width="22" height="3" fill="#C8102E"/></svg>',
+  fr: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;display:block;flex-shrink:0"><rect width="22" height="15" fill="#ED2939"/><rect width="14.67" height="15" fill="white"/><rect width="7.33" height="15" fill="#002395"/></svg>',
+  ru: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;display:block;flex-shrink:0"><rect width="22" height="15" fill="#D52B1E"/><rect width="22" height="10" fill="#0039A6"/><rect width="22" height="5" fill="white"/></svg>',
+  uk: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;display:block;flex-shrink:0"><rect width="22" height="15" fill="#FFD700"/><rect width="22" height="7.5" fill="#005BBB"/></svg>',
+  es: '<svg width="22" height="15" viewBox="0 0 22 15" style="border-radius:2px;display:block;flex-shrink:0"><rect width="22" height="15" fill="#AA151B"/><rect y="3.75" width="22" height="7.5" fill="#F1BF00"/></svg>',
 }
 
 function Flag({ lang }) {
-  return <span dangerouslySetInnerHTML={{__html: FLAG_SVG[lang] || ''}}/>
+  return <span style={{display:'flex',alignItems:'center'}} dangerouslySetInnerHTML={{__html: FLAG_SVG[lang] || ''}}/>
 }
 
 const COPY_ICON = <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -31,6 +31,7 @@ export default function Uebersetzung() {
   const [selected, setSelected]   = useState(null)
   const [toast, setToast]         = useState('')
   const [copiedKey, setCopiedKey] = useState(null)
+  const [visibleCount, setVisibleCount] = useState(200)
 
   useEffect(() => {
     function tryLoad() {
@@ -49,6 +50,8 @@ export default function Uebersetzung() {
     return cats
   }, [data])
 
+  useEffect(() => { setVisibleCount(200) }, [search, cat])
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
     let items = data.filter(b => {
@@ -61,7 +64,7 @@ export default function Uebersetzung() {
       if (bH !== aH) return bH - aH
       return a.de.localeCompare(b.de, 'de', {sensitivity:'base'})
     })
-    return items.slice(0, 200)
+    return items
   }, [data, search, cat])
 
   function showToast(msg) { setToast(msg); setTimeout(()=>setToast(''),2000) }
@@ -78,11 +81,17 @@ export default function Uebersetzung() {
     if (selected.de_allg) lines.push(`Allgemeinbegriff: ${selected.de_allg}`)
     UEB_LANGS.forEach(l => { if (selected[l.key]) lines.push(`${l.label}: ${selected[l.key]}`) })
     navigator.clipboard.writeText(lines.join('\n'))
-    showToast('✓ Alle Übersetzungen kopiert')
   }
 
   function toggleLang(key) {
     setVisible(prev => ({...prev, [key]: !prev[key]}))
+  }
+
+  function handleListScroll(e) {
+    const el = e.currentTarget
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+      setVisibleCount(c => Math.min(c + 200, filtered.length))
+    }
   }
 
   return (
@@ -94,7 +103,7 @@ export default function Uebersetzung() {
         </div>
       </div>
 
-      <div style={{padding:'0 28px 28px'}}>
+      <div>
         {/* Controls */}
         <div className="ueb-controls">
           {/* Search */}
@@ -121,7 +130,7 @@ export default function Uebersetzung() {
               {UEB_LANGS.map(l=>(
                 <button key={l.key} className={`ueb-lang-toggle${visibleLangs[l.key]?' active':''}`}
                   onClick={()=>toggleLang(l.key)} title={l.label}>
-                  <Flag lang={l.key}/> {l.abbr}
+                  <Flag lang={l.key}/><span>{l.abbr}</span>
                 </button>
               ))}
             </div>
@@ -135,7 +144,7 @@ export default function Uebersetzung() {
         <div className="ueb-layout">
 
           {/* List */}
-          <div className="ueb-list-container">
+          <div className="ueb-list-container" onScroll={handleListScroll}>
             {data.length === 0 && (
               <div className="ueb-empty">Daten werden geladen…</div>
             )}
@@ -143,7 +152,7 @@ export default function Uebersetzung() {
               <div className="ueb-empty">Keine Ergebnisse</div>
             )}
             <div className="ueb-list">
-              {filtered.map((b,i)=>(
+              {filtered.slice(0, visibleCount).map((b,i)=>(
                 <div key={i} className={`ueb-item${selected===b?' selected':''}`} onClick={()=>setSelected(b)}>
                   <div className="ueb-item-term">{b.de}</div>
                   {b.de_allg && <div className="ueb-item-sub">{b.de_allg}</div>}
@@ -214,7 +223,7 @@ export default function Uebersetzung() {
         </div>
       </div>
 
-      {toast && <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',background:'var(--orange)',color:'white',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
     </div>
   )
 }

@@ -56,15 +56,19 @@ export default function BriefSchreiber() {
   const [toast, setToast]     = useState('')
   const [recording, setRecording] = useState(false)
 
-  const inputRef  = useRef(null)
-  const mediaRef  = useRef(null)
-  const chunksRef = useRef([])
+  const inputRef     = useRef(null)
+  const mediaRef     = useRef(null)
+  const chunksRef    = useRef([])
+  const popupChipRef = useRef(null)
+  const [popup, setPopup] = useState({ visible:false, choices:[], x:0, y:0 })
 
   useEffect(() => {
     const saved = localStorage.getItem('arvis_brief_input')
     if (saved && inputRef.current) {
-      inputRef.current.innerHTML = renderPlaceholders(saved)
-      setChars(saved.length)
+      const existing = inputRef.current.innerHTML.trim()
+      const newContent = renderPlaceholders(saved)
+      inputRef.current.innerHTML = existing ? existing + '<br><br>' + newContent : newContent
+      setChars(getBriefText(inputRef.current).length)
       localStorage.removeItem('arvis_brief_input')
     }
   }, [])
@@ -74,16 +78,69 @@ export default function BriefSchreiber() {
   function clearInput() { if(inputRef.current) inputRef.current.innerHTML=''; setChars(0) }
   function clearAll() { clearInput(); setState('empty'); setResult(''); setOrig('') }
 
-  function handleInputClick(e) {
-    const chip = e.target.closest('.ph-chip')
-    if (!chip) return
+  function replaceChipWithCursor(chip) {
     const textNode = document.createTextNode('')
     chip.parentNode.replaceChild(textNode, chip)
     const range = document.createRange(), sel = window.getSelection()
-    range.setStart(textNode,0); range.collapse(true)
+    range.setStart(textNode, 0); range.collapse(true)
     sel.removeAllRanges(); sel.addRange(range)
     inputRef.current?.focus(); updateCount()
   }
+
+  function replaceChipWithText(chip, text) {
+    const textNode = document.createTextNode(text)
+    chip.parentNode.replaceChild(textNode, chip)
+    const range = document.createRange(), sel = window.getSelection()
+    range.setStartAfter(textNode); range.collapse(true)
+    sel.removeAllRanges(); sel.addRange(range)
+    inputRef.current?.focus(); updateCount()
+  }
+
+  function hidePopup() {
+    popupChipRef.current = null
+    setPopup({ visible:false, choices:[], x:0, y:0 })
+  }
+
+  function choosePopup(val) {
+    const chip = popupChipRef.current
+    if (chip) replaceChipWithText(chip, val)
+    hidePopup()
+  }
+
+  function andereEingeben() {
+    const chip = popupChipRef.current
+    if (chip) replaceChipWithCursor(chip)
+    hidePopup()
+  }
+
+  function handleInputClick(e) {
+    const chip = e.target.closest('.ph-chip')
+    if (!chip) return
+    const raw = decodeURIComponent(chip.dataset.encoded || '')
+    const inner = raw.slice(1, -1)
+    const isChoice = inner.indexOf('/') !== -1 && !inner.startsWith('_')
+    if (isChoice) {
+      const choices = inner.split('/').map(c => c.trim())
+      const rect = chip.getBoundingClientRect()
+      popupChipRef.current = chip
+      setPopup({ visible:true, choices, x: rect.left, y: rect.bottom + 6 })
+    } else {
+      replaceChipWithCursor(chip)
+      hidePopup()
+    }
+  }
+
+  useEffect(() => {
+    if (!popup.visible) return
+    function onDocClick(e) {
+      const el = document.getElementById('placeholderPopup')
+      if (el && !el.contains(e.target) && !e.target.closest('.ph-chip')) {
+        hidePopup()
+      }
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [popup.visible])
 
   async function toggleDictation() {
     if (recording) { mediaRef.current?.stop(); setRecording(false); return }
@@ -149,7 +206,11 @@ export default function BriefSchreiber() {
     } catch(e) { setState('empty'); showToast('Fehler: '+e.message) }
   }
 
-  function copyResult() { navigator.clipboard.writeText(result); showToast('Text kopiert ✓') }
+  const [copied, setCopied] = useState(false)
+  function copyResult() {
+    navigator.clipboard.writeText(result)
+    setCopied(true); setTimeout(()=>setCopied(false), 1500)
+  }
 
   const modes = [
     { key:'korrektur',       label:'Korrektur',
@@ -238,8 +299,11 @@ export default function BriefSchreiber() {
           <div className="brief-panel-header">
             <span className="brief-panel-label">KI-Ergebnis</span>
             {state==='result' && (
-              <button className="result-action-btn" onClick={copyResult} title="Kopieren">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <button className="result-action-btn" onClick={copyResult} title="Kopieren" style={copied?{color:'var(--orange)'}:{}}>
+                {copied
+                  ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                }
               </button>
             )}
           </div>
@@ -276,7 +340,16 @@ export default function BriefSchreiber() {
         </div>
       </div>
 
-      {toast && <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',background:'var(--orange)',color:'white',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+      {popup.visible && (
+        <div id="placeholderPopup" style={{position:'fixed',zIndex:9999,top:popup.y,left:popup.x,background:'var(--card)',border:'1px solid var(--border)',borderRadius:10,padding:8,boxShadow:'var(--shadow-lg)',minWidth:140,display:'flex',flexDirection:'column'}}>
+          {popup.choices.map(c=>(
+            <button key={c} className="ph-popup-btn" onMouseDown={e=>{e.preventDefault();choosePopup(c)}}>{c}</button>
+          ))}
+          <button className="ph-popup-btn ph-andere" onMouseDown={e=>{e.preventDefault();andereEingeben()}}>Andere eingeben…</button>
+        </div>
+      )}
+
+      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
     </div>
   )
 }

@@ -50,8 +50,13 @@ export default function Scan() {
   const [loadingText, setLoadingText] = useState('Analysiere Dokument...')
   const [errorMsg, setErrorMsg]       = useState('')
   const [zoom, setZoom]               = useState(1)
+  const [panX, setPanX]               = useState(0)
+  const [panY, setPanY]               = useState(0)
+  const [isDragging, setIsDragging]   = useState(false)
+  const [viewerHeight, setViewerHeight] = useState(0)
   const [blackouts, setBlackouts]     = useState([])
   const [selectedBk, setSelectedBk]  = useState(null)
+  const [copied, setCopied]           = useState(false)
 
   // PDF state
   const pdfDocRef      = useRef(null)
@@ -61,10 +66,34 @@ export default function Scan() {
   const [pdfTotal, setPdfTotal] = useState(1)
   const blackoutsByPageRef      = useRef({})
 
-  const imgRef       = useRef(null)
-  const cropInnerRef = useRef(null)
-  const fileInputRef = useRef(null)
-  const imgDataRef   = useRef(null) // current image data url
+  const imgRef        = useRef(null)
+  const cropInnerRef  = useRef(null)
+  const viewerRef     = useRef(null)
+  const fileInputRef  = useRef(null)
+  const imgDataRef    = useRef(null) // current image data url
+
+  // ── Pan ───────────────────────────────────────────────────────────────────
+  function startPan(e) {
+    e.preventDefault()
+    setIsDragging(true)
+    const sx = e.clientX, sy = e.clientY
+    const startPanX = panX, startPanY = panY
+    const cw = viewerRef.current?.offsetWidth || 0
+    const ch = viewerHeight || (viewerRef.current?.offsetHeight || 0)
+    const onMove = (ev) => {
+      const minX = Math.min(0, cw - cw * zoom)
+      const minY = Math.min(0, ch - ch * zoom)
+      setPanX(Math.max(minX, Math.min(0, startPanX + (ev.clientX - sx))))
+      setPanY(Math.max(minY, Math.min(0, startPanY + (ev.clientY - sy))))
+    }
+    const onUp = () => {
+      setIsDragging(false)
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
 
   // ── Steps ─────────────────────────────────────────────────────────────────
   function goStep(n) { setStep(n) }
@@ -132,15 +161,13 @@ export default function Scan() {
 
   // ── Blackouts ──────────────────────────────────────────────────────────────
   function addBlackout() {
-    const inner = cropInnerRef.current
-    const img   = imgRef.current
-    if (!inner || !img) return
-    const cr = inner.getBoundingClientRect()
-    const ir = img.getBoundingClientRect()
+    const img = imgRef.current
+    if (!cropInnerRef.current || !img) return
+    // Coordinates are in cropInner's untransformed (layout) space
     const box = {
       id: Date.now(),
-      x: Math.round(ir.left - cr.left + ir.width/2 - 80),
-      y: Math.round(ir.top  - cr.top  + ir.height/4),
+      x: Math.round(img.offsetWidth  / 2 - 80),
+      y: Math.round(img.offsetHeight / 4),
       w: 160, h: 40
     }
     setBlackouts(prev => [...prev, box])
@@ -161,12 +188,13 @@ export default function Scan() {
     if (e.target !== e.currentTarget) return
     e.preventDefault(); e.stopPropagation()
     if (selectedBk !== box.id) { setSelectedBk(box.id); return }
+    // getBoundingClientRect gives visual (post-transform) coords; divide by zoom to get layout coords
     const cr = cropInnerRef.current.getBoundingClientRect()
-    const ox = e.clientX - cr.left - box.x
-    const oy = e.clientY - cr.top  - box.y
+    const ox = (e.clientX - cr.left) / zoom - box.x
+    const oy = (e.clientY - cr.top)  / zoom - box.y
     const onMove = (ev) => {
-      box.x = ev.clientX - cr.left - ox
-      box.y = ev.clientY - cr.top  - oy
+      box.x = (ev.clientX - cr.left) / zoom - ox
+      box.y = (ev.clientY - cr.top)  / zoom - oy
       setBlackouts(prev => prev.map(b => b.id===box.id ? {...box} : b))
     }
     const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
@@ -178,8 +206,9 @@ export default function Scan() {
     e.stopPropagation(); e.preventDefault()
     const sx=e.clientX, sy=e.clientY, sw=box.w, sh=box.h
     const onMove = (ev) => {
-      box.w = Math.max(20, sw + ev.clientX - sx)
-      box.h = Math.max(10, sh + ev.clientY - sy)
+      // Screen pixel delta → layout pixel delta: divide by zoom
+      box.w = Math.max(20, sw + (ev.clientX - sx) / zoom)
+      box.h = Math.max(10, sh + (ev.clientY - sy) / zoom)
       setBlackouts(prev => prev.map(b => b.id===box.id ? {...box} : b))
     }
     const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
@@ -195,15 +224,12 @@ export default function Scan() {
     canvas.height = img.naturalHeight || img.height
     const ctx = canvas.getContext('2d')
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-    const ir = img.getBoundingClientRect()
-    const cr = cropInnerRef.current.getBoundingClientRect()
-    const scaleX = canvas.width / ir.width
-    const scaleY = canvas.height / ir.height
+    // box coords are in layout space; scale to natural image pixels
+    const scaleX = canvas.width  / img.offsetWidth
+    const scaleY = canvas.height / img.offsetHeight
     ctx.fillStyle = '#000'
     blackouts.forEach(box => {
-      const bx = (box.x - (ir.left - cr.left)) * scaleX
-      const by = (box.y - (ir.top  - cr.top )) * scaleY
-      ctx.fillRect(bx, by, box.w*scaleX, box.h*scaleY)
+      ctx.fillRect(box.x * scaleX, box.y * scaleY, box.w * scaleX, box.h * scaleY)
     })
     return canvas.toDataURL('image/jpeg', 0.92)
   }
@@ -306,14 +332,14 @@ export default function Scan() {
     setPdfPage(1); setPdfTotal(1)
     setBlackouts([]); setSelectedBk(null)
     setPanel('upload'); setResult('empty')
-    setZoom(1); setErrorMsg('')
+    setZoom(1); setPanX(0); setPanY(0); setIsDragging(false); setViewerHeight(0); setErrorMsg('')
     goStep(1)
   }
 
   // ── Copy / Download ────────────────────────────────────────────────────────
   function copyResult() {
     const text = mode==='ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
-    if (text) navigator.clipboard.writeText(text)
+    if (text) { navigator.clipboard.writeText(text); setCopied(true); setTimeout(()=>setCopied(false),1500) }
   }
   function downloadResult() {
     const text = mode==='ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
@@ -327,6 +353,29 @@ export default function Scan() {
     const text = mode==='ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
     if (text) { localStorage.setItem('arvis_brief_input', text); navigate('/briefschreiber') }
   }
+
+  // ── Reset pan when zoom returns to 1 ─────────────────────────────────────
+  useEffect(() => {
+    if (zoom === 1) { setPanX(0); setPanY(0) }
+  }, [zoom])
+
+  // ── Set viewer height = rendered image height at 100% width ──────────────
+  function handleImageLoad() {
+    const img = imgRef.current
+    if (!img) return
+    // offsetHeight is the natural rendered height at width:100% (zoom=1)
+    setViewerHeight(img.offsetHeight)
+    setZoom(1)
+    setPanX(0)
+    setPanY(0)
+  }
+
+  // ── Inject image src when crop panel mounts ───────────────────────────────
+  useEffect(() => {
+    if (panel === 'crop' && imgRef.current && imgDataRef.current) {
+      imgRef.current.src = imgDataRef.current
+    }
+  }, [panel])
 
   // ── Load external scripts ──────────────────────────────────────────────────
   useEffect(() => {
@@ -348,23 +397,25 @@ export default function Scan() {
           <div className="page-title">Scan & Analyse</div>
           <div className="page-date">Dokument fotografieren · anonymisieren · analysieren</div>
         </div>
-        <button className="btn-secondary" onClick={resetScan} style={{display:'flex',alignItems:'center',gap:6}}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.45"/></svg>
-          Zurücksetzen
-        </button>
+        <div style={{display:'flex',gap:8}}>
+          <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{display:'flex',alignItems:'center',gap:6}}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.45"/></svg>
+            Zurücksetzen
+          </button>
+        </div>
       </div>
 
       {/* Steps */}
       <div className="scan-steps">
-        {['Dokument laden','Anonymisieren','Analysieren','Ergebnis'].map((label,i) => (
-          <div key={i} style={{display:'flex',alignItems:'center'}}>
-            <div className={`scan-step${step===i+1?' active':step>i+1?' done':''}`}>
-              <div className="scan-step-num">{step>i+1?'✓':i+1}</div>
+        {['Dokument laden','Anonymisieren','Analysieren','Ergebnis'].flatMap((label,i) => {
+          const el = (
+            <div key={`s${i}`} className={`scan-step${step===i+1?' active':step>i+1?' done':''}`} id={`step${i+1}`}>
+              <div className="scan-step-num">{step>i+1?<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="square" strokeLinejoin="miter"><polyline points="20 6 9 17 4 12"/></svg>:i+1}</div>
               <div className="scan-step-label">{label}</div>
             </div>
-            {i<3&&<div className="scan-step-line"/>}
-          </div>
-        ))}
+          )
+          return i<3 ? [el, <div key={`l${i}`} className="scan-step-line"/>] : [el]
+        })}
       </div>
 
       {/* Main layout */}
@@ -375,7 +426,7 @@ export default function Scan() {
 
           {/* Upload panel */}
           {panel==='upload'&&(
-            <div className="scan-panel">
+            <div className="scan-panel" id="panelUpload">
               <div className="scan-panel-header">
                 <span className="scan-panel-title">Dokument laden</span>
                 <span className="scan-panel-sub">Foto aufnehmen oder Datei hochladen</span>
@@ -394,7 +445,7 @@ export default function Scan() {
               <input type="file" ref={fileInputRef} accept="image/*,application/pdf" style={{display:'none'}} onChange={e=>{const f=e.target.files[0];if(f)loadFile(f)}}/>
               <div style={{marginTop:'auto'}}>
                 <div style={{textAlign:'center',marginTop:12}}><span style={{fontSize:12,color:'var(--text-3)'}}>oder</span></div>
-                <div style={{margin:'0 20px'}}>
+                <div style={{margin:'0 20px',position:'relative',zIndex:1}}>
                   <button className="btn-action" onClick={()=>fileInputRef.current.click()} style={{width:'100%',marginTop:12,justifyContent:'center',display:'flex',boxSizing:'border-box',gap:6}}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                     Foto aufnehmen / Datei wählen
@@ -410,19 +461,19 @@ export default function Scan() {
 
           {/* Crop panel */}
           {panel==='crop'&&(
-            <div className="scan-panel">
+            <div className="scan-panel" id="panelCrop">
               <div className="scan-panel-header">
                 <span className="scan-panel-title">Anonymisieren</span>
                 <span className="scan-panel-sub">Patientendaten mit dem Schwärzungs-Tool entfernen</span>
               </div>
               {/* Warning */}
-              <div style={{display:'flex',alignItems:'center',gap:8,background:'#FEE2E2',border:'1px solid #FCA5A5',borderRadius:8,padding:'10px 14px',marginBottom:10}}>
+              <div id="anonWarning" style={{display:'flex',alignItems:'center',gap:8,background:'#FEE2E2',borderTop:'1px solid #FCA5A5',borderBottom:'1px solid #FCA5A5',padding:'10px 16px',marginTop:0}}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <span style={{fontSize:13,fontWeight:600,color:'#DC2626'}}>Bitte alle Patientendaten schwärzen, bevor Sie fortfahren.</span>
               </div>
               {/* PDF nav */}
               {pdfDocRef.current&&(
-                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8,justifyContent:'center'}}>
+                <div id="pdfNav" style={{display:'flex',alignItems:'center',gap:10,marginTop:10,marginBottom:10,justifyContent:'center'}}>
                   <button className="btn-secondary" style={{padding:'4px 12px',minWidth:0}} onClick={()=>changePdfPage(-1)}>←</button>
                   <span style={{fontSize:13,color:'var(--text-2)'}}>Seite {pdfPage} / {pdfTotal}</span>
                   <button className="btn-secondary" style={{padding:'4px 12px',minWidth:0}} onClick={()=>changePdfPage(1)}>→</button>
@@ -437,11 +488,14 @@ export default function Scan() {
                 <button className="btn-secondary" onClick={undoBlackout} title="Rückgängig" style={{height:32,width:32,padding:0,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
                 </button>
-                <div style={{display:'flex',gap:4,margin:'0 auto'}}>
-                  <button className="btn-secondary" onClick={()=>setZoom(z=>Math.max(1,z-0.25))} style={{height:32,width:32,padding:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <div style={{display:'flex',alignItems:'center',gap:4,margin:'0 auto'}}>
+                  <button className="btn-secondary" onClick={()=>setZoom(z=>Math.max(0.25,z-0.25))} title="Verkleinern" style={{height:32,width:32,padding:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
                   </button>
-                  <button className="btn-secondary" onClick={()=>setZoom(z=>Math.min(4,z+0.25))} style={{height:32,width:32,padding:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <button className="btn-secondary" onClick={()=>setZoom(1)} title="Zurücksetzen" style={{height:32,minWidth:42,padding:'0 6px',fontSize:11,fontWeight:600,color:'var(--text-2)'}}>
+                    {Math.round(zoom*100)}%
+                  </button>
+                  <button className="btn-secondary" onClick={()=>setZoom(z=>Math.min(4,z+0.25))} title="Vergrößern" style={{height:32,width:32,padding:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
                   </button>
                 </div>
@@ -451,9 +505,10 @@ export default function Scan() {
                 </button>
               </div>
               {/* Document viewer */}
-              <div style={{position:'relative',overflow:'hidden',background:'var(--bg-3)'}}>
-                <div ref={cropInnerRef} style={{position:'relative',width:'100%',transformOrigin:'top left',transform:`scale(${zoom})`}}>
-                  <img ref={imgRef} style={{width:'100%',display:'block',background:'var(--bg-2)'}} alt="" onClick={()=>setSelectedBk(null)}/>
+              <div id="cropContainer" ref={viewerRef} onMouseDown={startPan} style={{height: viewerHeight > 0 ? viewerHeight : 'auto', cursor: isDragging ? 'grabbing' : 'grab'}}>
+                <div id="cropInner" ref={cropInnerRef} style={{position:'relative',width:'100%',transformOrigin:'top left',transform:`translate(${panX}px,${panY}px) scale(${zoom})`}}>
+                  <img ref={imgRef} style={{width:'100%',display:'block',background:'var(--bg-2)'}} alt="" onLoad={handleImageLoad} onClick={()=>setSelectedBk(null)}/>
+                  <canvas id="cropCanvas" style={{display:'none'}}/>
                   {/* Blackout boxes */}
                   {blackouts.map(box=>(
                     <div key={box.id} onMouseDown={e=>startDragBlackout(e,box)}
@@ -463,12 +518,15 @@ export default function Scan() {
                           <div onMouseDown={e=>e.stopPropagation()} onClick={()=>deleteBlackout(box.id)}
                             style={{position:'absolute',top:-10,right:-10,width:20,height:20,borderRadius:'50%',background:'#EF4444',color:'white',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',zIndex:20}}>×</div>
                           <div onMouseDown={e=>startResizeBlackout(e,box)}
-                            style={{position:'absolute',bottom:-5,right:-5,width:14,height:14,background:'#EF4444',borderRadius:3,cursor:'se-resize',zIndex:20}}/>
+                            style={{position:'absolute',bottom:-9,right:-9,width:18,height:18,background:'#EF4444',borderRadius:'50%',cursor:'se-resize',zIndex:20,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{transform:'scaleY(-1)'}}><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                          </div>
                         </>
                       )}
                     </div>
                   ))}
                 </div>
+                <div className="crop-overlay" id="cropOverlay" style={{display:'none'}}/>
               </div>
             </div>
           )}
@@ -534,15 +592,20 @@ export default function Scan() {
                     KI-Analyse
                   </div>
                   <div className="result-actions">
-                    <button className="result-action-btn" onClick={copyResult} title="Kopieren">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <button className="result-action-btn" onClick={copyResult} title="Kopieren" style={copied?{color:'var(--orange)'}:{}}>
+                      {copied
+                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      }
                     </button>
                     <button className="result-action-btn" onClick={downloadResult} title="Herunterladen">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     </button>
                   </div>
                 </div>
-                <div className="result-text" id="aiSummaryDiv" dangerouslySetInnerHTML={{__html:aiHtml}}/>
+                <div className="result-section" style={{marginBottom:0}}>
+                  <div className="result-text" id="aiSummaryDiv" dangerouslySetInnerHTML={{__html:aiHtml}}/>
+                </div>
                 <button className="btn-send-briefschreiber" onClick={sendToBrief} style={{marginTop:16}}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                   An Brief Schreiber senden
@@ -558,8 +621,11 @@ export default function Scan() {
                     OCR Text
                   </div>
                   <div className="result-actions">
-                    <button className="result-action-btn" onClick={copyResult} title="Kopieren">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <button className="result-action-btn" onClick={copyResult} title="Kopieren" style={copied?{color:'var(--orange)'}:{}}>
+                      {copied
+                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      }
                     </button>
                     <button className="result-action-btn" onClick={downloadResult} title="Herunterladen">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
