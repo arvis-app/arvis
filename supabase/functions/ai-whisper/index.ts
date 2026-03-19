@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +10,50 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error('No authorization header')
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) throw new Error('Not authenticated')
+
+    // ── Fix : lecture depuis 'users' (avec plan et trial_started_at) ──
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { data: profile } = await supabaseAdmin
+      .from('users')
+      .select('plan, trial_started_at')
+      .eq('id', user.id)
+      .single()
+
+    const now = new Date()
+    let isPro = false
+    if (profile) {
+      if (profile.plan === 'pro' || profile.plan === 'active') { // Adjust based on your actual pro status string
+        isPro = true
+      } else if (profile.plan === 'trial' && profile.trial_started_at) {
+        const start = new Date(profile.trial_started_at)
+        const daysUsed = Math.floor((now.getTime() - start.getTime()) / 86400000)
+        if (daysUsed < 14) isPro = true
+      }
+    }
+
+    if (!isPro) {
+      return new Response(
+        JSON.stringify({ error: 'Pro-Abonnement erforderlich' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    // ────────────────────────────────────────────────────────
+
     const apiKey = Deno.env.get('OPENAI_API_KEY')
     if (!apiKey) return new Response(
       JSON.stringify({ error: 'OPENAI_API_KEY not configured' }),

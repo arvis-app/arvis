@@ -6,6 +6,7 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
   const [profile, setProfile] = useState(null)
+  const [isPro, setIsPro]     = useState(true)
   const [loading, setLoading] = useState(true)
 
   // Charger le profil depuis Supabase
@@ -15,7 +16,17 @@ export function AuthProvider({ children }) {
       .select('*')
       .eq('id', userId)
       .maybeSingle()
-    if (!error && data) setProfile(data)
+    if (!error && data) {
+      setProfile(data)
+      const start = data.trial_started_at ? new Date(data.trial_started_at) : new Date()
+      const daysUsed = Math.floor((Date.now() - start.getTime()) / 86400000)
+      const daysLeft = Math.max(0, 14 - daysUsed)
+
+      setIsPro(data.plan === 'pro' || data.plan === 'active' || (data.plan === 'trial' && daysLeft > 0))
+    } else {
+      setIsPro(false)
+    }
+
     return data
   }
 
@@ -101,7 +112,8 @@ export function AuthProvider({ children }) {
   // Calcul du plan / trial
   function getPlanInfo() {
     if (!profile) return { plan: 'trial', daysLeft: 14, expired: false }
-    if (profile.plan === 'pro') return { plan: 'pro', daysLeft: null, expired: false }
+    if (profile.plan === 'pro' || profile.plan === 'active') return { plan: 'pro', daysLeft: null, expired: false }
+    if (profile.plan === 'canceled') return { plan: 'canceled', daysLeft: 0, expired: true }
     const start    = profile.trial_started_at ? new Date(profile.trial_started_at) : new Date()
     const daysUsed = Math.floor((Date.now() - start.getTime()) / 86400000)
     const daysLeft = Math.max(0, 14 - daysUsed)
@@ -132,7 +144,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, profile, loading,
+      user, profile, isPro, loading,
       login, register, loginWithGoogle, logout, updateProfile,
       getPlanInfo, getInitials, getDisplayName, getGreeting, loadProfile
     }}>

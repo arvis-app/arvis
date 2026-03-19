@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { downloadAsWord } from '../utils/downloadWord'
 
 function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2,7) }
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
@@ -31,9 +32,9 @@ function ConfirmModal({ opts, onOk, onCancel }) {
   if (!opts) return null
   return (
     <div style={{position:'fixed',inset:0,zIndex:1100,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{background:'var(--card)',borderRadius:16,padding:24,width:'100%',maxWidth:360,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:16}}>
+      <div style={{background:'var(--card)',borderRadius: 8,padding:24,width:'100%',maxWidth:360,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:16}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <div style={{width:36,height:36,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'#D63B3B'}} dangerouslySetInnerHTML={{__html:opts.icon||''}}/>
+          <div style={{width:36,height:36,borderRadius: 6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'#D63B3B'}} dangerouslySetInnerHTML={{__html:opts.icon||''}}/>
           <div>
             <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>{opts.title}</div>
             <div style={{fontSize:13,color:'var(--text-2)',marginTop:3}}>{opts.msg}</div>
@@ -90,12 +91,10 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
     autoSave(title, editorRef.current?.innerHTML)
   }
 
-  function downloadDoc() {
+  async function downloadDoc() {
     const t = title.trim() || 'Notiz'
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Calibri,sans-serif;font-size:11pt;margin:2cm;line-height:1.5;}ul,ol{margin-left:20px;}li{margin:3px 0;}</style></head><body><h1 style="font-size:18pt;margin-bottom:16px;">${escHtml(t)}</h1>${editorRef.current?.innerHTML||''}</body></html>`
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(new Blob([html], {type:'application/msword'}))
-    a.download = t + '.doc'; a.click()
+    const text = editorRef.current?.innerText || ''
+    await downloadAsWord(text, t)
   }
 
   return (
@@ -109,7 +108,9 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Word
           </button>
-          <button className="result-action-btn" onClick={onClose}>×</button>
+          <button className="result-action-btn" onClick={onClose}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
         </div>
       </div>
       <div style={{display:'flex',alignItems:'center',gap:6,padding:'8px 16px',borderBottom:'1px solid var(--border)',flexWrap:'wrap'}}>
@@ -290,8 +291,8 @@ export default function Dateien() {
 
         {/* Breadcrumb */}
         <div className="dateien-breadcrumb" id="dateienBreadcrumb">
-          <span className={`dateien-bread-item${!currentFolder?' active':''}`} onClick={()=>{setCurrentFolder(null);setDetail(null)}} style={{cursor:'pointer',display:'flex',alignItems:'center',gap:4}}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span className={`dateien-bread-item${!currentFolder?' active':''}`} onClick={()=>{setCurrentFolder(null);setDetail(null)}} style={{cursor:'pointer',display:'flex',alignItems:'center',gap:6,fontSize:14,fontWeight:600}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
             Meine Dateien
           </span>
           {path.map(f=>(
@@ -316,7 +317,7 @@ export default function Dateien() {
               <div id="dateienGrid" className="dateien-grid">
                 {folders.map(f=>(
                   <div key={f.id} className="dateien-item dateien-folder" onDoubleClick={()=>{setCurrentFolder(f.id);setDetail(null)}}
-                    style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:12,padding:'16px 12px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
+                    style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,padding:'16px 12px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
                     onMouseEnter={e=>e.currentTarget.style.borderColor='var(--orange)'}
                     onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}>
                     {ICO.folder}
@@ -329,7 +330,7 @@ export default function Dateien() {
                 ))}
                 {notes.map(n=>(
                   <div key={n.id} className="dateien-item dateien-note" onClick={()=>openNote(n)}
-                    style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:12,padding:'16px 12px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
+                    style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,padding:'16px 12px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
                     onMouseEnter={e=>e.currentTarget.style.borderColor='var(--orange)'}
                     onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}>
                     {getNoteType(n)==='image'&&n.dataUrl ? <img src={n.dataUrl} style={{width:48,height:48,objectFit:'cover',borderRadius:6}} alt=""/> : getNoteType(n)==='pdf' ? ICO.pdf : ICO.note}
@@ -440,7 +441,7 @@ export default function Dateien() {
 
       <ConfirmModal opts={confirm} onOk={()=>confirm?.onOk?.()} onCancel={()=>setConfirm(null)}/>
 
-      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius: 6,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
 
       <style>{`.dateien-item:hover .dateien-item-actions { opacity: 1 !important; }`}</style>
     </div>

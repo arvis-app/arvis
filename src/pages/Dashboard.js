@@ -22,7 +22,7 @@ function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)) }
 
 function Toast({ msg }) {
   if (!msg) return null
-  return <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{msg}</div>
+  return <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius: 6,fontSize:14,fontWeight:600,zIndex:99999}}>{msg}</div>
 }
 
 function Calendar({ currentDate, setCurrentDate, selectedDay, setSelectedDay, events, onDayClick }) {
@@ -200,7 +200,7 @@ function PatientsList({ patients, setPatients, showToast }) {
 
       {/* Add patient form */}
       {addOpen&&(
-        <div style={{marginTop:12,padding:16,background:'var(--bg)',border:'1px solid var(--border)',borderRadius:12,display:'flex',flexDirection:'column',gap:10}}>
+        <div style={{marginTop:12,padding:16,background:'var(--bg)',border:'1px solid var(--border)',borderRadius:8,display:'flex',flexDirection:'column',gap:10}}>
           <div style={{display:'grid',gridTemplateColumns:'70px 1fr',gap:8}}>
             <input className="mini-input" type="text" placeholder="101" value={newRoom} onChange={e=>setNewRoom(e.target.value)} style={{margin:0,height:40,fontSize:14,boxSizing:'border-box'}}/>
             <input className="mini-input" type="text" placeholder="Name, Vorname" value={newName} onChange={e=>setNewName(e.target.value)} style={{margin:0,height:40,fontSize:14,boxSizing:'border-box'}}/>
@@ -215,7 +215,7 @@ function PatientsList({ patients, setPatients, showToast }) {
 
       {/* Patient detail */}
       {selected!==null&&(
-        <div className="patient-detail" id="patientDetail" style={{marginTop:12,padding:16,background:'var(--bg)',border:'1px solid var(--border)',borderRadius:12,display:'flex',flexDirection:'column',gap:10}}>
+        <div className="patient-detail" id="patientDetail" style={{marginTop:12,padding:16,background:'var(--bg)',border:'1px solid var(--border)',borderRadius:8,display:'flex',flexDirection:'column',gap:10}}>
           <div style={{display:'grid',gridTemplateColumns:'70px 1fr',gap:8}}>
             <input className="mini-input" type="text" placeholder="101" value={detailRoom} onChange={e=>setDetailRoom(e.target.value)} style={{margin:0,height:40,fontSize:14,boxSizing:'border-box'}}/>
             <input className="mini-input" type="text" placeholder="Name, Vorname" value={detailName} onChange={e=>setDetailName(e.target.value)} style={{margin:0,height:40,fontSize:14,boxSizing:'border-box'}}/>
@@ -230,7 +230,7 @@ function PatientsList({ patients, setPatients, showToast }) {
 
       {confirmDel!==null&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.4)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}}>
-          <div style={{background:'var(--bg)',borderRadius:16,padding:28,maxWidth:340,width:'90%',textAlign:'center'}}>
+          <div style={{background:'var(--bg)',borderRadius:8,padding:28,maxWidth:340,width:'90%',textAlign:'center'}}>
             <div style={{fontSize:16,fontWeight:600,marginBottom:20}}>{patients[confirmDel]?.name} wirklich löschen?</div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
               <button className="btn-secondary" onClick={()=>setConfirmDel(null)} style={{height:40,fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>Abbrechen</button>

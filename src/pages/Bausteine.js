@@ -24,9 +24,9 @@ function ConfirmModal({ opts, onOk, onCancel }) {
   if (!opts) return null
   return (
     <div style={{position:'fixed',inset:0,zIndex:1100,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{background:'var(--card)',borderRadius:16,padding:24,width:'100%',maxWidth:380,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:16}}>
+      <div style={{background:'var(--card)',borderRadius: 8,padding:24,width:'100%',maxWidth:380,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:16}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          {opts.icon && <div style={{width:36,height:36,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:opts.iconBg||'var(--bg-3)'}} dangerouslySetInnerHTML={{__html:opts.icon}}/>}
+          {opts.icon && <div style={{width:36,height:36,borderRadius: 6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:opts.iconBg||'var(--bg-3)'}} dangerouslySetInnerHTML={{__html:opts.icon}}/>}
           <div>
             <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>{opts.title}</div>
             <div style={{fontSize:13,color:'var(--text-2)',marginTop:3,lineHeight:1.5,whiteSpace:'pre-line'}}>{opts.msg}</div>
@@ -70,7 +70,7 @@ function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }
   if (!open) return null
   return (
     <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{background:'var(--card)',borderRadius:16,padding:24,width:'100%',maxWidth:520,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:14}}>
+      <div style={{background:'var(--card)',borderRadius: 8,padding:24,width:'100%',maxWidth:520,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:14}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
           <span style={{fontSize:16,fontWeight:700,color:'var(--text)'}}>{editingBaustein ? 'Baustein bearbeiten' : 'Neuen Baustein erstellen'}</span>
           <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-3)',fontSize:20,lineHeight:1,padding:'2px 6px'}}>&times;</button>
@@ -323,7 +323,7 @@ export default function Bausteine() {
         <div style={{flex:2,display:'flex',flexDirection:'column',gap:12,minWidth:0,height:basket.length>0?Math.max(560,rightH):560}}>
 
           {/* Search */}
-          <div id="bausteineSearchBox" style={{position:'relative',background:'var(--card)',border:'1.5px solid var(--border)',borderRadius:12,overflow:'hidden',boxShadow:'var(--shadow)'}}>
+          <div id="bausteineSearchBox" style={{position:'relative',background:'var(--card)',border:'1.5px solid var(--border)',borderRadius:8,overflow:'hidden',boxShadow:'var(--shadow)'}}>
             <input
               type="text" placeholder="Suchen…" autoComplete="off"
               value={search}
@@ -339,10 +339,10 @@ export default function Bausteine() {
           </div>
 
           {/* Category select */}
-          <div style={{position:'relative',width:'100%',border:'2px solid var(--orange)',borderRadius:10,overflow:'hidden',background:'var(--card)'}}>
+          <div className="kat-select-wrap">
             <select
               value={activeCat||''}
-              onChange={e=>setActiveCat(e.target.value||null)}
+              onChange={e=>{setActiveCat(e.target.value||null); e.target.blur()}}
               style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'11px 40px 11px 14px',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text)',fontWeight:700,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
               <option value="">Alle Kategorien</option>
               <option value="Favoriten">★ Favoriten</option>
@@ -353,7 +353,7 @@ export default function Bausteine() {
           </div>
 
           {/* List */}
-          <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',minHeight:0,background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,boxShadow:'var(--shadow)'}}>
+          <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',minHeight:0,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow)'}}>
             {filtered.length===0 && (
               <div style={{padding:32,textAlign:'center',color:'var(--text-3)',fontSize:13}}>Keine Ergebnisse</div>
             )}
@@ -376,7 +376,7 @@ export default function Bausteine() {
         <div ref={rightRef} style={{flex:3,display:'flex',flexDirection:'column',gap:12,minWidth:0}}>
 
           {/* Preview */}
-          <div style={{border:'1px solid var(--border)',borderRadius:12,padding:16,background:'var(--card)',boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flexShrink:0}}>
+          <div style={{border:'1px solid var(--border)',borderRadius:8,padding:16,background:'var(--card)',boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flexShrink:0}}>
             {!selected && (
               <div style={{minHeight:218,color:'var(--text-2)',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>Baustein auswählen</div>
             )}
@@ -409,8 +409,8 @@ export default function Bausteine() {
                 </div>
                 <div className="baustein-preview-text" style={{overflowY:'auto',flex:1}}>{formatBausteinText(selected.text)}</div>
                 <div style={{display:'flex',gap:8,marginTop:16}}>
-                  <button className="btn-action" onClick={addToBasket} style={{flex:1,justifyContent:'center',display:'flex',gap:6}}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <button className="btn-secondary" onClick={addToBasket} style={{flex:1,justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Zum Warenkorb
                   </button>
                   <button className="btn-action" onClick={sendDirectToBrief} style={{flex:1,justifyContent:'center',display:'flex',gap:6}}>
@@ -424,7 +424,7 @@ export default function Bausteine() {
 
           {/* Basket */}
           {basket.length > 0 && (
-            <div style={{border:'1px solid var(--border)',background:'var(--card)',borderRadius:12,padding:14,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flexShrink:0}}>
+            <div style={{border:'1px solid var(--border)',background:'var(--card)',borderRadius:8,padding:14,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flexShrink:0}}>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,flexShrink:0}}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                 <span className="baustein-basket-title">Warenkorb</span>
@@ -464,7 +464,7 @@ export default function Bausteine() {
       />
 
       {/* Toast */}
-      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:toast.light?'var(--orange-ghost)':'var(--orange)',color:toast.light?'var(--orange)':'white',border:'none',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast.msg}</div>}
+      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:toast.light?'var(--orange-ghost)':'var(--orange)',color:toast.light?'var(--orange)':'white',border:'none',padding:'10px 22px',borderRadius: 6,fontSize:14,fontWeight:600,zIndex:99999}}>{toast.msg}</div>}
     </div>
   )
 }

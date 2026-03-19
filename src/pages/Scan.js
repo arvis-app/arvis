@@ -1,42 +1,86 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
+import { downloadAsWord } from '../utils/downloadWord'
+import { QRCodeSVG } from 'qrcode.react'
 
 // ── Markdown → HTML (fidèle à l'original) ─────────────────────────────────────
 function markdownToHtml(md) {
+  // Add space after colons not already followed by a space
+  md = md.replace(/:\*\*([^\s*\n])/g, ':** $1') // space after closing ** bold label
+  md = md.replace(/:(?=[^\s\n*])/g, ': ')        // space after other colons
+
   const lines = md.split('\n')
+
+  // Bold labels before : in "Wichtige Befunde" items
+  const befundeIdx = lines.findIndex(l => /^#{1,3} /.test(l) && /wichtige.befunde/i.test(l))
+  if (befundeIdx >= 0) {
+    for (let i = befundeIdx + 1; i < lines.length; i++) {
+      if (/^#{1,3} /.test(lines[i])) break
+      if (/^[-–] /.test(lines[i]) && !/\*\*/.test(lines[i]))
+        lines[i] = lines[i].replace(/^([-–] )([^:\n]+): /, '$1**$2:** ')
+    }
+  }
+
+  // Sort "Nicht übersehen" list items: 🔴 first, then 🟡, then 🟢
+  const secIdx = lines.findIndex(l => /^#{1,3} /.test(l) && /nicht.übersehen/i.test(l))
+  if (secIdx >= 0) {
+    const itemIdxs = []
+    for (let i = secIdx + 1; i < lines.length; i++) {
+      if (/^#{1,3} /.test(lines[i])) break
+      if (/^[-–] /.test(lines[i])) itemIdxs.push(i)
+    }
+    if (itemIdxs.length > 0) {
+      const prio = l => l.includes('🔴') ? 0 : l.includes('🟡') ? 1 : l.includes('🟢') ? 2 : 3
+      const sorted = itemIdxs.map(i => lines[i]).sort((a, b) => prio(a) - prio(b))
+      itemIdxs.forEach((idx, i) => { lines[idx] = sorted[i] })
+    }
+  }
+
   let html = '', inList = false
   for (const line of lines) {
-    if (/^## /.test(line)) {
+    if (/^#{1,3} /.test(line)) {
       if (inList) { html += '</div>'; inList = false }
-      const text = line.replace(/^## /, '').replace(/\*\*(.+?)\*\*/g, '$1')
+      let text = line.replace(/^#{1,3} /, '').replace(/\*\*(.+?)\*\*/g, '$1')
+      if (/nicht.übersehen/i.test(text) && !text.startsWith('⚠')) text = '⚠️ ' + text
       const mt = html === '' ? '0' : '22px'
       html += `<div style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;">${text}</div>`
     } else if (/^\*\*[^*]+\*\*:?\s*$/.test(line.trim())) {
       if (inList) { html += '</div>'; inList = false }
-      const text = line.replace(/\*\*(.+?)\*\*/g, '$1')
+      const text = line.replace(/\*\*(.+?)\*\*/g, '$1').replace(/:(\S)/g, ': $1')
       html += `<div style="font-size:15px;font-weight:700;color:var(--text);margin-top:10px;margin-bottom:4px;">${text}</div>`
-    } else if (/^[-] /.test(line)) {
+    } else if (/^[-–] /.test(line)) {
       if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:5px;margin-top:2px;">'; inList = true }
-      let text = line.replace(/^[-] /, '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      let bg = 'transparent', color = 'var(--text-2)', border = 'var(--border)'
-      if (text.indexOf('🔴') === 0) { bg='rgba(220,38,38,0.07)'; color='#DC2626'; border='rgba(220,38,38,0.3)' }
-      else if (text.indexOf('🟡') === 0) { bg='rgba(217,119,6,0.07)'; color='#B45309'; border='rgba(217,119,6,0.3)' }
-      else if (text.indexOf('🟢') === 0) { bg='rgba(22,163,74,0.07)'; color='#15803D'; border='rgba(22,163,74,0.3)' }
-      html += `<div style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 10px;line-height:1.55;">${text}</div>`
+      let text = line.replace(/^[-–] /, '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1')
+      let bg = 'transparent', color = 'var(--text-2)', border = 'var(--border)', dot = ''
+      if (text.indexOf('🔴') === 0) {
+        bg='rgba(220,38,38,0.07)'; color='#DC2626'; border='rgba(220,38,38,0.3)'
+        dot='<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#DC2626;margin-right:8px;flex-shrink:0;margin-top:2px;"></span>'
+        text=text.replace('🔴','').trim()
+      } else if (text.indexOf('🟡') === 0) {
+        bg='rgba(217,119,6,0.07)'; color='#B45309'; border='rgba(217,119,6,0.3)'
+        dot='<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#D97706;margin-right:8px;flex-shrink:0;margin-top:2px;"></span>'
+        text=text.replace('🟡','').trim()
+      } else if (text.indexOf('🟢') === 0) {
+        bg='rgba(22,163,74,0.07)'; color='#15803D'; border='rgba(22,163,74,0.3)'
+        dot='<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#16A34A;margin-right:8px;flex-shrink:0;margin-top:2px;"></span>'
+        text=text.replace('🟢','').trim()
+      }
+      html += `<div style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 12px;line-height:1.55;display:flex;align-items:flex-start;">${dot}<span>${text}</span></div>`
     } else if (line.trim() === '') {
       if (inList) { html += '</div>'; inList = false }
     } else {
       if (inList) { html += '</div>'; inList = false }
-      const text = line.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text);font-weight:700;">$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>')
-      html += `<div style="font-size:12.5px;color:var(--text-2);padding:2px 0;line-height:1.6;">${text}</div>`
+      const text = line.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text);font-weight:700;">$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/:(\S)/g, ': $1')
+      const indent = /^[–\-]/.test(line.trim()) ? 'padding-left:16px;' : ''
+      html += `<div style="font-size:12.5px;color:var(--text-2);padding:2px 0;line-height:1.6;${indent}">${text}</div>`
     }
   }
   if (inList) html += '</div>'
   return html
 }
 
-const SYSTEM_PROMPT = 'Du bist ein klinischer Entscheidungsassistent für Krankenhausärzte in Deutschland. Deine Aufgabe ist nicht nur zusammenzufassen, sondern aktiv mitzudenken — wie ein erfahrener Kollege, der das Dokument mitliest. Verwende klinische Abkürzungen (Z.n., ED, V.a., RR, NAS, etc.). Führe nur Abschnitte auf, die im Text vorhanden sind: 1) Wenn genau eine Hauptdiagnose: Titel "Hauptdiagnose", wenn mehrere: "Hauptdiagnosen". 2) Wenn genau eine weitere Diagnose: Titel "Weitere Diagnose", wenn mehrere: "Weitere Diagnosen". 3) Aufenthalt: Aufnahmegrund in einem Satz ("Grund:") + kurzer Verlauf 2-3 Sätze ("Verlauf:") — nur klinisch relevante Wendepunkte, chronologisch sortiert. 4) Wichtige Befunde — nur pathologische oder klinisch entscheidende Werte. 5) Aktuelle Medikation. 6) Aktuelle Empfehlungen. 7) Nächste Schritte. 8) ⚠️ Nicht übersehen — IMMER aufführen: Widersprüche, fehlende Angaben, klinische Lücken, fehlende Standardmedikamente. Sortiere nach: 🔴 kritisch · 🟡 wichtig · 🟢 beachten. Keine Schlussformeln. Kein Disclaimer.'
+const SYSTEM_PROMPT = 'Du bist ein klinischer Entscheidungsassistent für Krankenhausärzte in Deutschland. Deine Aufgabe ist nicht nur zusammenzufassen, sondern aktiv mitzudenken — wie ein erfahrener Kollege, der das Dokument mitliest. Verwende klinische Abkürzungen (Z.n., ED, V.a., RR, NAS, etc.). Führe nur Abschnitte auf, die im Text vorhanden sind: 1) Wenn genau eine Hauptdiagnose: Titel "Hauptdiagnose", wenn mehrere: "Hauptdiagnosen". 2) Wenn genau eine weitere Diagnose: Titel "Weitere Diagnose", wenn mehrere: "Weitere Diagnosen". 3) Aufenthalt: Aufnahmegrund in einem Satz ("Grund:") + kurzer Verlauf 2-3 Sätze ("Verlauf:") — nur klinisch relevante Wendepunkte, chronologisch sortiert. 4) Wichtige Befunde — nur pathologische oder klinisch entscheidende Werte. 5) Aktuelle Medikation. 6) Aktuelle Empfehlungen. 7) Nächste Schritte. 8) ⚠️ Nicht übersehen — IMMER aufführen: Widersprüche, fehlende Angaben, klinische Lücken, fehlende Standardmedikamente. Sortiere nach: 🔴 kritisch · 🟡 wichtig · 🟢 beachten. Wenn es in einer Kategorie (🔴, 🟡 oder 🟢) keine Einträge gibt, wird diese Kategorie vollständig weggelassen — kein leerer Titel, kein "Keine Auffälligkeiten", kein Platzhalter. Keine Schlussformeln. Kein Disclaimer.'
 
 export default function Scan() {
   const navigate = useNavigate()
@@ -59,6 +103,13 @@ export default function Scan() {
   const [selectedBk, setSelectedBk]  = useState(null)
   const [copied, setCopied]           = useState(false)
 
+  // Mobile Scan state
+  const [showDesktopScanOptions, setShowDesktopScanOptions] = useState(false)
+  const [showQrModal, setShowQrModal] = useState(false)
+  const [qrUrl, setQrUrl] = useState('')
+  const [qrToken, setQrToken] = useState('')
+  const [scanChannel, setScanChannel] = useState(null)
+
   // PDF state
   const pdfDocRef      = useRef(null)
   const pdfPageRef     = useRef(1)
@@ -72,6 +123,15 @@ export default function Scan() {
   const viewerRef     = useRef(null)
   const fileInputRef  = useRef(null)
   const imgDataRef    = useRef(null) // current image data url
+  const leftRef       = useRef(null)
+  const [leftH, setLeftH] = useState(0)
+
+  useEffect(() => {
+    if (!leftRef.current) return
+    const obs = new ResizeObserver(([e]) => setLeftH(e.contentRect.height))
+    obs.observe(leftRef.current)
+    return () => obs.disconnect()
+  }, [])
 
   // ── Pan ───────────────────────────────────────────────────────────────────
   function startPan(e) {
@@ -94,6 +154,49 @@ export default function Scan() {
     }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
+  }
+
+  async function startMobileScan() {
+    const scanToken = crypto.randomUUID()
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    await supabase.from('scan_sessions').insert({ 
+      token: scanToken, 
+      user_id: session?.user?.id || null,
+      status: 'waiting',
+      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+    })
+
+    const mobileUrl = `${window.location.origin}/mobile-scan/${scanToken}`
+    setQrToken(scanToken)
+    setQrUrl(mobileUrl)
+    setShowDesktopScanOptions(false)
+    setShowQrModal(true)
+    
+    const channel = supabase
+      .channel(`scan_${scanToken}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'scan_sessions',
+        filter: `token=eq.${scanToken}`
+      }, async (payload) => {
+        if (payload.new.status === 'completed' && payload.new.image_url) {
+          setShowQrModal(false)
+          channel.unsubscribe()
+          try {
+            const response = await fetch(payload.new.image_url)
+            const blob = await response.blob()
+            const file = new File([blob], "mobile_scan.jpg", { type: blob.type })
+            loadFile(file)
+          } catch(e) {
+            console.error("Failed to load image from url", e)
+          }
+        }
+      })
+      .subscribe()
+      
+    setScanChannel(channel)
   }
 
   // ── Steps ─────────────────────────────────────────────────────────────────
@@ -336,13 +439,10 @@ export default function Scan() {
     const text = mode==='ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
     if (text) { navigator.clipboard.writeText(text); setCopied(true); setTimeout(()=>setCopied(false),1500) }
   }
-  function downloadResult() {
+  async function downloadResult() {
     const text = mode==='ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
     if (!text) return
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(new Blob([text], {type:'text/plain;charset=utf-8'}))
-    a.download = mode==='ai' ? 'KI-Analyse.txt' : 'OCR-Text.txt'
-    a.click()
+    await downloadAsWord(text, mode==='ai' ? 'KI-Analyse' : 'OCR-Text')
   }
   function sendToBrief() {
     const text = mode==='ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
@@ -417,7 +517,7 @@ export default function Scan() {
       <div className="scan-layout">
 
         {/* LEFT */}
-        <div className="scan-left">
+        <div className="scan-left" ref={leftRef}>
 
           {/* Upload panel */}
           {panel==='upload'&&(
@@ -441,7 +541,14 @@ export default function Scan() {
               <div style={{marginTop:'auto'}}>
                 <div style={{textAlign:'center',marginTop:12}}><span style={{fontSize:12,color:'var(--text-3)'}}>oder</span></div>
                 <div style={{margin:'0 20px',position:'relative',zIndex:1}}>
-                  <button className="btn-action" onClick={()=>fileInputRef.current.click()} style={{width:'100%',marginTop:12,justifyContent:'center',display:'flex',boxSizing:'border-box',gap:6}}>
+                  <button className="btn-action" onClick={() => {
+                    const isMobile = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    if (isMobile) {
+                      fileInputRef.current.click();
+                    } else {
+                      setShowDesktopScanOptions(true);
+                    }
+                  }} style={{width:'100%',marginTop:12,justifyContent:'center',display:'flex',boxSizing:'border-box',gap:6}}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                     Foto aufnehmen / Datei wählen
                   </button>
@@ -528,7 +635,7 @@ export default function Scan() {
         </div>
 
         {/* RIGHT */}
-        <div className="scan-right">
+        <div className="scan-right" style={(result==='ai'||result==='ocr') && leftH > 0 ? {height:leftH} : {}}>
           {/* Mode selector */}
           <div className="scan-mode-card">
             <div className="scan-mode-title">Analysemodus</div>
@@ -593,8 +700,10 @@ export default function Scan() {
                         : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                       }
                     </button>
-                    <button className="result-action-btn" onClick={downloadResult} title="Herunterladen">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <button onClick={downloadResult} title="Als Word herunterladen"
+                      style={{height:28,padding:'0 10px',display:'flex',alignItems:'center',gap:5,background:'#2B579A',color:'white',border:'none',borderRadius:6,cursor:'pointer',fontFamily:'DM Sans,sans-serif',fontWeight:600,fontSize:12,flexShrink:0}}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      Word
                     </button>
                   </div>
                 </div>
@@ -622,8 +731,10 @@ export default function Scan() {
                         : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                       }
                     </button>
-                    <button className="result-action-btn" onClick={downloadResult} title="Herunterladen">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <button onClick={downloadResult} title="Als Word herunterladen"
+                      style={{height:28,padding:'0 10px',display:'flex',alignItems:'center',gap:5,background:'#2B579A',color:'white',border:'none',borderRadius:6,cursor:'pointer',fontFamily:'DM Sans,sans-serif',fontWeight:600,fontSize:12,flexShrink:0}}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      Word
                     </button>
                   </div>
                 </div>
@@ -637,6 +748,50 @@ export default function Scan() {
           </div>
         </div>
       </div>
+
+      {showDesktopScanOptions && (
+        <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <div style={{background:'white',borderRadius:12,padding:24,width:320,display:'flex',flexDirection:'column',gap:12}}>
+            <div style={{fontSize:17,fontWeight:700,color:'#1C1C1E',marginBottom:8,textAlign:'center'}}>Scan-Methode wählen</div>
+            
+            <button onClick={() => { setShowDesktopScanOptions(false); fileInputRef.current.click() }}
+              style={{padding:'14px',borderRadius:10,border:'1px solid #E5E5EA',background:'white',color:'#1C1C1E',fontSize:15,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Datei hochladen
+            </button>
+            <button onClick={startMobileScan}
+              style={{padding:'14px',borderRadius:10,border:'1px solid #E5E5EA',background:'white',color:'#1C1C1E',fontSize:15,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              Mit Handy fotografieren
+            </button>
+            
+            <button onClick={() => setShowDesktopScanOptions(false)} 
+              style={{marginTop:8,padding:'10px',borderRadius:8,border:'none',background:'transparent',color:'#8E8E93',cursor:'pointer',fontSize:14,fontWeight:600}}>
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showQrModal && (
+        <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <div style={{background:'white',borderRadius:16,padding:32,width:340,textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:16}}>
+            <div style={{fontSize:17,fontWeight:700,color:'#1C1C1E'}}>Mit Handy fotografieren</div>
+            <div style={{fontSize:13,color:'#8E8E93'}}>QR-Code mit Ihrem Handy scannen</div>
+            <QRCodeSVG value={qrUrl} size={200} />
+            <div style={{fontSize:11,color:'#8E8E93',wordBreak:'break-all',maxWidth:280}}>{qrUrl}</div>
+            <div style={{display:'flex',alignItems:'center',gap:8,fontSize:13,color:'#D94B0A',fontWeight:600}}>
+              <div style={{width:8,height:8,borderRadius:'50%',background:'#D94B0A',animation:'pulse 1.5s infinite'}}/>
+              Warte auf Foto…
+            </div>
+            <button onClick={() => { setShowQrModal(false); scanChannel?.unsubscribe() }} 
+              style={{padding:'8px 20px',borderRadius:8,border:'1px solid #E5E5EA',background:'transparent',color:'#8E8E93',cursor:'pointer',fontSize:13}}>
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

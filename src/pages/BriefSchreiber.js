@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import { downloadAsWord } from '../utils/downloadWord'
 
 function escHtml(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
@@ -40,9 +41,9 @@ function buildPrompt(mode, style, length, input) {
   const li = mode==='umformulierung' ? (length==='Kürzer'?' Kürze deutlich.':length==='Länger'?' Ergänze relevante Details.':'') : ''
   const ph = '1. PLATZHALTER FÜLLEN: [_Wert], [Wert_], [Wert1/Wert2] → Wert in Satz integrieren. Leere [_] → "[nicht angegeben]".'
   const ord = '2. REIHENFOLGE: Anamnese → Befunde → Diagnose → Verlauf → OP → Empfehlungen.'
-  if (mode==='korrektur') return `${ph}\n${ord}\n3. BAUSTEINE SCHONEN: nur Tipp-/Grammatikfehler korrigieren.\n4. ÜBERGÄNGE: flüssig verbinden. Keine neuen Inhalte erfinden.\n5. ROHTEXT GLÄTTEN: in medizinischen Stil anpassen.${si}${li}\n\nText:\n${input}`
+  if (mode==='korrektur') return `${ph}\n${ord}\n3. BAUSTEINE HARMONISIEREN: Wortlaut so weit wie möglich erhalten. Erlaubt: Redundanzen/Wiederholungen entfernen, Übergänge glätten, Stil vereinheitlichen. Verboten: medizinische Inhalte, Befunde oder Werte verändern oder weglassen.\n4. REDUNDANZEN ENTFERNEN: Wenn derselbe Sachverhalt mehrfach vorkommt, nur einmal behalten — die präziseste Formulierung.\n5. ÜBERGÄNGE: flüssig verbinden. Keine neuen Inhalte erfinden.\n6. ROHTEXT GLÄTTEN: in medizinischen Stil anpassen.${si}${li}\n\nText:\n${input}`
   if (mode==='umformulierung') return `${ph}\n${ord}\n3. UMFORMULIEREN: jeden Satz neu schreiben, gleicher Inhalt. Alle Werte exakt beibehalten.${si}${li}\n\nText:\n${input}`
-  return `${ph}\n2. ZUSAMMENFASSUNG in 5-10 Zeilen: Aufnahmegrund, Befunde, Diagnose(n), Maßnahmen, Weiteres.${si}${li}\n\nText:\n${input}`
+  return `${ph}\n2. ZUSAMMENFASSUNG in 5-10 Zeilen: Aufnahmegrund, Befunde, Diagnose(n), Maßnahmen, Weiteres. WICHTIG: Gib AUSSCHLIESSLICH den Zusammenfassungstext zurück. Kein Titel, keine Überschrift wie "Zusammenfassung:", kein Originaltext, keine Einleitung — nur der reine Text.${si}${li}\n\nText:\n${input}`
 }
 
 export default function BriefSchreiber() {
@@ -202,6 +203,10 @@ export default function BriefSchreiber() {
     navigator.clipboard.writeText(result)
     setCopied(true); setTimeout(()=>setCopied(false), 1500)
   }
+  async function downloadDoc() {
+    if (!result) return
+    await downloadAsWord(result, 'Brief')
+  }
 
   const modes = [
     { key:'korrektur',       label:'Korrektur',
@@ -290,12 +295,19 @@ export default function BriefSchreiber() {
           <div className="brief-panel-header">
             <span className="brief-panel-label">KI-Ergebnis</span>
             {state==='result' && (
-              <button className="result-action-btn" onClick={copyResult} title="Kopieren" style={copied?{color:'var(--orange)'}:{}}>
-                {copied
-                  ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                }
-              </button>
+              <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                <button className="result-action-btn" onClick={copyResult} title="Kopieren" style={copied?{color:'var(--orange)'}:{}}>
+                  {copied
+                    ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  }
+                </button>
+                <button onClick={downloadDoc} title="Als Word herunterladen"
+                  style={{height:28,padding:'0 10px',display:'flex',alignItems:'center',gap:5,background:'#2B579A',color:'white',border:'none',borderRadius:6,cursor:'pointer',fontFamily:'DM Sans,sans-serif',fontWeight:600,fontSize:12,flexShrink:0}}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Word
+                </button>
+              </div>
             )}
           </div>
 
@@ -332,7 +344,7 @@ export default function BriefSchreiber() {
       </div>
 
       {popup.visible && (
-        <div id="placeholderPopup" style={{position:'fixed',zIndex:9999,top:popup.y,left:popup.x,background:'var(--card)',border:'1px solid var(--border)',borderRadius:10,padding:8,boxShadow:'var(--shadow-lg)',minWidth:140,display:'flex',flexDirection:'column'}}>
+        <div id="placeholderPopup" style={{position:'fixed',zIndex:9999,top:popup.y,left:popup.x,background:'var(--card)',border:'1px solid var(--border)',borderRadius: 6,padding:8,boxShadow:'var(--shadow-lg)',minWidth:140,display:'flex',flexDirection:'column'}}>
           {popup.choices.map(c=>(
             <button key={c} className="ph-popup-btn" onMouseDown={e=>{e.preventDefault();choosePopup(c)}}>{c}</button>
           ))}
@@ -340,7 +352,7 @@ export default function BriefSchreiber() {
         </div>
       )}
 
-      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius:10,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius: 6,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
     </div>
   )
 }

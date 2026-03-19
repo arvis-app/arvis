@@ -37,7 +37,7 @@ const personalItems = [
 ]
 
 export default function AppLayout() {
-  const { profile, getInitials, getDisplayName, logout } = useAuth()
+  const { profile, getInitials, getDisplayName, logout, isPro } = useAuth()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileOpen,       setMobileOpen]       = useState(false)
   const [avatarOpen,       setAvatarOpen]       = useState(false)
@@ -89,7 +89,7 @@ export default function AppLayout() {
               {initials}
             </div>
             {avatarOpen && (
-              <div style={{position:'absolute',right:0,top:'calc(100% + 8px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:12,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
+              <div style={{position:'absolute',right:0,top:'calc(100% + 8px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
                 <div onClick={() => { setAvatarOpen(false); navigate('/profil') }}
                   style={{padding:'11px 16px',fontSize:13,fontWeight:600,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
                   onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
@@ -115,20 +115,47 @@ export default function AppLayout() {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-section-title">Hauptmenü</div>
-        {navItems.map(item => (
-          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
-            <span className="nav-item-icon">{item.icon}</span>
-            {item.label}
-          </NavLink>
-        ))}
+        {navItems.map(item => {
+          const restricted = ['/scan', '/briefschreiber', '/bausteine', '/uebersetzung'].includes(item.to)
+          const disabled = restricted && !isPro
+          return (
+            <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive && !disabled ? ' active' : ''}`} onClick={(e) => { if (disabled) { e.preventDefault() } else { setMobileOpen(false) } }} style={disabled ? { opacity: 0.4, pointerEvents: 'none', cursor: 'not-allowed' } : {}}>
+              <span className="nav-item-icon">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          )
+        })}
 
         <div className="sidebar-section-title">Persönlich</div>
-        {personalItems.map(item => (
-          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
-            <span className="nav-item-icon">{item.icon}</span>
-            {item.label}
-          </NavLink>
-        ))}
+        {personalItems.map(item => {
+          const restricted = ['/dateien'].includes(item.to)
+          const disabled = restricted && !isPro
+          return (
+            <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive && !disabled ? ' active' : ''}`} onClick={(e) => { if (disabled) { e.preventDefault() } else { setMobileOpen(false) } }} style={disabled ? { opacity: 0.4, pointerEvents: 'none', cursor: 'not-allowed' } : {}}>
+              <span className="nav-item-icon">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          )
+        })}
+
+        {!isPro && (
+          <div
+            onClick={() => { setMobileOpen(false); navigate('/profil'); }}
+            style={{
+              margin: '8px 12px 4px',
+              padding: '6px 10px',
+              background: 'var(--orange-ghost)',
+              borderRadius: 6,
+              fontSize: 11,
+              color: 'var(--orange)',
+              fontWeight: 600,
+              textAlign: 'center',
+              cursor: 'pointer'
+            }}
+          >
+            Trial abgelaufen — Jetzt Pro starten
+          </div>
+        )}
 
         <div className="sidebar-footer">
           <div className="sidebar-user" onClick={handleLogout} style={{cursor:'pointer'}}>
