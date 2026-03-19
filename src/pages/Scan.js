@@ -350,6 +350,21 @@ export default function Scan() {
   }
 
   // ── OCR ────────────────────────────────────────────────────────────────────
+  function cleanOcrText(text) {
+    let t = text;
+    // Remove vertical bars and backslashes (almost always page border noise)
+    t = t.replace(/[|\\]/g, ' ');
+    // Remove isolated weird symbols at the exact beginning of lines (like "%*")
+    t = t.replace(/^[ \t]*[%*~_]+[ \t]*/gm, '');
+    // Remove isolated weird symbols at the exact end of lines
+    t = t.replace(/[ \t]*[%*~_]+[ \t]*$/gm, '');
+    // Clean up multiple spaces left behind
+    t = t.replace(/[ \t]{2,}/g, ' ');
+    // Also remove any stray 'l ' or 'I ' at the very end of lines if they look like border noise
+    t = t.replace(/[ \t]+[lI][ \t]*$/gm, '');
+    return t.trim();
+  }
+
   async function runTesseract(imageDataUrl, pageInfo) {
     setLoadingText(pageInfo ? `Seite ${pageInfo} — OCR wird gestartet...` : 'OCR wird gestartet...')
     const worker = await window.Tesseract.createWorker('deu', 1, {
@@ -360,7 +375,7 @@ export default function Scan() {
     })
     const { data: { text } } = await worker.recognize(imageDataUrl)
     await worker.terminate()
-    return text.trim()
+    return cleanOcrText(text)
   }
 
   // ── AI Analysis ────────────────────────────────────────────────────────────
