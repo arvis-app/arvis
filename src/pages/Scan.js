@@ -352,16 +352,28 @@ export default function Scan() {
   // ── OCR ────────────────────────────────────────────────────────────────────
   function cleanOcrText(text) {
     let t = text;
-    // Remove vertical bars and backslashes (almost always page border noise)
+    // Supprime les pipes et antislashs (bruit typique des bordures de page physiques)
     t = t.replace(/[|\\]/g, ' ');
-    // Remove isolated weird symbols at the exact beginning of lines (like "%*")
-    t = t.replace(/^[ \t]*[%*~_]+[ \t]*/gm, '');
-    // Remove isolated weird symbols at the exact end of lines
-    t = t.replace(/[ \t]*[%*~_]+[ \t]*$/gm, '');
-    // Clean up multiple spaces left behind
+    
+    // Supprime les symboles purs en début de ligne suivis d'un espace (ex: "} ", "! ", "“ ", "%* ")
+    // On exclut le tiret "-" car c'est une puce de liste valide.
+    t = t.replace(/^[ \t]*[\]{}!_~^"“'‘`%*#|<>\/]+[ \t]+/gm, '');
+    
+    // Supprime les combinaisons symbole+chiffre/lettre en début de ligne (ex: "{8 ", "1] ", "!] ")
+    t = t.replace(/^[ \t]*([a-zA-Z0-9][\]{}!_~^"“'‘`%*#|<>\/]+|[\]{}!_~^"“'‘`%*#|<>\/]+[a-zA-Z0-9])[ \t]+/gm, '');
+    
+    // Supprime les lettres "fantômes" isolées créées par l'ombre (ex: "f ", "l ", "I ")
+    t = t.replace(/^[ \t]*(f|l|I|i)[ \t]+/gm, '');
+
+    // Nettoie la fin des lignes de la même façon (bruit ou espaces inutiles)
+    t = t.replace(/[ \t]+([\]{}!_~^"“'‘`%*#|<>\/]+|l|I|i)[ \t]*$/gm, '');
+
+    // Réduit les sauts de lignes multiples à un seul saut de ligne (efface le "double espacement" causé par le bruit)
+    t = t.replace(/\n(?:[ \t]*\n)+/g, '\n');
+
+    // Compresse les espaces multiples au sein des phrases
     t = t.replace(/[ \t]{2,}/g, ' ');
-    // Also remove any stray 'l ' or 'I ' at the very end of lines if they look like border noise
-    t = t.replace(/[ \t]+[lI][ \t]*$/gm, '');
+
     return t.trim();
   }
 
