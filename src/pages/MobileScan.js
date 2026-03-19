@@ -20,17 +20,13 @@ export default function MobileScan() {
       
       if (error) throw error
 
-      // URL publique de l'image
-      const { data: { publicUrl } } = supabase.storage
-        .from('scan-images')
-        .getPublicUrl(filename)
-
-      // Met à jour la session → déclenche le Realtime sur le PC
+      // On enregistre simplement le nom de fichier au lieu d'une URL publique
+      // Le PC, qui est authentifié, le téléchargera de manière sécurisée
       await supabase
         .from('scan_sessions')
         .update({ 
           status: 'completed', 
-          image_url: publicUrl 
+          image_url: filename 
         })
         .eq('token', token)
 

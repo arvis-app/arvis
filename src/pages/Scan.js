@@ -185,16 +185,23 @@ export default function Scan() {
           setShowQrModal(false)
           channel.unsubscribe()
           try {
-            const response = await fetch(payload.new.image_url)
-            if (!response.ok) {
-              throw new Error(`Erreur HTTP ${response.status} (le bucket n'est peut-être pas public)`)
+            // "image_url" contient maintenant le bucket filePath (filename)
+            const filename = payload.new.image_url
+            
+            // Téléchargement sécurisé via le client Supabase (utilise le token d'auth du PC)
+            const { data: blob, error } = await supabase.storage
+              .from('scan-images')
+              .download(filename)
+              
+            if (error) {
+              throw error
             }
-            const blob = await response.blob()
+
             const file = new File([blob], "mobile_scan.jpg", { type: blob.type })
             loadFile(file)
           } catch(e) {
-            console.error("Failed to load image from url", e)
-            alert("Impossible de charger la photo. Vérifiez que le bucket 'scan-images' est bien configuré en mode PUBLIC dans Supabase : " + e.message)
+            console.error("Failed to download secure image", e)
+            alert("Erreur de téléchargement depuis le bucket privé : " + e.message)
           }
         }
       })
