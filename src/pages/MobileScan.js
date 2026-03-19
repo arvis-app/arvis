@@ -53,7 +53,7 @@ export default function MobileScan() {
           <label style={{width:'100%',maxWidth:320,padding:'14px 0',background:'#D94B0A',color:'white',borderRadius:10,fontSize:16,fontWeight:600,textAlign:'center',cursor:'pointer',display:'block'}}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:8,verticalAlign:'middle'}}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             Foto aufnehmen
-            <input type="file" accept="image/*" capture="environment" onChange={handlePhoto} style={{display:'none'}}/>
+            <input type="file" accept="image/jpeg, image/png, image/webp" capture="environment" onChange={handlePhoto} style={{display:'none'}}/>
           </label>
         </>
       )}
