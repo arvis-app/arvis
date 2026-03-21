@@ -223,7 +223,7 @@ export default function Uebersetzung() {
         </div>
       </div>
 
-      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius: 6,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+      {toast && <div className="app-toast">{toast}</div>}
     </div>
   )
 }

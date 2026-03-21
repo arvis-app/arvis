@@ -100,8 +100,7 @@ function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }
         {error && <div style={{fontSize:12,color:'var(--orange)',padding:'6px 10px',background:'rgba(217,75,10,0.07)',borderRadius:6}}>{error}</div>}
         <div style={{display:'flex',gap:8,justifyContent:'flex-end',marginTop:4}}>
           <button className="btn-secondary" onClick={onClose}>Abbrechen</button>
-          <button className="btn-action" onClick={handleSave} style={{gap:6,display:'flex',alignItems:'center'}}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <button className="btn-action" onClick={handleSave}>
             Speichern
           </button>
         </div>
@@ -304,7 +303,7 @@ export default function Bausteine() {
   const isFav = selected && favs.includes(selected.id)
 
   return (
-    <div className="page active">
+    <div className="page active" id="page-bausteine">
       {/* Header */}
       <div className="page-header">
         <div>
@@ -320,7 +319,7 @@ export default function Bausteine() {
       <div style={{display:'flex',gap:16,alignItems:'flex-start',paddingTop:4}}>
 
         {/* LEFT: Search + List */}
-        <div style={{flex:2,display:'flex',flexDirection:'column',gap:12,minWidth:0,height:basket.length>0?Math.max(560,rightH):560}}>
+        <div className="bausteine-left-col" style={{flex:2,display:'flex',flexDirection:'column',gap:12,minWidth:0,height:basket.length>0?Math.max(560,rightH):560}}>
 
           {/* Search */}
           <div id="bausteineSearchBox" style={{position:'relative',background:'var(--card)',border:'1.5px solid var(--border)',borderRadius:8,overflow:'hidden',boxShadow:'var(--shadow)'}}>
@@ -353,7 +352,7 @@ export default function Bausteine() {
           </div>
 
           {/* List */}
-          <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',minHeight:0,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow)'}}>
+          <div className="bausteine-list" style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',minHeight:0,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow)'}}>
             {filtered.length===0 && (
               <div style={{padding:32,textAlign:'center',color:'var(--text-3)',fontSize:13}}>Keine Ergebnisse</div>
             )}
@@ -410,11 +409,11 @@ export default function Bausteine() {
                 <div className="baustein-preview-text" style={{overflowY:'auto',flex:1}}>{formatBausteinText(selected.text)}</div>
                 <div style={{display:'flex',gap:8,marginTop:16}}>
                   <button className="btn-secondary" onClick={addToBasket} style={{flex:1,justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Zum Warenkorb
                   </button>
                   <button className="btn-action" onClick={sendDirectToBrief} style={{flex:1,justifyContent:'center',display:'flex',gap:6}}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     An Brief Schreiber
                   </button>
                 </div>
@@ -440,7 +439,7 @@ export default function Bausteine() {
                 ))}
               </div>
               <button className="btn-action" onClick={sendBasketToBrief} style={{width:'100%',justifyContent:'center',display:'flex',gap:6,marginTop:8}}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 An Brief Schreiber senden
               </button>
             </div>
@@ -464,7 +463,7 @@ export default function Bausteine() {
       />
 
       {/* Toast */}
-      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:toast.light?'var(--orange-ghost)':'var(--orange)',color:toast.light?'var(--orange)':'white',border:'none',padding:'10px 22px',borderRadius: 6,fontSize:14,fontWeight:600,zIndex:99999}}>{toast.msg}</div>}
+      {toast && <div className={`app-toast${toast.light ? '' : ' app-toast--solid'}`}>{toast.msg}</div>}
     </div>
   )
 }

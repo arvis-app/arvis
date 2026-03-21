@@ -22,6 +22,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) throw new Error('Not authenticated')
 
+    // Plan check
     const { data: profile } = await supabaseAdmin
       .from('users')
       .select('plan, trial_started_at')
@@ -31,7 +32,7 @@ serve(async (req) => {
     const now = new Date()
     let isPro = false
     if (profile) {
-      if (profile.plan === 'pro' || profile.plan === 'active') { // Adjust based on your actual pro status string
+      if (profile.plan === 'pro' || profile.plan === 'active') {
         isPro = true
       } else if (profile.plan === 'trial' && profile.trial_started_at) {
         const start = new Date(profile.trial_started_at)
@@ -46,38 +47,40 @@ serve(async (req) => {
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-    // ────────────────────────────────────────────────────────
 
     const apiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!apiKey) return new Response(
-      JSON.stringify({ error: 'OPENAI_API_KEY not configured' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    if (!apiKey) throw new Error('OPENAI_API_KEY not configured')
 
-    const formData = await req.formData()
-    const audioFile = formData.get('file')
-    const prompt = formData.get('prompt') ?? ''
-
-    const fd = new FormData()
-    fd.append('file', audioFile)
-    fd.append('model', 'whisper-1')
-    fd.append('language', 'de')
-    fd.append('prompt', prompt)
-
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    // Create ephemeral token for OpenAI Realtime API
+    const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + apiKey },
-      body: fd,
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-realtime-preview-2024-12-17',
+        modalities: ['text'],
+        input_audio_transcription: { model: 'whisper-1', language: 'de' },
+        turn_detection: {
+          type: 'server_vad',
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 600,
+          create_response: false,
+        },
+        instructions: 'Transkribiere präzise medizinische Fachsprache auf Deutsch. Keine Antworten, nur Transkription.',
+      }),
     })
 
-    const data = await response.json()
-    if (!response.ok) return new Response(
-      JSON.stringify({ error: data.error?.message || 'API Fehler ' + response.status }),
-      { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.error?.message || 'Realtime session creation failed')
+    }
 
+    const data = await response.json()
     return new Response(
-      JSON.stringify({ text: data.text }),
+      JSON.stringify({ token: data.client_secret?.value }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (e) {

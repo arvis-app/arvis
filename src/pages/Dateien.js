@@ -146,10 +146,47 @@ export default function Dateien() {
   const [newFolderName, setNewFolderName] = useState('')
   const [renameName, setRenameName] = useState('')
   const [toast, setToast]           = useState('')
+  const [imgPanX, setImgPanX]       = useState(0)
+  const [imgPanY, setImgPanY]       = useState(0)
+  const [imgZoom, setImgZoom]       = useState(1)
   const fileInputRef                = useRef(null)
 
   function refresh() { setData(load()) }
   function showToast(msg) { setToast(msg); setTimeout(()=>setToast(''),2200) }
+
+  useEffect(() => { setImgPanX(0); setImgPanY(0); setImgZoom(1) }, [detail])
+
+  function handleImgTouch(e) {
+    if (e.touches.length === 2) {
+      e.preventDefault()
+      const t1 = e.touches[0], t2 = e.touches[1]
+      const startDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY)
+      const startZoom = imgZoom
+      const onMove = (ev) => {
+        if (ev.touches.length !== 2) return
+        ev.preventDefault()
+        const dist = Math.hypot(ev.touches[1].clientX - ev.touches[0].clientX, ev.touches[1].clientY - ev.touches[0].clientY)
+        setImgZoom(Math.max(1, Math.min(5, startZoom * dist / startDist)))
+      }
+      const onEnd = () => { document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onEnd) }
+      document.addEventListener('touchmove', onMove, { passive: false })
+      document.addEventListener('touchend', onEnd)
+    } else if (e.touches.length === 1 && imgZoom > 1) {
+      e.preventDefault()
+      const t = e.touches[0]
+      const sx = t.clientX, sy = t.clientY
+      const startX = imgPanX, startY = imgPanY
+      const onMove = (ev) => {
+        if (ev.touches.length !== 1) return
+        ev.preventDefault()
+        setImgPanX(startX + (ev.touches[0].clientX - sx))
+        setImgPanY(startY + (ev.touches[0].clientY - sy))
+      }
+      const onEnd = () => { document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onEnd) }
+      document.addEventListener('touchmove', onMove, { passive: false })
+      document.addEventListener('touchend', onEnd)
+    }
+  }
 
   // ── Filter ─────────────────────────────────────────────────────────────────
   const q = search.toLowerCase().trim()
@@ -177,7 +214,7 @@ export default function Dateien() {
     const d = load()
     d.folders.push({id:genId(), name, parentId:currentFolder, created:Date.now()})
     save(d); refresh(); setFolderModal(false); setNewFolderName('')
-    showToast('✓ Ordner erstellt')
+    showToast('Ordner erstellt')
   }
 
   function confirmRename() {
@@ -186,7 +223,7 @@ export default function Dateien() {
     const item = d.folders.find(f=>f.id===renameModal.id)
     if (item) item.name = name
     save(d); refresh(); setRenameModal(null); setRenameName('')
-    showToast('✓ Umbenannt')
+    showToast('Umbenannt')
   }
 
   function deleteItem(id, type) {
@@ -205,7 +242,7 @@ export default function Dateien() {
           d.notes = d.notes.filter(n=>n.id!==id)
           if (detail?.note?.id===id) setDetail(null)
         }
-        save(d); refresh(); setConfirm(null); showToast('✓ Gelöscht')
+        save(d); refresh(); setConfirm(null); showToast('Gelöscht')
       }
     })
   }
@@ -221,7 +258,7 @@ export default function Dateien() {
       const isText  = /^(txt|md|csv|json|xml|html|htm|js|css|py)$/.test(ext)||(!isImage&&!isPDF&&file.type.startsWith('text/'))
       const finish = entry => {
         d.notes.push({id:genId(), title:file.name, folderId:currentFolder, created:Date.now(), modified:Date.now(), ...entry})
-        if (++done===total) { const ok=save(d); if(ok!==false) showToast(`✓ ${total} Datei(en) hochgeladen`); refresh() }
+        if (++done===total) { const ok=save(d); if(ok!==false) showToast(`${total} ${total===1?'Datei':'Dateien'} hochgeladen`); refresh() }
       }
       const reader = new FileReader()
       if (isImage) { reader.onload=e=>finish({fileType:'image',dataUrl:e.target.result,content:''}); reader.readAsDataURL(file) }
@@ -254,7 +291,7 @@ export default function Dateien() {
           <div className="page-title">Meine Dateien</div>
           <div className="page-date">Persönlicher Dokumentenspeicher</div>
         </div>
-        <div style={{display:'flex',gap:8}}>
+        <div className="dateien-header-actions" style={{display:'flex',gap:8}}>
           <button className="btn-secondary" onClick={()=>setFolderModal(true)}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
             Ordner
@@ -317,11 +354,11 @@ export default function Dateien() {
               <div id="dateienGrid" className="dateien-grid">
                 {folders.map(f=>(
                   <div key={f.id} className="dateien-item dateien-folder" onDoubleClick={()=>{setCurrentFolder(f.id);setDetail(null)}}
-                    style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,padding:'16px 12px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
+                    style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,padding:'16px 12px',cursor:'pointer',display:'grid',gridTemplateRows:'44px auto',justifyItems:'center',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
                     onMouseEnter={e=>e.currentTarget.style.borderColor='var(--orange)'}
                     onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}>
                     {ICO.folder}
-                    <div style={{fontSize:12,fontWeight:600,color:'var(--text)',textAlign:'center',wordBreak:'break-word',lineHeight:1.3}}>{f.name}</div>
+                    <div style={{fontSize:12,fontWeight:600,color:'var(--text)',textAlign:'center',lineHeight:1.3,alignSelf:'start',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',wordBreak:'break-all'}}>{f.name}</div>
                     <div style={{position:'absolute',top:6,right:6,display:'flex',gap:2,opacity:0}} className="dateien-item-actions">
                       <button onClick={e=>{e.stopPropagation();setRenameModal({id:f.id,name:f.name});setRenameName(f.name)}} style={{width:22,height:22,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{ICO.rename}</button>
                       <button onClick={e=>{e.stopPropagation();deleteItem(f.id,'folder')}} style={{width:22,height:22,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#dc2626'}}>{ICO.del}</button>
@@ -330,11 +367,11 @@ export default function Dateien() {
                 ))}
                 {notes.map(n=>(
                   <div key={n.id} className="dateien-item dateien-note" onClick={()=>openNote(n)}
-                    style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,padding:'16px 12px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
+                    style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,padding:'16px 12px',cursor:'pointer',display:'grid',gridTemplateRows:'44px auto',justifyItems:'center',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
                     onMouseEnter={e=>e.currentTarget.style.borderColor='var(--orange)'}
                     onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}>
-                    {getNoteType(n)==='image'&&n.dataUrl ? <img src={n.dataUrl} style={{width:48,height:48,objectFit:'cover',borderRadius:6}} alt=""/> : getNoteType(n)==='pdf' ? ICO.pdf : ICO.note}
-                    <div style={{fontSize:12,fontWeight:600,color:'var(--text)',textAlign:'center',wordBreak:'break-word',lineHeight:1.3}}>{n.title||'Ohne Titel'}</div>
+                    {getNoteType(n)==='image'&&n.dataUrl ? <img src={n.dataUrl} style={{width:44,height:44,objectFit:'cover',borderRadius:6}} alt=""/> : getNoteType(n)==='pdf' ? ICO.pdf : ICO.note}
+                    <div style={{fontSize:12,fontWeight:600,color:'var(--text)',textAlign:'center',lineHeight:1.3,alignSelf:'start',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',wordBreak:'break-all'}}>{n.title||'Ohne Titel'}</div>
                     <div style={{position:'absolute',top:6,right:6,opacity:0}} className="dateien-item-actions">
                       <button onClick={e=>{e.stopPropagation();deleteItem(n.id,'note')}} style={{width:22,height:22,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#dc2626'}}>{ICO.del}</button>
                     </div>
@@ -396,8 +433,8 @@ export default function Dateien() {
                   <NoteEditor note={detail.note} folderId={currentFolder} onSave={refresh} onClose={()=>setDetail(null)}/>
                 )}
                 {detail.type==='image' && (
-                  <div style={{flex:1,overflow:'auto',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-                    <img src={detail.note.dataUrl} style={{maxWidth:'100%',maxHeight:'100%',borderRadius:8,objectFit:'contain'}} alt=""/>
+                  <div style={{flex:1,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',padding:16,touchAction:'none'}} onTouchStart={handleImgTouch}>
+                    <img src={detail.note.dataUrl} style={{maxWidth:'100%',maxHeight:'100%',borderRadius:8,objectFit:'contain',transform:`translate(${imgPanX}px,${imgPanY}px) scale(${imgZoom})`,transformOrigin:'center center',userSelect:'none',pointerEvents:'none'}} alt=""/>
                   </div>
                 )}
                 {detail.type==='pdf' && (
@@ -441,7 +478,7 @@ export default function Dateien() {
 
       <ConfirmModal opts={confirm} onOk={()=>confirm?.onOk?.()} onCancel={()=>setConfirm(null)}/>
 
-      {toast && <div style={{position:'fixed',bottom:28,left:'calc(50% + 120px)',transform:'translateX(-50%)',background:'var(--orange-ghost)',color:'var(--orange)',border:'none',padding:'10px 22px',borderRadius: 6,fontSize:14,fontWeight:600,zIndex:99999}}>{toast}</div>}
+      {toast && <div className="app-toast">{toast}</div>}
 
       <style>{`.dateien-item:hover .dateien-item-actions { opacity: 1 !important; }`}</style>
     </div>
