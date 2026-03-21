@@ -138,7 +138,7 @@ export default function Profil() {
       avatar_url: photo || null,
     })
     if (error) { showToast('Fehler beim Speichern'); return }
-    showToast('✓ Profil gespeichert')
+    showToast('Profil gespeichert')
   }
 
   // ── Save password ──────────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ export default function Profil() {
   const displayName = [titel, vorname ? vorname[0] + '.' : '', nachname].filter(Boolean).join(' ') || 'Arvis'
 
   return (
-    <div className="page active">
+    <div className="page active" id="page-profil">
       <div className="page-header">
         <div>
           <div className="page-title">Mein Profil</div>
@@ -198,12 +198,9 @@ export default function Profil() {
               <div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => photoInputRef.current?.click()}>Foto ändern</button>
-                  <button 
-                    className="btn-secondary" 
-                    style={{ fontSize: 12, color: '#e53e3e', borderColor: '#e53e3e', transition: 'background 0.2s' }} 
+                  <button
+                    className="btn-danger"
                     onClick={() => setPhoto(null)}
-                    onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
-                    onMouseOut={e=>e.target.style.background=''}
                   >
                     Foto löschen
                   </button>
@@ -416,12 +413,7 @@ export default function Profil() {
                   <div style={{ paddingTop: 8, borderTop: '1px solid var(--border)' }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Abonnement kündigen</div>
                     <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 12 }}>Ihr Zugang bleibt bis zum Ende des aktuellen Abrechnungszeitraums aktiv.</div>
-                    <button 
-                      onClick={() => setShowCancelModal(true)} 
-                      style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid #e53e3e', background: 'transparent', color: '#e53e3e', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition:'background 0.2s' }}
-                      onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
-                      onMouseOut={e=>e.target.style.background='transparent'}
-                    >
+                    <button className="btn-danger" onClick={() => setShowCancelModal(true)}>
                       Abonnement kündigen
                     </button>
                   </div>

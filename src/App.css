@@ -509,6 +509,15 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   transition: all 0.2s;
 }
 .btn-action-secondary:hover { background: var(--orange-ghost); transform: translateY(-1px); }
+.btn-danger {
+  padding: 9px 18px; border-radius: 6px; border: 1.5px solid #DC2626;
+  background: var(--card); color: #DC2626;
+  font-size: 13px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background 0.2s;
+}
+.btn-danger:hover { background: rgba(220,38,38,0.1); }
 
 .btn-secondary {
   padding: 10px 20px; border-radius: 6px;
@@ -910,13 +919,18 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
   #cropContainer { height: auto !important; min-height: 300px; }
 
   /* Brief & Profil strictly mobile stack */
-  .brief-layout, .profil-layout { grid-template-columns: 1fr !important; }
+  .brief-layout, .profil-layout { grid-template-columns: 1fr !important; max-width: 100%; overflow-x: hidden; }
+  .profil-layout > * { min-width: 0; max-width: 100%; box-sizing: border-box; }
 
-  /* Übersetzung */
-  .ueb-layout { min-height: 400px; }
+  /* Profil header */
+  #page-profil .page-header { flex-direction: column; align-items: flex-start; }
+
+  /* Übersetzung — drapeau seul + panels empilés */
+  .ueb-layout { min-height: 400px; grid-template-columns: 1fr !important; }
   .ueb-item { grid-template-columns: 1fr; }
-  .ueb-lang-toggle { padding: 4px 6px; font-size: 10px; }
-  .ueb-lang-toggle svg { width: 14px; height: 9.5px; }
+  .ueb-lang-toggle { padding: 8px 10px; min-width: 38px; flex: 0 0 auto; }
+  .ueb-lang-toggle span { display: none; }
+  .ueb-lang-toggle svg { width: 22px; height: 15px; }
   .ueb-detail-row {
     display: grid !important;
     grid-template-columns: 24px auto 1fr !important;
@@ -930,7 +944,7 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
   .ueb-detail-copy { grid-area: copy; justify-self: end; margin-left: auto; }
   .ueb-detail-val { grid-area: val; font-size: 16px; padding-left: 0; font-weight: 600; margin-top: 4px; word-break: break-word; }
 
-  /* Dateien */
+  /* Dateien — boutons côte à côte */
   .dateien-toolbar { flex-wrap: wrap; }
   .dateien-detail {
     position: fixed; top: auto; left: 0; right: 0; bottom: 0;
@@ -938,21 +952,21 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
     z-index: 1000; background: var(--bg);
     box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
   }
-  .dateien-header-actions { flex-direction: column; width: 100%; gap: 8px !important; margin-top: 10px; }
-  .dateien-header-actions button { width: 100%; justify-content: center; padding: 12px; font-size: 13px; margin: 0; }
+  .dateien-header-actions { flex-direction: row !important; flex-wrap: nowrap; width: 100%; gap: 8px !important; margin-top: 10px; }
+  .dateien-header-actions button { flex: 1; width: auto !important; justify-content: center; padding: 10px 6px; font-size: 12px; margin: 0; }
 
   /* Brief & Scan header resets */
   .page-header > *:last-child { margin-left: auto !important; }
-  
+
   /* Brief modes gap filling */
   .brief-modes { display: flex; width: 100%; gap: 8px; justify-content: space-between; margin-bottom: 16px; box-sizing: border-box; }
   .brief-mode-btn { flex: 1; justify-content: center; padding: 10px 4px; font-size: 11px; text-align: center; }
 
-  /* Brief */
-  .brief-panel, .brief-panel:last-child { height: auto !important; min-height: 480px; }
+  /* Brief — éviter overflow horizontal */
+  .brief-panel, .brief-panel:last-child { height: auto !important; min-height: 480px; min-width: 0; max-width: 100%; overflow-x: hidden; }
   .brief-options { flex-wrap: wrap; gap: 10px; padding: 12px; justify-content: flex-start; }
-  .brief-action-row { gap: 8px; }
-  .brief-action-row .btn-diktieren, .brief-action-row .brief-submit-btn { flex: 1; width: auto; }
+  .brief-action-row { gap: 8px; flex-wrap: wrap; }
+  .brief-action-row .btn-diktieren, .brief-action-row .brief-submit-btn { flex: 1; width: auto; min-width: 0; }
 }
 
 /* ── Bausteine stack (≤700px) ── */

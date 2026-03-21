@@ -108,7 +108,7 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
     if (editing) { const ok = `${editing.year}-${editing.month}-${editing.day}`; if (ne[ok]) { ne[ok] = ne[ok].filter(e => !(e.time === editing.time && e.title === editing.title)); if (!ne[ok].length) delete ne[ok] }; setEditing(null) }
     if (!ne[k]) ne[k] = []
     ne[k].push({ time: `${hour}:${minute}`, title: title.trim(), id: Date.now() })
-    setEvents(ne); save('arvis_events', ne); setTitle(''); setAddOpen(false); showToast('Termin gespeichert ✓')
+    setEvents(ne); save('arvis_events', ne); setTitle(''); setAddOpen(false); showToast('Termin gespeichert')
   }
   function handleDel(e, d) {
     const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`, ne = { ...events }
@@ -171,12 +171,12 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen })
   function handleAdd() {
     if (!newName.trim()) return
     const upd = [...patients, { room: newRoom || '—', name: newName.trim(), note: newNote }]
-    setPatients(upd); save('arvis_patients', upd); setNewRoom(''); setNewName(''); setNewNote(''); setAddOpen(false); showToast('Patient hinzugefügt ✓')
+    setPatients(upd); save('arvis_patients', upd); setNewRoom(''); setNewName(''); setNewNote(''); setAddOpen(false); showToast('Patient hinzugefügt')
   }
   function handleSel(i) { setSelected(i); setDetailRoom(patients[i].room || ''); setDetailName(patients[i].name || ''); setDetailNote(patients[i].note || '') }
   function handleSave() {
     const upd = patients.map((p, i) => i === selected ? { ...p, room: detailRoom, name: detailName, note: detailNote } : p)
-    setPatients(upd); save('arvis_patients', upd); setSelected(null); showToast('Gespeichert ✓')
+    setPatients(upd); save('arvis_patients', upd); setSelected(null); showToast('Gespeichert')
   }
   function handleDel() {
     const upd = patients.filter((_, i) => i !== confirmDel)
@@ -225,7 +225,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen })
           <textarea className="mini-input" placeholder="Notiz..." rows={1} value={detailNote} onChange={e => setDetailNote(e.target.value)} style={{ resize: 'none', lineHeight: 1.5, margin: 0, overflow: 'hidden', fontSize: 14 }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <button className="btn-action" onClick={handleSave} style={{ fontSize: 14, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Speichern</button>
-            <button className="btn-secondary" onClick={() => setConfirmDel(selected)} style={{ fontSize: 14, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', borderColor: '#EF4444' }}>Löschen</button>
+            <button className="btn-danger" onClick={() => setConfirmDel(selected)} style={{ fontSize: 14, height: 40, justifyContent: 'center' }}>Löschen</button>
           </div>
         </div>
       )}
