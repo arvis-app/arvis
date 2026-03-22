@@ -1162,56 +1162,77 @@ footer {
     <div style="background:var(--bg-2);border:1px solid var(--border);border-radius: 8px;overflow:hidden;margin-top:16px;flex:1;">
   <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:9px 12px;display:flex;align-items:center;gap:8px;">
   </div>
-  <div style="padding:10px 12px;display:flex;flex-direction:column;flex:1;">
-    <!-- brief-modes exact -->
-    <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;row-gap:4px;">
+  <div style="padding:10px 12px;display:flex;flex-direction:column;gap:6px;">
+    <!-- brief-modes -->
+    <div style="display:flex;gap:4px;flex-wrap:wrap;row-gap:4px;">
       <span style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px;border-radius:8px;border:1.5px solid var(--orange);background:var(--orange);color:white;font-size:9px;font-weight:600;">
         <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         Korrektur
       </span>
-      <span style="padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-2);color:var(--text-3);font-size:9px;font-weight:600;">Umformulierung</span>
-      <span style="padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-2);color:var(--text-3);font-size:9px;font-weight:600;">Zusammenfassung</span>
+      <span style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-2);color:var(--text-3);font-size:9px;font-weight:600;">
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Umformulierung
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-2);color:var(--text-3);font-size:9px;font-weight:600;">
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/></svg>
+        Zusammenfassung
+      </span>
     </div>
-    <!-- 2 panneaux brief-panel exact -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;">
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px;">
-        <div style="font-size:8px;font-weight:700;color:var(--text-3);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;">Ihr Text</div>
+    <!-- 2 panels: Ihr Text | KI-Ergebnis -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+      <!-- Left panel -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px;display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:8px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Ihr Text</span>
+          <span style="font-size:7px;color:var(--text-3);">284 Zeichen</span>
+        </div>
         <div style="display:flex;flex-direction:column;gap:3px;">
           <div style="height:5px;border-radius:3px;background:var(--bg-3);width:95%;"></div>
           <div style="height:5px;border-radius:3px;background:var(--bg-3);width:78%;"></div>
           <div style="height:5px;border-radius:3px;background:var(--bg-3);width:88%;"></div>
           <div style="height:5px;border-radius:3px;background:var(--bg-3);width:65%;"></div>
           <div style="height:5px;border-radius:3px;background:var(--bg-3);width:82%;"></div>
-          <div style="height:5px;border-radius:3px;background:var(--bg-3);width:70%;"></div>
+        </div>
+        <!-- Action row: Diktieren + KI analysieren -->
+        <div style="display:flex;gap:4px;margin-top:2px;">
+          <div style="flex:0 0 auto;display:flex;align-items:center;gap:3px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg-2);font-size:8px;font-weight:600;color:var(--text-2);">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            Diktieren
+          </div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:4px 6px;border-radius:6px;background:var(--orange);font-size:8px;font-weight:700;color:white;">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="11"/></svg>
+            KI analysieren
+          </div>
         </div>
       </div>
-      <div style="background:var(--bg-2);border:1px solid var(--orange);border-radius:8px;padding:7px;">
-        <div style="font-size:8px;font-weight:700;color:var(--orange);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;">KI-Ergebnis</div>
+      <!-- Right panel -->
+      <div style="background:var(--bg-2);border:1px solid var(--orange);border-radius:8px;padding:7px;display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:8px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;">KI-Ergebnis</span>
+          <div style="display:flex;gap:3px;">
+            <div style="padding:2px 5px;border-radius:4px;background:var(--orange);color:white;font-size:7px;font-weight:700;">Ergebnis</div>
+            <div style="padding:2px 5px;border-radius:4px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-3);font-size:7px;font-weight:600;">Änderungen</div>
+          </div>
+        </div>
         <div style="display:flex;flex-direction:column;gap:3px;">
           <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:100%;"></div>
           <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:84%;"></div>
           <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:93%;"></div>
           <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:72%;"></div>
           <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:88%;"></div>
-          <div style="height:5px;border-radius:3px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:79%;"></div>
+        </div>
+        <!-- Copy + Word -->
+        <div style="display:flex;gap:4px;margin-top:2px;">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:4px 6px;border-radius:6px;background:var(--orange);font-size:8px;font-weight:700;color:white;">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Kopieren
+          </div>
+          <div style="flex:0 0 auto;display:flex;align-items:center;gap:3px;padding:4px 6px;border-radius:6px;background:#2B579A;font-size:8px;font-weight:700;color:white;">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Word
+          </div>
         </div>
       </div>
-    </div>
-    <!-- brief-opt-btns Stil/Länge -->
-    <div style="display:flex;gap:3px;margin-top:6px;flex-wrap:wrap;row-gap:3px;">
-      <span style="font-size:8px;padding:3px 6px;border-radius:5px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-3);">Telegrafisch</span>
-      <span style="font-size:8px;padding:3px 6px;border-radius:5px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-3);">Präzise</span>
-      <span style="font-size:8px;padding:3px 6px;border-radius:5px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-3);">Narrativ</span>
-    </div>
-    <!-- AI result preview block -->
-    <div style="margin-top:7px;background:rgba(217,75,10,0.07);border:1px solid rgba(217,75,10,0.3);border-radius:7px;padding:7px 9px;">
-      <div style="font-size:8px;font-weight:700;color:var(--orange);margin-bottom:4px;display:flex;align-items:center;gap:3px;"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> KI-Ergebnis bereit</div>
-      <div style="font-size:8px;color:var(--text-2);line-height:1.55;">Pat. wurde notfallmäßig aufgenommen. Diagnose: akute Appendizitis. Laparoskopische Appendektomie komplikationslos erfolgt. Entlassung in stabilem AZ.</div>
-    </div>
-    <!-- copy button -->
-    <div style="margin-top:6px;background:var(--orange);border-radius:6px;padding:5px 8px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;">
-      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      <span style="font-size:8px;font-weight:700;color:white;">Kopieren</span>
     </div>
   </div>
 </div>
