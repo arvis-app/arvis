@@ -78,25 +78,31 @@ export default function Profil() {
   async function handleCheckout() {
     setCheckoutLoading(true)
     try {
-      // Essayer d'abord create-checkout-session (pour nouveaux abonnés)
       const priceId = yearly ? STRIPE_PRICE_YEARLY : STRIPE_PRICE_MONTHLY
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+      if (!priceId) {
+        throw new Error('Stripe Price ID ist nicht konfiguriert. Bitte Umgebungsvariablen prüfen.')
+      }
+      const { data, error, response } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId }
       })
       if (error) {
-        // Si la fonction n'est pas déployée (non-2xx), fallback sur create-portal-session
-        console.warn('create-checkout-session non disponible, fallback sur portal:', error.message)
-        const { data: portalData, error: portalError } = await supabase.functions.invoke('create-portal-session', {
-          body: { returnUrl: window.location.href }
-        })
-        if (portalError) throw new Error(portalError.message || 'Verbindungsfehler')
-        if (portalData?.error) throw new Error(portalData.error)
-        if (portalData?.url) window.location.href = portalData.url
-        return
+        let msg = error.message
+        try {
+          if (response) {
+            const body = await response.text()
+            msg += ' | Status: ' + response.status + ' | ' + body
+          }
+        } catch {}
+        throw new Error(msg)
       }
       if (data?.error) throw new Error(data.error)
-      if (data?.url) window.location.href = data.url
+      if (data?.url) {
+        window.location.href = data.url
+      } else {
+        throw new Error('Keine Checkout-URL erhalten.')
+      }
     } catch (err) {
+      console.error('Checkout error:', err)
       showToast('Fehler: ' + err.message, false)
     } finally {
       setCheckoutLoading(false)

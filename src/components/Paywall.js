@@ -18,23 +18,49 @@ export default function Paywall({ children }) {
 
       // Si l'utilisateur a déjà un stripe_customer_id → portal (gestion d'abonnement existant)
       if (profile?.stripe_customer_id) {
-        const { data, error } = await supabase.functions.invoke('create-portal-session', {
+        const { data, error, response } = await supabase.functions.invoke('create-portal-session', {
           body: { returnUrl: window.location.href }
         })
-        if (error) throw new Error(error.message || 'Verbindungsfehler')
+        if (error) {
+          // Lire le corps de la réponse pour le vrai message d'erreur
+          let msg = error.message
+          try {
+            if (response) {
+              const body = await response.text()
+              msg += ' | Response: ' + body
+            }
+          } catch {}
+          throw new Error(msg)
+        }
         if (data?.error) throw new Error(data.error)
         if (data?.url) { window.location.href = data.url; return }
       }
 
       // Sinon → checkout (nouvel abonnement)
       const priceId = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+      if (!priceId) {
+        throw new Error('REACT_APP_STRIPE_PRICE_MONTHLY ist nicht konfiguriert')
+      }
+
+      const { data, error, response } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId }
       })
-      if (error) throw new Error(error.message || 'Verbindungsfehler')
+      if (error) {
+        // Lire le corps de la réponse pour le vrai message d'erreur
+        let msg = error.message
+        try {
+          if (response) {
+            const body = await response.text()
+            msg += ' | Status: ' + response.status + ' | Response: ' + body
+          }
+        } catch {}
+        throw new Error(msg)
+      }
       if (data?.error) throw new Error(data.error)
       if (data?.url) {
         window.location.href = data.url
+      } else {
+        throw new Error('Keine Checkout-URL erhalten. Data: ' + JSON.stringify(data))
       }
     } catch (err) {
       console.error('Checkout error:', err)
