@@ -1,6 +1,6 @@
 # context.md — État du projet Arvis
 
-Dernière mise à jour : 22 mars 2026
+Dernière mise à jour : 22 mars 2026 (session 2)
 
 ## Qu'est-ce qu'Arvis ?
 Application SaaS de documentation médicale assistée par IA pour le personnel médical allemand (médecins, infirmiers en hôpitaux). Permet de rédiger des courriers médicaux, scanner/analyser des documents, traduire, gérer des blocs de texte réutilisables et des fichiers.
@@ -102,9 +102,18 @@ Colonnes clés : `id`, `email`, `first_name`, `last_name`, `title`, `clinic`, `p
 
 ---
 
+## Fait en session 2 (22 mars 2026) ✅
+- **Sidebar logout** : le footer sidebar ne déconnecte plus accidentellement — avatar/nom → `/profil`, icône seule → logout
+- **Profil mobile** : panels empilés portrait (Infos → Billing → Password) via `.profil-layout` class
+- **CSS cleanup** : règles mortes `body.menu-open` supprimées, box-shadow corrigé sur `.app-layout.menu-open`
+- **Bausteine mobile** : sélecteurs fragiles `#page-bausteine > div > div` remplacés par `.bausteine-left` / `.bausteine-right`
+- **MobileScan multi-photos** : prise de plusieurs pages une par une, upload immédiat, bouton "Weitere Seite" + "Fertig", assemblage PDF côté PC via `pdf-lib`
+- **Normalisation EXIF** : toutes les photos mobiles passent par canvas avant PDF → orientation portrait garantie
+- **Scan.js multi-photos mobile direct** : bouton "Foto aufnehmen" sur téléphone accumule les pages dans un overlay avant d'envoyer
+- **Redirect post-login** : après login, redirection vers l'URL d'origine (fix QR code → login → retour MobileScan)
+
 ## Ce qui reste à faire / améliorations possibles
 - Personnalisation des emails Supabase en allemand
 - Tests automatisés
 - Page d'erreur 404 personnalisée
-- Mobile responsive amélioré
 - Analytics (combien d'utilisateurs, conversions trial→pro)
