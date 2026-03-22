@@ -814,6 +814,7 @@ footer {
   .steps { grid-template-columns: 1fr 1fr; }
   .steps::before { display: none; }
   .pricing-grid { grid-template-columns: 1fr; }
+  .features-row-3 { grid-template-columns: 1fr !important; }
   .mockup-section { padding: 0 16px 60px; }
   .mockup-scaler-wrap { width: 100%; max-width: 1000px; overflow: hidden; }
   .mockup-scaler { width: 1000px; transform-origin: top left; }
@@ -850,16 +851,11 @@ footer {
 @media (max-width: 768px) {
   .features-grid { grid-template-columns: 1fr !important; }
   .features-grid > div[style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
-  .features-row-3 { grid-template-columns: 1fr 1fr !important; }
-  .features-row-3 > div { min-width: 0; overflow: hidden; }
-  .features-row-3 > div:last-child { grid-column: 1 / -1; }
-}
-@media (max-width: 480px) {
   .features-row-3 { grid-template-columns: 1fr !important; }
-  .features-row-3 > div:last-child { grid-column: auto; }
+  .features-row-3 > div { min-width: 0; overflow: hidden; }
 }
 @media (max-width: 1024px) {
-  .features-grid > div[style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr 1fr !important; }
+  .features-grid > div[style*="grid-template-columns:1fr 1fr 1fr"]:not(.features-row-3) { grid-template-columns: 1fr 1fr !important; }
 }
 
 /* Feature cards : adapter les couleurs au thème */
