@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabaseClient'
 
 export default function LoginPage() {
   const { login, register, loginWithGoogle } = useAuth()
@@ -22,6 +23,9 @@ export default function LoginPage() {
   const [regNachname, setRegNachname]   = useState('')
   const [regEmail, setRegEmail]         = useState('')
   const [regPassword, setRegPassword]   = useState('')
+
+  // Forgot password state
+  const [forgotEmail, setForgotEmail] = useState('')
 
   function clearMessages() { setError(''); setInfo('') }
 
@@ -64,6 +68,24 @@ export default function LoginPage() {
       await loginWithGoogle()
     } catch {
       setError('Google-Anmeldung fehlgeschlagen.')
+    }
+  }
+
+  async function handleForgotPassword() {
+    clearMessages()
+    if (!forgotEmail) { setError('Bitte E-Mail-Adresse eingeben.'); return }
+    setLoading(true)
+    try {
+      const { error: err } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: window.location.origin
+      })
+      if (err) throw err
+      setInfo('E-Mail gesendet — bitte prüfen Sie Ihr Postfach.')
+      setForgotEmail('')
+    } catch (e) {
+      setError(e.message || 'Fehler beim Senden der E-Mail.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -148,7 +170,7 @@ export default function LoginPage() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </span>
                 </div>
-                <div className="form-forgot"><a href="#">Passwort vergessen?</a></div>
+                <div className="form-forgot"><a href="#" onClick={e => { e.preventDefault(); setTab('forgot'); clearMessages() }}>Passwort vergessen?</a></div>
               </div>
 
               <button className="btn-submit" onClick={handleLogin} disabled={loading}>
@@ -169,6 +191,29 @@ export default function LoginPage() {
 
               <div className="form-footer">
                 Noch kein Konto? <a href="#" onClick={e => { e.preventDefault(); setTab('register'); clearMessages() }}>Jetzt registrieren</a>
+              </div>
+            </div>
+          )}
+
+          {/* Forgot Password Form */}
+          {tab === 'forgot' && (
+            <div>
+              <div className="form-title">Passwort zurücksetzen</div>
+              <div className="form-sub">Wir senden Ihnen einen Reset-Link per E-Mail</div>
+
+              <div className="form-group">
+                <label className="form-label">E-Mail-Adresse</label>
+                <input type="email" className="form-input" placeholder="dr.mueller@klinik.de"
+                  value={forgotEmail} onChange={e => setForgotEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleForgotPassword()} />
+              </div>
+
+              <button className="btn-submit" onClick={handleForgotPassword} disabled={loading}>
+                {loading ? 'Senden…' : 'Reset-Link senden'}
+              </button>
+
+              <div className="form-footer">
+                <a href="#" onClick={e => { e.preventDefault(); setTab('login'); clearMessages() }}>← Zurück zur Anmeldung</a>
               </div>
             </div>
           )}

@@ -67,6 +67,9 @@ export default function BriefSchreiber() {
   const processorRef = useRef(null)
   const streamRef = useRef(null)
   const popupChipRef = useRef(null)
+  const intentionalStopRef = useRef(false)
+  const reconnectCountRef  = useRef(0)
+  const wsTokenRef         = useRef(null)
   const [popup, setPopup] = useState({ visible: false, choices: [], x: 0, y: 0 })
 
   useEffect(() => {
@@ -164,8 +167,74 @@ export default function BriefSchreiber() {
     }
   }, [popup.visible])
 
+  function connectWs(token) {
+    const ws = new WebSocket(
+      'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
+      ['realtime', `openai-insecure-api-key.${token}`, 'openai-beta.realtime-v1']
+    )
+    wsRef.current = ws
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({
+        type: 'session.update',
+        session: {
+          modalities: ['text'],
+          input_audio_format: 'pcm16',
+          input_audio_transcription: { model: 'whisper-1', language: 'de' },
+          turn_detection: {
+            type: 'server_vad',
+            threshold: 0.5,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 600,
+            create_response: false,
+          },
+        },
+      }))
+    }
+
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data)
+        if (msg.type === 'input_audio_buffer.speech_started') {
+          setInterimText('')
+        } else if (msg.type === 'conversation.item.input_audio_transcription.delta') {
+          setInterimText(prev => prev + (msg.delta || ''))
+        } else if (msg.type === 'conversation.item.input_audio_transcription.completed') {
+          const text = (msg.transcript || '').trim()
+          if (text) { insertAtCursor(text + ' '); setInterimText('') }
+        } else if (msg.type === 'error') {
+          showToast('Diktierfehler: ' + (msg.error?.message || 'Unbekannt'))
+        }
+      } catch {}
+    }
+
+    ws.onerror = () => showToast('WebSocket-Verbindungsfehler')
+
+    ws.onclose = () => {
+      if (intentionalStopRef.current) {
+        intentionalStopRef.current = false
+        reconnectCountRef.current = 0
+        setRecording(false)
+        setInterimText('')
+        return
+      }
+      // Unexpected disconnect — try to reconnect up to 3 times
+      if (reconnectCountRef.current < 3 && wsTokenRef.current) {
+        reconnectCountRef.current++
+        showToast(`Verbindung unterbrochen — Versuch ${reconnectCountRef.current}/3…`)
+        setTimeout(() => connectWs(wsTokenRef.current), 1500 * reconnectCountRef.current)
+      } else {
+        setRecording(false)
+        setInterimText('')
+        reconnectCountRef.current = 0
+        showToast('Diktat beendet — Verbindung konnte nicht wiederhergestellt werden')
+      }
+    }
+  }
+
   async function toggleDictation() {
     if (recording) {
+      intentionalStopRef.current = true
       processorRef.current?.disconnect()
       audioCtxRef.current?.close().catch(() => {})
       streamRef.current?.getTracks().forEach(t => t.stop())
@@ -174,13 +243,13 @@ export default function BriefSchreiber() {
           if (wsRef.current) {
             wsRef.current.onmessage = null
             wsRef.current.onerror = null
-            wsRef.current.onclose = null
             wsRef.current.close()
           }
         }, 300)
       }
       setRecording(false)
       setInterimText('')
+      reconnectCountRef.current = 0
       return
     }
     try {
@@ -196,48 +265,9 @@ export default function BriefSchreiber() {
         return
       }
 
-      const ws = new WebSocket(
-        'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
-        ['realtime', `openai-insecure-api-key.${tokenData.token}`, 'openai-beta.realtime-v1']
-      )
-      wsRef.current = ws
-
-      ws.onopen = () => {
-        ws.send(JSON.stringify({
-          type: 'session.update',
-          session: {
-            modalities: ['text'],
-            input_audio_format: 'pcm16',
-            input_audio_transcription: { model: 'whisper-1', language: 'de' },
-            turn_detection: {
-              type: 'server_vad',
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 600,
-              create_response: false,
-            },
-          },
-        }))
-      }
-
-      ws.onmessage = (e) => {
-        try {
-          const msg = JSON.parse(e.data)
-          if (msg.type === 'input_audio_buffer.speech_started') {
-            setInterimText('')
-          } else if (msg.type === 'conversation.item.input_audio_transcription.delta') {
-            setInterimText(prev => prev + (msg.delta || ''))
-          } else if (msg.type === 'conversation.item.input_audio_transcription.completed') {
-            const text = (msg.transcript || '').trim()
-            if (text) { insertAtCursor(text + ' '); setInterimText('') }
-          } else if (msg.type === 'error') {
-            showToast('Diktierfehler: ' + (msg.error?.message || 'Unbekannt'))
-          }
-        } catch {}
-      }
-
-      ws.onerror = () => showToast('WebSocket-Verbindungsfehler')
-      ws.onclose = () => { setRecording(false); setInterimText('') }
+      wsTokenRef.current = tokenData.token
+      reconnectCountRef.current = 0
+      connectWs(tokenData.token)
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
       streamRef.current = stream

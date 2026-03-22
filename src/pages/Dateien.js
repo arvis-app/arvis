@@ -1,10 +1,45 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { downloadAsWord } from '../utils/downloadWord'
+import { useAuth } from '../context/AuthContext'
+import { supabase } from '../supabaseClient'
 
 function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2,7) }
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
-function load() { try { return JSON.parse(localStorage.getItem('dateien_data') || '{"folders":[],"notes":[]}') } catch { return {folders:[],notes:[]} } }
-function save(data) { try { localStorage.setItem('dateien_data', JSON.stringify(data)); return true } catch { return false } }
+
+// ── Supabase helpers ──────────────────────────────────────────────────────────
+async function fetchData(userId) {
+  const [{ data: folders }, { data: notes }] = await Promise.all([
+    supabase.from('folders').select('*').eq('user_id', userId).order('created_at'),
+    supabase.from('notes').select('*').eq('user_id', userId).order('modified_at', { ascending: false })
+  ])
+  return {
+    folders: (folders || []).map(f => ({ ...f, parentId: f.parent_id })),
+    notes:   (notes   || []).map(n => ({ ...n, folderId: n.folder_id, modified: new Date(n.modified_at||n.created_at).getTime() }))
+  }
+}
+
+// Migration unique depuis localStorage
+async function migrateDateienLocalStorage(userId) {
+  if (localStorage.getItem('arvis_dateien_migrated_v1')) return
+  try {
+    const local = JSON.parse(localStorage.getItem('dateien_data') || '{"folders":[],"notes":[]}')
+    if (local.folders?.length) {
+      await supabase.from('folders').insert(local.folders.map(f => ({
+        id: f.id, user_id: userId, name: f.name, parent_id: f.parentId || null
+      })))
+    }
+    const textNotes = (local.notes || []).filter(n => !n.dataUrl)
+    if (textNotes.length) {
+      await supabase.from('notes').insert(textNotes.map(n => ({
+        id: n.id, user_id: userId, folder_id: n.folderId || null,
+        title: n.title || 'Ohne Titel', content: n.content || '',
+        file_type: n.fileType || 'note',
+        modified_at: n.modified ? new Date(n.modified).toISOString() : new Date().toISOString()
+      })))
+    }
+    localStorage.setItem('arvis_dateien_migrated_v1', '1')
+  } catch (e) { console.error('Dateien migration error:', e) }
+}
 
 const ICO = {
   folder: <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>,
@@ -67,19 +102,20 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
   function autoSave(newTitle, newContent) {
     clearTimeout(timerRef.current)
     setSaved('...')
-    timerRef.current = setTimeout(() => {
+    timerRef.current = setTimeout(async () => {
       const t = newTitle.trim() || 'Ohne Titel'
       const c = newContent || editorRef.current?.innerHTML || ''
-      const data = load()
+      const now = new Date().toISOString()
       if (noteIdRef.current) {
-        const n = data.notes.find(x=>x.id===noteIdRef.current)
-        if (n) { n.title=t; n.content=c; n.modified=Date.now() }
+        await supabase.from('notes').update({ title: t, content: c, modified_at: now }).eq('id', noteIdRef.current)
       } else {
-        const newNote = {id:genId(), title:t, content:c, folderId, created:Date.now(), modified:Date.now()}
-        noteIdRef.current = newNote.id
-        data.notes.push(newNote)
+        const { data: inserted } = await supabase.from('notes').insert({
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+          folder_id: folderId || null, title: t, content: c,
+          file_type: 'note', modified_at: now
+        }).select().single()
+        if (inserted) noteIdRef.current = inserted.id
       }
-      save(data)
       onSave()
       setSaved('✓ ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}))
     }, 600)
@@ -135,7 +171,8 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
 
 // ── Main Dateien ───────────────────────────────────────────────────────────────
 export default function Dateien() {
-  const [data, setData]             = useState(load)
+  const { user } = useAuth()
+  const [data, setData]             = useState({ folders: [], notes: [] })
   const [currentFolder, setCurrentFolder] = useState(null)
   const [view, setView]             = useState('grid')
   const [search, setSearch]         = useState('')
@@ -151,8 +188,17 @@ export default function Dateien() {
   const [imgZoom, setImgZoom]       = useState(1)
   const fileInputRef                = useRef(null)
 
-  function refresh() { setData(load()) }
+  async function refresh() {
+    if (!user) return
+    const d = await fetchData(user.id)
+    setData(d)
+  }
   function showToast(msg) { setToast(msg); setTimeout(()=>setToast(''),2200) }
+
+  useEffect(() => {
+    if (!user) return
+    migrateDateienLocalStorage(user.id).then(() => refresh())
+  }, [user]) // eslint-disable-line
 
   useEffect(() => { setImgPanX(0); setImgPanY(0); setImgZoom(1) }, [detail])
 
@@ -209,20 +255,17 @@ export default function Dateien() {
   }
 
   // ── Folder ops ─────────────────────────────────────────────────────────────
-  function createFolder() {
+  async function createFolder() {
     const name = newFolderName.trim(); if (!name) return
-    const d = load()
-    d.folders.push({id:genId(), name, parentId:currentFolder, created:Date.now()})
-    save(d); refresh(); setFolderModal(false); setNewFolderName('')
+    await supabase.from('folders').insert({ user_id: user.id, name, parent_id: currentFolder || null })
+    await refresh(); setFolderModal(false); setNewFolderName('')
     showToast('Ordner erstellt')
   }
 
-  function confirmRename() {
+  async function confirmRename() {
     const name = renameName.trim(); if (!name || !renameModal) return
-    const d = load()
-    const item = d.folders.find(f=>f.id===renameModal.id)
-    if (item) item.name = name
-    save(d); refresh(); setRenameModal(null); setRenameName('')
+    await supabase.from('folders').update({ name }).eq('id', renameModal.id)
+    await refresh(); setRenameModal(null); setRenameName('')
     showToast('Umbenannt')
   }
 
@@ -231,18 +274,22 @@ export default function Dateien() {
       title: type==='folder' ? 'Ordner löschen' : 'Datei löschen',
       msg:   type==='folder' ? 'Ordner und Inhalt werden unwiderruflich gelöscht.' : 'Diese Datei wird unwiderruflich gelöscht.',
       icon:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>',
-      onOk: () => {
-        const d = load()
+      onOk: async () => {
         if (type==='folder') {
-          const toDelete = [id]; let i=0
-          while (i<toDelete.length) { const fid=toDelete[i++]; d.folders.filter(f=>f.parentId===fid).forEach(f=>toDelete.push(f.id)) }
-          d.folders = d.folders.filter(f=>!toDelete.includes(f.id))
-          d.notes   = d.notes.filter(n=>!toDelete.includes(n.folderId))
+          // Supprimer récursivement (Supabase ON DELETE CASCADE si configuré, sinon manuel)
+          const toDelete = [id]
+          let i = 0
+          while (i < toDelete.length) {
+            const fid = toDelete[i++]
+            data.folders.filter(f => f.parentId === fid).forEach(f => toDelete.push(f.id))
+          }
+          await supabase.from('notes').delete().in('folder_id', toDelete)
+          await supabase.from('folders').delete().in('id', toDelete)
         } else {
-          d.notes = d.notes.filter(n=>n.id!==id)
-          if (detail?.note?.id===id) setDetail(null)
+          await supabase.from('notes').delete().eq('id', id)
+          if (detail?.note?.id === id) setDetail(null)
         }
-        save(d); refresh(); setConfirm(null); showToast('Gelöscht')
+        await refresh(); setConfirm(null); showToast('Gelöscht')
       }
     })
   }
@@ -250,21 +297,43 @@ export default function Dateien() {
   // ── Upload ─────────────────────────────────────────────────────────────────
   function handleUpload(files) {
     if (!files?.length) return
-    const d = load(); let done=0; const total=files.length
-    Array.from(files).forEach(file => {
+    let done = 0; const total = files.length
+    Array.from(files).forEach(async file => {
       const ext = (file.name.match(/\.([^.]+)$/)||['',''])[1].toLowerCase()
       const isImage = /^(jpg|jpeg|png|gif|webp|bmp|svg)$/.test(ext)||file.type.startsWith('image/')
       const isPDF   = ext==='pdf'||file.type==='application/pdf'
       const isText  = /^(txt|md|csv|json|xml|html|htm|js|css|py)$/.test(ext)||(!isImage&&!isPDF&&file.type.startsWith('text/'))
-      const finish = entry => {
-        d.notes.push({id:genId(), title:file.name, folderId:currentFolder, created:Date.now(), modified:Date.now(), ...entry})
-        if (++done===total) { const ok=save(d); if(ok!==false) showToast(`${total} ${total===1?'Datei':'Dateien'} hochgeladen`); refresh() }
+
+      const insertNote = async (entry) => {
+        await supabase.from('notes').insert({
+          user_id: user.id, folder_id: currentFolder || null,
+          title: file.name, file_type: entry.fileType || 'other',
+          content: entry.content || '', storage_path: entry.storage_path || null,
+          modified_at: new Date().toISOString()
+        })
+        if (++done === total) { await refresh(); showToast(`${total} ${total===1?'Datei':'Dateien'} hochgeladen`) }
       }
-      const reader = new FileReader()
-      if (isImage) { reader.onload=e=>finish({fileType:'image',dataUrl:e.target.result,content:''}); reader.readAsDataURL(file) }
-      else if (isPDF) { reader.onload=e=>finish({fileType:'pdf',dataUrl:e.target.result,content:''}); reader.readAsDataURL(file) }
-      else if (isText) { reader.onload=e=>finish({fileType:'text',content:`<pre style="white-space:pre-wrap;font-size:13px;">${escHtml(e.target.result)}</pre>`}); reader.readAsText(file) }
-      else finish({fileType:'other',content:''})
+
+      if (isImage || isPDF) {
+        // Stocker dans Supabase Storage
+        const path = `${user.id}/${Date.now()}_${file.name}`
+        const { error } = await supabase.storage.from('user-files').upload(path, file)
+        if (!error) {
+          const { data: urlData } = supabase.storage.from('user-files').getPublicUrl(path)
+          await insertNote({ fileType: isImage ? 'image' : 'pdf', storage_path: path, content: urlData?.publicUrl || '' })
+        } else {
+          // Fallback: stocker en base64 si Storage échoue
+          const reader = new FileReader()
+          reader.onload = async e => await insertNote({ fileType: isImage ? 'image' : 'pdf', content: e.target.result })
+          reader.readAsDataURL(file)
+        }
+      } else if (isText) {
+        const reader = new FileReader()
+        reader.onload = async e => await insertNote({ fileType: 'text', content: `<pre style="white-space:pre-wrap;font-size:13px;">${escHtml(e.target.result)}</pre>` })
+        reader.readAsText(file)
+      } else {
+        await insertNote({ fileType: 'other', content: '' })
+      }
     })
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
@@ -275,10 +344,19 @@ export default function Dateien() {
     else setDetail({type:'note', note})
   }
 
+  function getFileUrl(note) {
+    if (note?.storage_path) {
+      const { data } = supabase.storage.from('user-files').getPublicUrl(note.storage_path)
+      return data?.publicUrl || note.content || ''
+    }
+    return note?.dataUrl || note?.content || ''
+  }
+
   function downloadFile(note) {
-    if (!note?.dataUrl) return
+    const url = getFileUrl(note)
+    if (!url) return
     const a = document.createElement('a')
-    a.href = note.dataUrl; a.download = note.title||'download'; a.click()
+    a.href = url; a.download = note.title||'download'; a.click()
   }
 
   const isEmpty = !folders.length && !notes.length

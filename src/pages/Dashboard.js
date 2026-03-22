@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../supabaseClient'
 
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
 const MONTHS_S = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
@@ -15,10 +16,47 @@ const DEFAULT_PATIENTS = [
   { room: 'Zi. 220', name: 'Wagner, Peter', note: 'EKG Kontrolle 14:00 Uhr' },
 ]
 
-function load(key, fallback) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
+// ── Supabase helpers ─────────────────────────────────────────────────────────
+async function fetchEvents(userId) {
+  const { data, error } = await supabase
+    .from('events').select('*').eq('user_id', userId)
+    .abortSignal(AbortSignal.timeout(8000))
+  if (error) { console.error('fetchEvents:', error); return {} }
+  const map = {}
+  data?.forEach(e => {
+    if (!map[e.date]) map[e.date] = []
+    map[e.date].push({ id: e.id, time: e.time, title: e.title, type: e.type || 'task' })
+  })
+  return map
 }
-function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)) } catch { } }
+
+async function fetchPatients(userId) {
+  const { data, error } = await supabase
+    .from('patients').select('*').eq('user_id', userId).order('created_at')
+    .abortSignal(AbortSignal.timeout(8000))
+  if (error) { console.error('fetchPatients:', error); return [] }
+  return data || []
+}
+
+// Migration unique depuis localStorage
+async function migrateLocalStorage(userId) {
+  if (localStorage.getItem('arvis_migrated_v1')) return
+  try {
+    const localEvents = JSON.parse(localStorage.getItem('arvis_events') || '{}')
+    const eventRows = []
+    Object.entries(localEvents).forEach(([date, evs]) => {
+      evs.forEach(e => eventRows.push({ user_id: userId, date, time: e.time || '08:00', title: e.title || '', type: e.type || 'task' }))
+    })
+    if (eventRows.length) await supabase.from('events').insert(eventRows)
+
+    const localPatients = JSON.parse(localStorage.getItem('arvis_patients') || '[]')
+    const realPatients = localPatients.filter(p => p.name && !['Müller, Hans','Schmidt, Anna','Weber, Klaus','Fischer, Maria','Wagner, Peter'].includes(p.name))
+    if (realPatients.length) {
+      await supabase.from('patients').insert(realPatients.map(p => ({ user_id: userId, room: p.room || '—', name: p.name, note: p.note || '' })))
+    }
+    localStorage.setItem('arvis_migrated_v1', '1')
+  } catch (e) { console.error('Migration error:', e) }
+}
 
 function Toast({ msg }) {
   if (!msg) return null
@@ -100,20 +138,38 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
   const key = `${year}-${month}-${day}`
   const dayEvs = (events[key] || []).map(e => ({ ...e, date: clicked })).sort((a, b) => a.time.localeCompare(b.time))
   function isPast(e, d) { const [h, m] = e.time.split(':').map(Number); return new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m) < now }
-  function handleAdd() {
+  async function handleAdd() {
     if (!title.trim()) return
     let y = year, mo = month, d2 = day
     if (date && date.includes('.')) { const p = date.split('.'); d2 = parseInt(p[0]); mo = parseInt(p[1]) - 1; y = parseInt(p[2]) }
-    const k = `${y}-${mo}-${d2}`, ne = { ...events }
-    if (editing) { const ok = `${editing.year}-${editing.month}-${editing.day}`; if (ne[ok]) { ne[ok] = ne[ok].filter(e => !(e.time === editing.time && e.title === editing.title)); if (!ne[ok].length) delete ne[ok] }; setEditing(null) }
+    const k = `${y}-${mo}-${d2}`
+    const ne = { ...events }
+
+    if (editing) {
+      // Supprimer l'ancien événement
+      if (editing.id) {
+        await supabase.from('events').delete().eq('id', editing.id)
+      }
+      const ok = `${editing.year}-${editing.month}-${editing.day}`
+      if (ne[ok]) { ne[ok] = ne[ok].filter(e => e.id !== editing.id); if (!ne[ok].length) delete ne[ok] }
+      setEditing(null)
+    }
+
+    const { data: inserted } = await supabase.from('events').insert({
+      user_id: (await supabase.auth.getUser()).data.user?.id,
+      date: k, time: `${hour}:${minute}`, title: title.trim(), type: 'task'
+    }).select().single()
+
     if (!ne[k]) ne[k] = []
-    ne[k].push({ time: `${hour}:${minute}`, title: title.trim(), id: Date.now() })
-    setEvents(ne); save('arvis_events', ne); setTitle(''); setAddOpen(false); showToast('Termin gespeichert')
+    ne[k].push({ id: inserted?.id, time: `${hour}:${minute}`, title: title.trim(), type: 'task' })
+    setEvents(ne); setTitle(''); setAddOpen(false); showToast('Termin gespeichert')
   }
-  function handleDel(e, d) {
+
+  async function handleDel(e, d) {
+    if (e.id) await supabase.from('events').delete().eq('id', e.id)
     const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`, ne = { ...events }
-    if (ne[k]) { ne[k] = ne[k].filter(ev => !(ev.time === e.time && ev.title === e.title)); if (!ne[k].length) delete ne[k] }
-    setEvents(ne); save('arvis_events', ne)
+    if (ne[k]) { ne[k] = ne[k].filter(ev => ev.id !== e.id); if (!ne[k].length) delete ne[k] }
+    setEvents(ne)
   }
   function startEdit(e, d) {
     setEditing({ year: d.getFullYear(), month: d.getMonth(), day: d.getDate(), time: e.time, title: e.title })
@@ -168,19 +224,28 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen })
   const [detailRoom, setDetailRoom] = useState('')
   const [detailName, setDetailName] = useState('')
   const [confirmDel, setConfirmDel] = useState(null)
-  function handleAdd() {
+  async function handleAdd() {
     if (!newName.trim()) return
-    const upd = [...patients, { room: newRoom || '—', name: newName.trim(), note: newNote }]
-    setPatients(upd); save('arvis_patients', upd); setNewRoom(''); setNewName(''); setNewNote(''); setAddOpen(false); showToast('Patient hinzugefügt')
+    const { data: inserted } = await supabase.from('patients').insert({
+      user_id: (await supabase.auth.getUser()).data.user?.id,
+      room: newRoom || '—', name: newName.trim(), note: newNote
+    }).select().single()
+    if (inserted) setPatients(prev => [...prev, inserted])
+    setNewRoom(''); setNewName(''); setNewNote(''); setAddOpen(false); showToast('Patient hinzugefügt')
   }
   function handleSel(i) { setSelected(i); setDetailRoom(patients[i].room || ''); setDetailName(patients[i].name || ''); setDetailNote(patients[i].note || '') }
-  function handleSave() {
-    const upd = patients.map((p, i) => i === selected ? { ...p, room: detailRoom, name: detailName, note: detailNote } : p)
-    setPatients(upd); save('arvis_patients', upd); setSelected(null); showToast('Gespeichert')
+  async function handleSave() {
+    const p = patients[selected]
+    if (!p?.id) return
+    await supabase.from('patients').update({ room: detailRoom, name: detailName, note: detailNote }).eq('id', p.id)
+    setPatients(prev => prev.map((pt, i) => i === selected ? { ...pt, room: detailRoom, name: detailName, note: detailNote } : pt))
+    setSelected(null); showToast('Gespeichert')
   }
-  function handleDel() {
-    const upd = patients.filter((_, i) => i !== confirmDel)
-    setPatients(upd); save('arvis_patients', upd); setSelected(null); setConfirmDel(null); showToast('Patient gelöscht')
+  async function handleDel() {
+    const p = patients[confirmDel]
+    if (p?.id) await supabase.from('patients').delete().eq('id', p.id)
+    setPatients(prev => prev.filter((_, i) => i !== confirmDel))
+    setSelected(null); setConfirmDel(null); showToast('Patient gelöscht')
   }
   return (
     <div>
@@ -246,20 +311,44 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen })
 }
 
 export default function Dashboard() {
-  const { getGreeting } = useAuth()
+  const { getGreeting, user } = useAuth()
   const navigate = useNavigate()
   const today = new Date()
   const dateStr = `${DAYS_LONG[today.getDay()]}, ${today.getDate()}. ${MONTHS[today.getMonth()]} ${today.getFullYear()}`
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date().getDate())
-  const [events, setEvents] = useState(() => load('arvis_events', {}))
-  const [patients, setPatients] = useState(() => load('arvis_patients', DEFAULT_PATIENTS))
+  const [events, setEvents] = useState({})
+  const [patients, setPatients] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
   const [toast, setToast] = useState('')
   const [calClickedDate, setCalClickedDate] = useState('')
   const [patientAddOpen, setPatientAddOpen] = useState(false)
   const showToast = useCallback((msg) => { setToast(msg); setTimeout(() => setToast(''), 2200) }, [])
+
+  useEffect(() => {
+    if (!user) return
+    setFetchError('')
+    migrateLocalStorage(user.id)
+      .then(() => Promise.all([
+        fetchEvents(user.id).then(setEvents),
+        fetchPatients(user.id).then(setPatients)
+      ]))
+      .catch(e => {
+        console.error('Dashboard load error:', e)
+        setFetchError('Daten konnten nicht geladen werden. Bitte Seite neu laden.')
+      })
+      .finally(() => setLoading(false))
+  }, [user])
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}><div className="spinner" /></div>
+
   return (
     <div className="page active" id="page-dashboard">
+      {fetchError && (
+        <div style={{ margin: '0 0 16px', padding: '10px 16px', borderRadius: 8, background: 'rgba(217,75,10,0.07)', color: '#D94B0A', fontWeight: 600, fontSize: 13 }}>
+          {fetchError}
+        </div>
+      )}
       <div className="page-header">
         <div>
           <div className="page-title">{getGreeting()}</div>

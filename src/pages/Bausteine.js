@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { supabase } from '../supabaseClient'
 
 const SPECIAL_FIRST = ['Notaufnahme','Aufnahme','Befunde','OP-Berichte','Verlauf','Entlassung','Sozialmedizin/Gutachten','Diverses']
 
@@ -14,10 +16,22 @@ function formatBausteinText(s) {
   return s
 }
 
-function load(key, fallback) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
+// ── Migration unique depuis localStorage ─────────────────────────────────────
+async function migrateBausteineLocalStorage(userId) {
+  if (localStorage.getItem('arvis_bausteine_migrated_v1')) return
+  try {
+    const localCustom = JSON.parse(localStorage.getItem('arvis_bausteine_custom') || '[]')
+    const localFavs   = JSON.parse(localStorage.getItem('arvis_bausteine_favs') || '[]')
+    if (localCustom.length) {
+      await supabase.from('bausteine').insert(localCustom.map(b => ({
+        id: b.id, user_id: userId, title: b.title || '', category: b.category || '',
+        text: b.text || '', keywords: b.keywords || '', forked_from: b.forked_from || null,
+        is_fav: localFavs.includes(b.id)
+      })))
+    }
+    localStorage.setItem('arvis_bausteine_migrated_v1', '1')
+  } catch (e) { console.error('Bausteine migration error:', e) }
 }
-function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)) } catch {} }
 
 // ── Confirm Modal ──────────────────────────────────────────────────────────────
 function ConfirmModal({ opts, onOk, onCancel }) {
@@ -112,11 +126,24 @@ function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }
 // ── Main Bausteine ─────────────────────────────────────────────────────────────
 export default function Bausteine() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [search, setSearch]             = useState('')
   const [activeCat, setActiveCat]       = useState(null)
   const [selected, setSelected]         = useState(null)
-  const [custom, setCustom]             = useState(() => load('arvis_bausteine_custom', []))
-  const [favs, setFavs]                 = useState(() => load('arvis_bausteine_favs', []))
+  const [custom, setCustom]             = useState([])
+  const [favs, setFavs]                 = useState([]) // array of IDs
+
+  // ── Charger depuis Supabase au montage ──────────────────────────────────────
+  useEffect(() => {
+    if (!user) return
+    migrateBausteineLocalStorage(user.id).then(() => {
+      supabase.from('bausteine').select('*').eq('user_id', user.id).then(({ data }) => {
+        if (!data) return
+        setCustom(data.map(b => ({ ...b, custom: true })))
+        setFavs(data.filter(b => b.is_fav).map(b => b.id))
+      })
+    })
+  }, [user])
   const [basket, setBasket]             = useState([])
   const basketListRef                   = useRef(null)
   const [neuOpen, setNeuOpen]           = useState(false)
@@ -204,11 +231,12 @@ export default function Bausteine() {
   }
 
   // ── Favourites ─────────────────────────────────────────────
-  function toggleFav(b) {
+  async function toggleFav(b) {
     const isFav = favs.includes(b.id)
     if (!isFav) {
+      await supabase.from('bausteine').update({ is_fav: true }).eq('id', b.id)
       const newFavs = [...favs, b.id]
-      setFavs(newFavs); save('arvis_bausteine_favs', newFavs)
+      setFavs(newFavs)
     } else {
       setConfirm({
         title:'Aus Favoriten entfernen',
@@ -216,36 +244,45 @@ export default function Bausteine() {
         icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
         iconBg:'var(--orange-ghost)',
         btnLabel:'Entfernen',
-        onOk: () => {
+        onOk: async () => {
+          await supabase.from('bausteine').update({ is_fav: false }).eq('id', b.id)
           const newFavs = favs.filter(id=>id!==b.id)
-          setFavs(newFavs); save('arvis_bausteine_favs', newFavs); setConfirm(null)
+          setFavs(newFavs); setConfirm(null)
         }
       })
     }
   }
 
   // ── Custom CRUD ────────────────────────────────────────────
-  function handleSaveNeu({ titel, category, text, keywords }) {
+  async function handleSaveNeu({ titel, category, text, keywords }) {
     if (editingB) {
       const existingIdx = custom.findIndex(b=>b.id===editingB.id)
-      let saved
       if (existingIdx !== -1) {
+        const updates = { title: titel, category, text, keywords }
+        await supabase.from('bausteine').update(updates).eq('id', editingB.id)
         const updated = [...custom]
-        updated[existingIdx] = {...updated[existingIdx], title:titel, category, text, keywords}
-        saved = updated[existingIdx]
-        setCustom(updated); save('arvis_bausteine_custom', updated)
+        updated[existingIdx] = { ...updated[existingIdx], ...updates }
+        setCustom(updated); setSelected(updated[existingIdx])
       } else {
-        saved = {id:'custom_'+Date.now(), title:titel, category, text, keywords, custom:true, forked_from:editingB.id}
-        const updated = [...custom, saved]
-        setCustom(updated); save('arvis_bausteine_custom', updated)
+        // Fork d'un baustein standard
+        const { data: inserted } = await supabase.from('bausteine').insert({
+          user_id: user.id, title: titel, category, text, keywords,
+          forked_from: editingB.id, is_fav: false
+        }).select().single()
+        if (inserted) {
+          const newB = { ...inserted, custom: true }
+          setCustom(prev => [...prev, newB]); setSelected(newB)
+        }
       }
-      setSelected(saved)
       showToast('Baustein gespeichert')
     } else {
-      const newB = {id:'custom_'+Date.now(), title:titel, category, text, keywords, custom:true}
-      const updated = [...custom, newB]
-      setCustom(updated); save('arvis_bausteine_custom', updated)
-      setSelected(newB)
+      const { data: inserted } = await supabase.from('bausteine').insert({
+        user_id: user.id, title: titel, category, text, keywords, is_fav: false
+      }).select().single()
+      if (inserted) {
+        const newB = { ...inserted, custom: true }
+        setCustom(prev => [...prev, newB]); setSelected(newB)
+      }
     }
     setNeuOpen(false); setEditingB(null)
   }
@@ -259,11 +296,10 @@ export default function Bausteine() {
       iconBg:'rgba(220,38,38,0.1)',
       btnLabel:'Löschen',
       btnStyle:'danger',
-      onOk: () => {
-        const updated = custom.filter(c=>c.id!==b.id)
-        setCustom(updated); save('arvis_bausteine_custom', updated)
-        const newFavs = favs.filter(id=>id!==b.id)
-        setFavs(newFavs); save('arvis_bausteine_favs', newFavs)
+      onOk: async () => {
+        await supabase.from('bausteine').delete().eq('id', b.id)
+        setCustom(prev => prev.filter(c => c.id !== b.id))
+        setFavs(prev => prev.filter(id => id !== b.id))
         setSelected(null); setConfirm(null)
       }
     })

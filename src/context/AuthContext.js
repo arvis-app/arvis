@@ -4,10 +4,11 @@ import { supabase } from '../supabaseClient'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [isPro, setIsPro]     = useState(true)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser]                   = useState(null)
+  const [profile, setProfile]             = useState(null)
+  const [isPro, setIsPro]                 = useState(false) // false par défaut — sécurisé
+  const [loading, setLoading]             = useState(true)
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
 
   // Charger le profil depuis Supabase
   async function loadProfile(userId) {
@@ -42,13 +43,23 @@ export function AuthProvider({ children }) {
     })
 
     // Écouter les changements d'auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        // L'utilisateur a cliqué sur le lien de reset → on l'authentifie et on affiche le form
+        setUser(session.user)
+        setIsResettingPassword(true)
+        setLoading(false)
+        return
+      }
       if (session) {
         setUser(session.user)
         loadProfile(session.user.id)
+        setIsResettingPassword(false)
       } else {
         setUser(null)
         setProfile(null)
+        setIsPro(false)
+        setIsResettingPassword(false)
       }
     })
 
@@ -109,6 +120,12 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
+  // Rafraîchir le profil (ex: après un paiement Stripe réussi)
+  async function refreshProfile() {
+    if (!user) return
+    await loadProfile(user.id)
+  }
+
   // Calcul du plan / trial
   function getPlanInfo() {
     if (!profile) return { plan: 'trial', daysLeft: 14, expired: false }
@@ -144,8 +161,8 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, profile, isPro, loading,
-      login, register, loginWithGoogle, logout, updateProfile,
+      user, profile, isPro, loading, isResettingPassword,
+      login, register, loginWithGoogle, logout, updateProfile, refreshProfile,
       getPlanInfo, getInitials, getDisplayName, getGreeting, loadProfile
     }}>
       {children}
