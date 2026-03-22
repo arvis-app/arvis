@@ -325,19 +325,24 @@ export default function Profil() {
             <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
               {/* Plan badge */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: planInfo.expired ? 'rgba(229,62,62,0.06)' : 'rgba(22,163,74,0.08)', border: planInfo.expired ? '1px solid rgba(229,62,62,0.2)' : '1px solid rgba(22,163,74,0.3)', borderRadius: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: planInfo.canceledPending ? 'rgba(245,158,11,0.08)' : planInfo.expired ? 'rgba(229,62,62,0.06)' : 'rgba(22,163,74,0.08)', border: planInfo.canceledPending ? '1px solid rgba(245,158,11,0.3)' : planInfo.expired ? '1px solid rgba(229,62,62,0.2)' : '1px solid rgba(22,163,74,0.3)', borderRadius: 8 }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
                     {planInfo.plan === 'pro' ? 'Plan Pro' : planInfo.expired ? 'Testversion abgelaufen' : 'Testversion'}
                   </div>
+                  {planInfo.canceledPending && (
+                    <div style={{ fontSize: 12, color: '#e53e3e', marginTop: 2 }}>
+                      Gekündigt · Noch {planInfo.daysLeft} Tag{planInfo.daysLeft !== 1 ? 'e' : ''} verbleibend
+                    </div>
+                  )}
                   {planInfo.plan !== 'pro' && (
                     <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>
                       {planInfo.expired ? 'Abonnement erforderlich' : `Noch ${planInfo.daysLeft} Tag${planInfo.daysLeft !== 1 ? 'e' : ''} verbleibend`}
                     </div>
                   )}
                 </div>
-                <span style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.expired ? '#e53e3e' : '#16a34a', color: 'white', fontSize: 11, fontWeight: 700 }}>
-                  {planInfo.plan === 'pro' ? 'Aktiv' : planInfo.expired ? 'Abgelaufen' : 'Trial'}
+                <span style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? '#e53e3e' : '#16a34a', color: 'white', fontSize: 11, fontWeight: 700 }}>
+                  {planInfo.canceledPending ? 'Gekündigt' : planInfo.plan === 'pro' ? 'Aktiv' : planInfo.expired ? 'Abgelaufen' : 'Trial'}
                 </span>
               </div>
 

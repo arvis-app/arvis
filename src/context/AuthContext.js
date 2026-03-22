@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
       const daysUsed = Math.floor((Date.now() - start.getTime()) / 86400000)
       const daysLeft = Math.max(0, 14 - daysUsed)
 
-      setIsPro(data.plan === 'pro' || data.plan === 'active' || (data.plan === 'trial' && daysLeft > 0))
+      setIsPro(data.plan === 'pro' || data.plan === 'active' || data.plan === 'canceled_pending' || (data.plan === 'trial' && daysLeft > 0))
     } else {
       setIsPro(false)
     }
@@ -145,6 +145,11 @@ export function AuthProvider({ children }) {
   function getPlanInfo() {
     if (!profile) return { plan: 'trial', daysLeft: 14, expired: false }
     if (profile.plan === 'pro' || profile.plan === 'active') return { plan: 'pro', daysLeft: null, expired: false }
+    if (profile.plan === 'canceled_pending' && profile.subscription_end_date) {
+      const endDate = new Date(profile.subscription_end_date)
+      const daysLeft = Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / 86400000))
+      return { plan: 'pro', daysLeft, expired: false, canceledPending: true }
+    }
     if (profile.plan === 'canceled') return { plan: 'canceled', daysLeft: 0, expired: true }
     const start    = profile.trial_started_at ? new Date(profile.trial_started_at) : new Date()
     const daysUsed = Math.floor((Date.now() - start.getTime()) / 86400000)
