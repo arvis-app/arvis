@@ -17,16 +17,14 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '')
 
-    // Utiliser le service role pour valider le token (plus fiable que le client anon)
+    // Admin client pour valider le JWT (même pattern que ai-chat, realtime-token)
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-    if (authError || !user) {
-      throw new Error('Not authenticated: ' + (authError?.message || 'no user'))
-    }
+    if (authError || !user) throw new Error('Not authenticated')
 
     const { data: profile } = await supabaseAdmin
       .from('users')
@@ -67,7 +65,6 @@ serve(async (req) => {
 
       customerId = customer.id
 
-      // Customer ID in Supabase speichern
       await supabaseAdmin
         .from('users')
         .update({ stripe_customer_id: customerId })

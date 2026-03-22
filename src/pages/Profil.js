@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { supabase } from '../supabaseClient'
+import { supabase, invokeEdgeFunction } from '../supabaseClient'
 
-const STRIPE_PRICE_MONTHLY = 'price_monthly'
-const STRIPE_PRICE_YEARLY = 'price_yearly'
+const STRIPE_PRICE_MONTHLY = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
+const STRIPE_PRICE_YEARLY  = process.env.REACT_APP_STRIPE_PRICE_YEARLY
 
 function EyeIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -46,6 +46,7 @@ export default function Profil() {
   // Plan
   const planInfo = getPlanInfo()
   const [yearly, setYearly] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
 
   // Profil fields
   const [titel, setTitel] = useState('')
@@ -74,16 +75,26 @@ export default function Profil() {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
 
+  async function handleCheckout() {
+    setCheckoutLoading(true)
+    try {
+      const priceId = yearly ? STRIPE_PRICE_YEARLY : STRIPE_PRICE_MONTHLY
+      const data = await invokeEdgeFunction('create-checkout-session', { priceId })
+      if (data?.url) window.location.href = data.url
+    } catch (err) {
+      showToast('Fehler: ' + err.message, false)
+    } finally {
+      setCheckoutLoading(false)
+    }
+  }
+
   async function manageSubscription() {
     setPortalLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('create-portal-session')
-      if (error) throw new Error(error.message)
-      if (data?.url) {
-        window.location.href = data.url
-      } else if (data?.error) {
-        throw new Error(data.error)
-      }
+      const data = await invokeEdgeFunction('create-portal-session', {
+        returnUrl: window.location.href
+      })
+      if (data?.url) window.location.href = data.url
     } catch (err) {
       showToast('Fehler: ' + err.message, false)
     } finally {
@@ -402,10 +413,10 @@ export default function Profil() {
                       </div>
                     </div>
                   </div>
-                  <button onClick={() => showToast('Stripe-Integration folgt')}
+                  <button onClick={handleCheckout} disabled={checkoutLoading}
                     style={{ width: '100%', padding: 11, borderRadius: 6, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.2s' }}
                     onMouseOver={e => e.target.style.background = 'var(--orange-dark)'} onMouseOut={e => e.target.style.background = 'var(--orange)'}>
-                    {yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
+                    {checkoutLoading ? 'Laden...' : yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
                   </button>
                 </div>
               )}

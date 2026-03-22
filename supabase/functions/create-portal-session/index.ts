@@ -15,20 +15,16 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('No authorization header')
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    )
-
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) throw new Error('Not authenticated')
 
+    // Admin client pour valider le JWT (même pattern que ai-chat, realtime-token)
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    if (authError || !user) throw new Error('Not authenticated')
 
     const { data: profile } = await supabaseAdmin
       .from('users')
@@ -37,20 +33,20 @@ serve(async (req) => {
       .single()
 
     if (!profile?.stripe_customer_id) {
-      throw new Error('Kein angehängtes Stripe-Konto gefunden.')
+      throw new Error('Kein Stripe-Konto gefunden.')
     }
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
-    if (!stripeKey) {
-      throw new Error('Server-Konfiguration fehlt: STRIPE_SECRET_KEY ist nicht gesetzt.')
-    }
+    if (!stripeKey) throw new Error('STRIPE_SECRET_KEY nicht konfiguriert')
 
-    const origin = req.headers.get('origin') || 'http://localhost:3000'
-    
-    // Fallback auf die native Fetch-API, um Laufzeitfehler des Node-SDKs (Microtasks) zu vermeiden
+    const origin = req.headers.get('origin') || 'https://arvis-app.de'
+
+    let body = {}
+    try { body = await req.json() } catch { /* no body is ok */ }
+
     const params = new URLSearchParams()
     params.append('customer', profile.stripe_customer_id)
-    params.append('return_url', `${origin}/profil`)
+    params.append('return_url', (body as any)?.returnUrl || `${origin}/profil`)
 
     const stripeRes = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
       method: 'POST',
@@ -62,10 +58,7 @@ serve(async (req) => {
     })
 
     const session = await stripeRes.json()
-
-    if (!stripeRes.ok) {
-      throw new Error(session.error?.message || 'Fehler bei der Kommunikation mit Stripe')
-    }
+    if (!stripeRes.ok) throw new Error(session.error?.message || 'Fehler bei Stripe')
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

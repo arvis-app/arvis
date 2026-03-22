@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { supabase } from '../supabaseClient'
+import { invokeEdgeFunction } from '../supabaseClient'
 
 export default function Paywall({ children }) {
-  const { isPro, getPlanInfo } = useAuth()
-  const [loading, setLoading]  = useState(false)
-  
+  const { isPro, getPlanInfo, profile } = useAuth()
+  const [loading, setLoading] = useState(false)
+
   const planInfo = getPlanInfo()
 
   if (isPro) {
@@ -15,16 +15,24 @@ export default function Paywall({ children }) {
   const handleUpgrade = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase.functions.invoke('create-portal-session', {
-        body: { returnUrl: window.location.href }
-      })
-      if (error) throw error
+
+      // Abonné existant avec stripe_customer_id → portail de gestion
+      if (profile?.stripe_customer_id) {
+        const data = await invokeEdgeFunction('create-portal-session', {
+          returnUrl: window.location.href
+        })
+        if (data?.url) { window.location.href = data.url; return }
+      }
+
+      // Nouvel utilisateur → Stripe Checkout
+      const priceId = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
+      const data = await invokeEdgeFunction('create-checkout-session', { priceId })
       if (data?.url) {
         window.location.href = data.url
       }
     } catch (err) {
-      console.error(err)
-      // On ignore l'alerte bloquante, console error suffit pour un portail
+      console.error('Checkout error:', err)
+      alert('Fehler: ' + err.message)
     } finally {
       setLoading(false)
     }
@@ -36,7 +44,7 @@ export default function Paywall({ children }) {
         <h1 className="section-title">Abonnement Erforderlich ✨</h1>
         <p className="section-subtitle">Schalten Sie alle Funktionen von Arvis frei</p>
       </div>
-      
+
       <div style={{
         background: 'var(--bg-2)',
         border: '1px solid var(--border)',
@@ -57,20 +65,20 @@ export default function Paywall({ children }) {
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
         </div>
-        
+
         <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>
-          {planInfo.plan === 'canceled' 
+          {planInfo.plan === 'canceled'
             ? 'Ihr Abonnement wurde gekündigt'
             : 'Ihr Probemonat ist abgelaufen'}
         </h2>
-        
+
         <p style={{ color: 'var(--text-2)', fontSize: 15, lineHeight: 1.6, marginBottom: 32 }}>
           {planInfo.plan === 'canceled'
             ? 'Ihr vorheriges Abonnement ist nicht mehr aktiv. Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und Premium-Funktionen zu haben, reaktivieren Sie bitte Ihr Abonnement.'
             : 'Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und andere Premium-Funktionen zu haben, upgraden Sie bitte auf Arvis Pro.'}
         </p>
 
-        <button 
+        <button
           onClick={handleUpgrade}
           disabled={loading}
           style={{
@@ -89,7 +97,7 @@ export default function Paywall({ children }) {
             fontFamily: 'DM Sans, sans-serif'
           }}
         >
-          {loading ? 'Laden...' : 'Abonnement Verwalten'}
+          {loading ? 'Laden...' : 'Jetzt upgraden'}
           {!loading && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>}
         </button>
       </div>

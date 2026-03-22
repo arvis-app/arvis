@@ -4,3 +4,21 @@ const SUPABASE_URL = 'https://jmanxlmzvfnhpgcxsqly.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptYW54bG16dmZuaHBnY3hzcWx5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODE4NDYsImV4cCI6MjA4OTE1Nzg0Nn0.O6Mjh2KRydHtCj4ZxyZaaqzcleOQOq4jC01zoSaYxws'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+/**
+ * Appel sécurisé d'une Edge Function avec JWT explicite.
+ * Même pattern que BriefSchreiber.js et Scan.js (qui fonctionnent).
+ */
+export async function invokeEdgeFunction(fnName, body = {}) {
+  const { data: refreshData } = await supabase.auth.refreshSession()
+  const session = refreshData?.session
+  if (!session) throw new Error('Sitzung abgelaufen – bitte neu anmelden.')
+
+  const { data, error } = await supabase.functions.invoke(fnName, {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    body
+  })
+  if (error) throw error
+  if (data?.error) throw new Error(data.error)
+  return data
+}
