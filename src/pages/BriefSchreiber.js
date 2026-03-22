@@ -139,7 +139,9 @@ export default function BriefSchreiber() {
       const choices = inner.split('/').map(c => c.trim())
       const rect = chip.getBoundingClientRect()
       popupChipRef.current = chip
-      setPopup({ visible: true, choices, x: rect.left, y: rect.bottom + 6 })
+      const popupWidth = 160
+      const x = Math.min(rect.left, window.innerWidth - popupWidth - 8)
+      setPopup({ visible: true, choices, x: Math.max(8, x), y: rect.bottom + 6 })
     } else {
       replaceChipWithCursor(chip)
       hidePopup()
@@ -155,7 +157,11 @@ export default function BriefSchreiber() {
       }
     }
     document.addEventListener('mousedown', onDocClick)
-    return () => document.removeEventListener('mousedown', onDocClick)
+    document.addEventListener('touchstart', onDocClick)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('touchstart', onDocClick)
+    }
   }, [popup.visible])
 
   async function toggleDictation() {
