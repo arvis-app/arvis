@@ -4,34 +4,34 @@ import { useAuth } from '../context/AuthContext'
 
 const navItems = [
   {
-    to: '/app/dashboard', label: 'Dashboard',
+    to: '/dashboard', label: 'Dashboard',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   },
   {
-    to: '/app/scan', label: 'Scan & Analyse',
+    to: '/scan', label: 'Scan & Analyse',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
   },
   {
-    to: '/app/briefschreiber', label: 'Brief Schreiber',
+    to: '/briefschreiber', label: 'Brief Schreiber',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
   },
   {
-    to: '/app/bausteine', label: 'Bausteine',
+    to: '/bausteine', label: 'Bausteine',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="11" height="4" rx="1"/><rect x="3" y="17" width="14" height="4" rx="1"/></svg>
   },
   {
-    to: '/app/uebersetzung', label: 'Übersetzung',
+    to: '/uebersetzung', label: 'Übersetzung',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
   },
 ]
 
 const personalItems = [
   {
-    to: '/app/dateien', label: 'Meine Dateien',
+    to: '/dateien', label: 'Meine Dateien',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
   },
   {
-    to: '/app/profil', label: 'Mein Profil',
+    to: '/profil', label: 'Mein Profil',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
   },
 ]
@@ -90,7 +90,7 @@ export default function AppLayout() {
             </div>
             {avatarOpen && (
               <div style={{position:'absolute',right:0,top:'calc(100% + 8px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
-                <div onClick={() => { setAvatarOpen(false); navigate('/app/profil') }}
+                <div onClick={() => { setAvatarOpen(false); navigate('/profil') }}
                   style={{padding:'11px 16px',fontSize:13,fontWeight:600,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
                   onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -116,7 +116,7 @@ export default function AppLayout() {
       <aside className="sidebar">
         <div className="sidebar-section-title">Hauptmenü</div>
         {navItems.map(item => {
-          const restricted = ['/app/scan', '/app/briefschreiber', '/app/bausteine', '/app/uebersetzung'].includes(item.to)
+          const restricted = ['/scan', '/briefschreiber', '/bausteine', '/uebersetzung'].includes(item.to)
           const disabled = restricted && !isPro
           return (
             <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive && !disabled ? ' active' : ''}`} onClick={(e) => { if (disabled) { e.preventDefault() } else { setMobileOpen(false) } }} style={disabled ? { opacity: 0.4, pointerEvents: 'none', cursor: 'not-allowed' } : {}}>
@@ -128,7 +128,7 @@ export default function AppLayout() {
 
         <div className="sidebar-section-title">Persönlich</div>
         {personalItems.map(item => {
-          const restricted = ['/app/dateien'].includes(item.to)
+          const restricted = ['/dateien'].includes(item.to)
           const disabled = restricted && !isPro
           return (
             <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive && !disabled ? ' active' : ''}`} onClick={(e) => { if (disabled) { e.preventDefault() } else { setMobileOpen(false) } }} style={disabled ? { opacity: 0.4, pointerEvents: 'none', cursor: 'not-allowed' } : {}}>
@@ -140,7 +140,7 @@ export default function AppLayout() {
 
         {!isPro && (
           <div
-            onClick={() => { setMobileOpen(false); navigate('/app/profil'); }}
+            onClick={() => { setMobileOpen(false); navigate('/profil'); }}
             style={{
               margin: '8px 12px 4px',
               padding: '6px 10px',

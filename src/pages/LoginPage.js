@@ -47,7 +47,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(loginEmail, loginPassword)
-      navigate('/app/dashboard')
+      navigate('/dashboard')
     } catch {
       setError('E-Mail-Adresse oder Passwort ist falsch.')
     } finally {
@@ -92,7 +92,7 @@ export default function LoginPage() {
       const { error: err } = await supabase.auth.updateUser({ password: newPassword })
       if (err) throw err
       setResetSuccess(true)
-      setTimeout(() => navigate('/app/dashboard'), 2000)
+      setTimeout(() => navigate('/dashboard'), 2000)
     } catch (e) {
       setError(e.message || 'Fehler beim Ändern des Passworts.')
     } finally {

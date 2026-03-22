@@ -13,7 +13,6 @@ import Profil         from './pages/Profil'
 import MobileScan     from './pages/MobileScan'
 import ErrorBoundary      from './components/ErrorBoundary'
 import ResetPasswordPage  from './pages/ResetPasswordPage'
-import LandingPage        from './pages/LandingPage'
 import './App.css'
 
 function PrivateRoute({ children }) {
@@ -26,23 +25,18 @@ function PrivateRoute({ children }) {
 function PublicRoute({ children }) {
   const { user, loading, isResettingPassword } = useAuth()
   if (loading) return <div className="app-loader"><div className="spinner" /></div>
-  if (isResettingPassword) return children
-  return user ? <Navigate to="/app/dashboard" replace /> : children
+  if (isResettingPassword) return children // rester sur /login pendant le reset
+  return user ? <Navigate to="/dashboard" replace /> : children
 }
 
 function AppRoutes() {
   return (
     <Routes>
-      {/* Landing page — toujours accessible */}
-      <Route path="/" element={<LandingPage />} />
-
       <Route path="/login" element={
         <PublicRoute><LoginPage /></PublicRoute>
       } />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-
-      {/* App — protégée */}
-      <Route path="/app" element={
+      <Route path="/" element={
         <PrivateRoute><AppLayout /></PrivateRoute>
       }>
         <Route index element={<Navigate to="/dashboard" replace />} />
@@ -55,17 +49,7 @@ function AppRoutes() {
         <Route path="profil"         element={<ErrorBoundary><Profil /></ErrorBoundary>} />
         <Route path="mobile-scan/:token" element={<MobileScan />} />
       </Route>
-
-      {/* Raccourcis directs sans /app/ préfixe */}
-      <Route path="/dashboard"      element={<PrivateRoute><Navigate to="/app/dashboard" replace /></PrivateRoute>} />
-      <Route path="/scan"           element={<PrivateRoute><Navigate to="/app/scan" replace /></PrivateRoute>} />
-      <Route path="/briefschreiber" element={<PrivateRoute><Navigate to="/app/briefschreiber" replace /></PrivateRoute>} />
-      <Route path="/bausteine"      element={<PrivateRoute><Navigate to="/app/bausteine" replace /></PrivateRoute>} />
-      <Route path="/uebersetzung"   element={<PrivateRoute><Navigate to="/app/uebersetzung" replace /></PrivateRoute>} />
-      <Route path="/dateien"        element={<PrivateRoute><Navigate to="/app/dateien" replace /></PrivateRoute>} />
-      <Route path="/profil"         element={<PrivateRoute><Navigate to="/app/profil" replace /></PrivateRoute>} />
-
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )
 }
