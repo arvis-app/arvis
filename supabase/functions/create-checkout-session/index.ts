@@ -98,12 +98,27 @@ serve(async (req) => {
     sessionParams.append('billing_address_collection', 'auto')
     sessionParams.append('subscription_data[metadata][user_id]', user.id)
 
-    // Récupérer le premier coupon actif dans Stripe et l'appliquer automatiquement
+    // Récupérer le produit associé au prix pour filtrer les coupons
+    const priceRes = await fetch(`https://api.stripe.com/v1/prices/${priceId}`, {
+      headers: { 'Authorization': `Basic ${btoa(stripeKey + ':')}` }
+    })
+    const priceData = await priceRes.json()
+    const productId = priceData?.product as string | undefined
+
+    // Récupérer les coupons actifs et ne garder que ceux qui s'appliquent à ce produit
     const couponsRes = await fetch('https://api.stripe.com/v1/coupons?limit=20', {
       headers: { 'Authorization': `Basic ${btoa(stripeKey + ':')}` }
     })
     const couponsData = await couponsRes.json()
-    const activeCoupon = couponsData?.data?.find((c: any) => c.valid)
+    const activeCoupon = couponsData?.data?.find((c: any) => {
+      if (!c.valid) return false
+      // Si le coupon a une restriction applies_to, vérifier que ce produit est inclus
+      if (c.applies_to?.products?.length > 0) {
+        return productId && c.applies_to.products.includes(productId)
+      }
+      // Coupon sans restriction → applicable partout
+      return true
+    })
 
     if (activeCoupon) {
       sessionParams.append('discounts[0][coupon]', activeCoupon.id)
