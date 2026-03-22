@@ -814,11 +814,9 @@ footer {
   .steps { grid-template-columns: 1fr 1fr; }
   .steps::before { display: none; }
   .pricing-grid { grid-template-columns: 1fr; }
-  .mockup-dashboard { grid-template-columns: 1fr; }
-  .mockup-sidebar { display: none; }
   .mockup-section { padding: 0 16px 60px; }
-  .mockup-main { padding: 16px !important; }
-  .mockup-inner-grid { grid-template-columns: 1fr !important; }
+  .mockup-scaler-wrap { width: 100%; max-width: 1000px; overflow: hidden; }
+  .mockup-scaler { width: 1000px; transform-origin: top left; }
   footer { flex-direction: column; text-align: center; }
   .hero-stats { gap: 28px; }
 }
@@ -927,6 +925,8 @@ footer {
 
 <!-- MOCKUP -->
 <div class="mockup-section">
+  <div class="mockup-scaler-wrap">
+  <div class="mockup-scaler">
   <div class="mockup-container reveal">
       <!-- Browser bar -->
       <div class="mockup-bar">
@@ -1084,6 +1084,8 @@ footer {
         </div>
       </div>
     </div>
+  </div><!-- /mockup-scaler -->
+  </div><!-- /mockup-scaler-wrap -->
 </div>
 
 <!-- FEATURES -->
@@ -1919,6 +1921,22 @@ footer {
 </footer>
 
 <script>
+
+// Mockup desktop scale on mobile
+function scaleMockup() {
+  const wrap = document.querySelector('.mockup-scaler-wrap');
+  const scaler = document.querySelector('.mockup-scaler');
+  if (!wrap || !scaler) return;
+  const DESKTOP_WIDTH = 1000;
+  const available = wrap.clientWidth;
+  const scale = Math.min(1, available / DESKTOP_WIDTH);
+  scaler.style.transform = `scale(${scale})`;
+  scaler.style.transformOrigin = 'top left';
+  // Adjust wrapper height to match scaled content
+  wrap.style.height = (scaler.scrollHeight * scale) + 'px';
+}
+scaleMockup();
+window.addEventListener('resize', scaleMockup);
 
 // Scroll reveal
 const reveals = document.querySelectorAll('.reveal');
