@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 
 export default function LoginPage() {
-  const { login, register, loginWithGoogle } = useAuth()
+  const { login, register, loginWithGoogle, isResettingPassword } = useAuth()
   const navigate = useNavigate()
 
   const [tab, setTab]               = useState('login')
@@ -26,6 +26,17 @@ export default function LoginPage() {
 
   // Forgot password state
   const [forgotEmail, setForgotEmail] = useState('')
+
+  // New password state (reset flow)
+  const [newPassword, setNewPassword]     = useState('')
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
+  const [showPwNew, setShowPwNew]         = useState(false)
+  const [resetSuccess, setResetSuccess]   = useState(false)
+
+  // Basculer automatiquement sur le formulaire de reset si lien cliqué
+  useEffect(() => {
+    if (isResettingPassword) setTab('reset')
+  }, [isResettingPassword])
 
   function clearMessages() { setError(''); setInfo('') }
 
@@ -71,13 +82,31 @@ export default function LoginPage() {
     }
   }
 
+  async function handleNewPassword() {
+    clearMessages()
+    if (!newPassword)                 { setError('Bitte neues Passwort eingeben.'); return }
+    if (newPassword.length < 6)       { setError('Das Passwort muss mindestens 6 Zeichen lang sein.'); return }
+    if (newPassword !== newPasswordConfirm) { setError('Die Passwörter stimmen nicht überein.'); return }
+    setLoading(true)
+    try {
+      const { error: err } = await supabase.auth.updateUser({ password: newPassword })
+      if (err) throw err
+      setResetSuccess(true)
+      setTimeout(() => navigate('/dashboard'), 2000)
+    } catch (e) {
+      setError(e.message || 'Fehler beim Ändern des Passworts.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleForgotPassword() {
     clearMessages()
     if (!forgotEmail) { setError('Bitte E-Mail-Adresse eingeben.'); return }
     setLoading(true)
     try {
       const { error: err } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-        redirectTo: `${window.location.origin}/reset-password`
+        redirectTo: `${window.location.origin}/login`
       })
       if (err) throw err
       setInfo('E-Mail gesendet — bitte prüfen Sie Ihr Postfach.')
@@ -192,6 +221,55 @@ export default function LoginPage() {
               <div className="form-footer">
                 Noch kein Konto? <a href="#" onClick={e => { e.preventDefault(); setTab('register'); clearMessages() }}>Jetzt registrieren</a>
               </div>
+            </div>
+          )}
+
+          {/* Reset Password Form (depuis lien email) */}
+          {tab === 'reset' && (
+            <div>
+              <div className="form-title">Neues Passwort festlegen</div>
+              <div className="form-sub">Geben Sie Ihr neues Passwort ein</div>
+
+              {resetSuccess ? (
+                <p style={{ textAlign: 'center', padding: '16px', borderRadius: 8, background: 'rgba(46,125,50,0.07)', color: '#2e7d32', fontWeight: 600, fontSize: 14 }}>
+                  ✓ Passwort erfolgreich geändert — Sie werden weitergeleitet…
+                </p>
+              ) : (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Neues Passwort</label>
+                    <div className="form-input-group">
+                      <input
+                        type={showPwNew ? 'text' : 'password'}
+                        className="form-input"
+                        placeholder="Min. 6 Zeichen"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleNewPassword()}
+                        style={{ paddingRight: 44 }}
+                        autoFocus
+                      />
+                      <span className="form-input-icon" onClick={() => setShowPwNew(v => !v)}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginTop: 12 }}>
+                    <label className="form-label">Passwort bestätigen</label>
+                    <input
+                      type={showPwNew ? 'text' : 'password'}
+                      className="form-input"
+                      placeholder="Passwort wiederholen"
+                      value={newPasswordConfirm}
+                      onChange={e => setNewPasswordConfirm(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleNewPassword()}
+                    />
+                  </div>
+                  <button className="btn-submit" onClick={handleNewPassword} disabled={loading} style={{ marginTop: 20 }}>
+                    {loading ? 'Speichern…' : 'Passwort speichern'}
+                  </button>
+                </>
+              )}
             </div>
           )}
 

@@ -22,8 +22,9 @@ function PrivateRoute({ children }) {
 }
 
 function PublicRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user, loading, isResettingPassword } = useAuth()
   if (loading) return <div className="app-loader"><div className="spinner" /></div>
+  if (isResettingPassword) return children // rester sur /login pendant le reset
   return user ? <Navigate to="/dashboard" replace /> : children
 }
 

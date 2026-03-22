@@ -32,11 +32,21 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
+    // Détecter un flux PASSWORD_RECOVERY depuis l'URL (hash ou query param)
+    const hash   = new URLSearchParams(window.location.hash.replace('#', ''))
+    const search = new URLSearchParams(window.location.search)
+    const isRecovery = hash.get('type') === 'recovery' || search.get('type') === 'recovery'
+    if (isRecovery) setIsResettingPassword(true)
+
     // Vérifier la session au démarrage
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user)
-        loadProfile(session.user.id).finally(() => setLoading(false))
+        if (isRecovery) {
+          setLoading(false) // ne pas charger le profil, on reste sur le form reset
+        } else {
+          loadProfile(session.user.id).finally(() => setLoading(false))
+        }
       } else {
         setLoading(false)
       }

@@ -15,11 +15,11 @@ export default function Paywall({ children }) {
   const handleUpgrade = async () => {
     try {
       setLoading(true)
-      // Utilisateurs sans abo → checkout pour souscrire
-      // Utilisateurs avec abo annulé → checkout pour réactiver
       const priceId = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
+      const { data: { session } } = await supabase.auth.getSession()
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId }
+        body: { priceId },
+        headers: session ? { Authorization: `Bearer ${session.access_token}` } : {}
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
