@@ -15,23 +15,36 @@ export default function Paywall({ children }) {
     return children
   }
 
-  // Appel direct fetch vers les Edge Functions (contourne les bugs de supabase.functions.invoke)
+  // Appel direct fetch vers les Edge Functions
   async function callEdgeFunction(fnName, body) {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('Nicht eingeloggt. Bitte erneut anmelden.')
+    // Forcer le rafraîchissement du token
+    const { data: { session }, error: sessionError } = await supabase.auth.refreshSession()
+    if (sessionError || !session) {
+      throw new Error('Session abgelaufen. Bitte erneut anmelden. ' + (sessionError?.message || ''))
+    }
 
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+    const token = session.access_token
+    const url = `${SUPABASE_URL}/functions/v1/${fnName}`
+
+    console.log('Edge Function call:', { url, fnName, tokenStart: token?.substring(0, 30), apiKeyStart: SUPABASE_KEY?.substring(0, 30) })
+
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${session.access_token}`
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(body)
     })
 
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`)
+    let data
+    try { data = await res.json() } catch { data = {} }
+
+    if (!res.ok) {
+      const detail = `HTTP ${res.status} | ${JSON.stringify(data)} | Token: ${token?.substring(0, 20)}... | URL: ${url}`
+      throw new Error(detail)
+    }
     if (data.error) throw new Error(data.error)
     return data
   }
