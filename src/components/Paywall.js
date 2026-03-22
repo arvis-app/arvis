@@ -2,78 +2,29 @@ import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 
-const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL
-const SUPABASE_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY
-
 export default function Paywall({ children }) {
-  const { isPro, getPlanInfo, profile } = useAuth()
+  const { isPro, getPlanInfo } = useAuth()
   const [loading, setLoading]  = useState(false)
-
+  
   const planInfo = getPlanInfo()
 
   if (isPro) {
     return children
   }
 
-  // Appel direct fetch vers les Edge Functions
-  async function callEdgeFunction(fnName, body) {
-    // Forcer le rafraîchissement du token
-    const { data: { session }, error: sessionError } = await supabase.auth.refreshSession()
-    if (sessionError || !session) {
-      throw new Error('Session abgelaufen. Bitte erneut anmelden. ' + (sessionError?.message || ''))
-    }
-
-    const token = session.access_token
-    const url = `${SUPABASE_URL}/functions/v1/${fnName}`
-
-    console.log('Edge Function call:', { url, fnName, tokenStart: token?.substring(0, 30), apiKeyStart: SUPABASE_KEY?.substring(0, 30) })
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    })
-
-    let data
-    try { data = await res.json() } catch { data = {} }
-
-    if (!res.ok) {
-      const detail = `HTTP ${res.status} | ${JSON.stringify(data)} | Token: ${token?.substring(0, 20)}... | URL: ${url}`
-      throw new Error(detail)
-    }
-    if (data.error) throw new Error(data.error)
-    return data
-  }
-
   const handleUpgrade = async () => {
     try {
       setLoading(true)
-
-      // Si l'utilisateur a déjà un stripe_customer_id → portal
-      if (profile?.stripe_customer_id) {
-        const data = await callEdgeFunction('create-portal-session', {
-          returnUrl: window.location.href
-        })
-        if (data?.url) { window.location.href = data.url; return }
-      }
-
-      // Sinon → checkout (nouvel abonnement)
-      const priceId = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-      if (!priceId) throw new Error('REACT_APP_STRIPE_PRICE_MONTHLY ist nicht konfiguriert')
-
-      const data = await callEdgeFunction('create-checkout-session', { priceId })
+      const { data, error } = await supabase.functions.invoke('create-portal-session', {
+        body: { returnUrl: window.location.href }
+      })
+      if (error) throw error
       if (data?.url) {
         window.location.href = data.url
-      } else {
-        throw new Error('Keine Checkout-URL erhalten.')
       }
     } catch (err) {
-      console.error('Checkout error:', err)
-      alert('Fehler: ' + err.message)
+      console.error(err)
+      // On ignore l'alerte bloquante, console error suffit pour un portail
     } finally {
       setLoading(false)
     }
@@ -85,7 +36,7 @@ export default function Paywall({ children }) {
         <h1 className="section-title">Abonnement Erforderlich ✨</h1>
         <p className="section-subtitle">Schalten Sie alle Funktionen von Arvis frei</p>
       </div>
-
+      
       <div style={{
         background: 'var(--bg-2)',
         border: '1px solid var(--border)',
@@ -106,20 +57,20 @@ export default function Paywall({ children }) {
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
         </div>
-
+        
         <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>
-          {planInfo.plan === 'canceled'
+          {planInfo.plan === 'canceled' 
             ? 'Ihr Abonnement wurde gekündigt'
             : 'Ihr Probemonat ist abgelaufen'}
         </h2>
-
+        
         <p style={{ color: 'var(--text-2)', fontSize: 15, lineHeight: 1.6, marginBottom: 32 }}>
           {planInfo.plan === 'canceled'
             ? 'Ihr vorheriges Abonnement ist nicht mehr aktiv. Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und Premium-Funktionen zu haben, reaktivieren Sie bitte Ihr Abonnement.'
             : 'Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und andere Premium-Funktionen zu haben, upgraden Sie bitte auf Arvis Pro.'}
         </p>
 
-        <button
+        <button 
           onClick={handleUpgrade}
           disabled={loading}
           style={{
