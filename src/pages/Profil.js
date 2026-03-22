@@ -107,13 +107,15 @@ export default function Profil() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('success') === 'true') {
-      // Nettoyer l'URL
       window.history.replaceState({}, '', window.location.pathname)
-      // Attendre un peu que le webhook Stripe ait mis à jour la DB, puis rafraîchir
-      const timer1 = setTimeout(() => refreshProfile(), 1500)
-      const timer2 = setTimeout(() => refreshProfile(), 5000)
-      const timer3 = setTimeout(() => refreshProfile(), 10000)
-      return () => { clearTimeout(timer1); clearTimeout(timer2); clearTimeout(timer3) }
+      // Polling : vérifier toutes les 2s pendant 20s max si le plan est devenu pro
+      let attempts = 0
+      const interval = setInterval(async () => {
+        attempts++
+        await refreshProfile()
+        if (planInfo.plan === 'pro' || attempts >= 10) clearInterval(interval)
+      }, 2000)
+      return () => clearInterval(interval)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
