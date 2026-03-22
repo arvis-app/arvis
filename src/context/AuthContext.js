@@ -74,9 +74,7 @@ export function AuthProvider({ children }) {
         setUser(null)
         setProfile(null)
         setIsPro(false)
-        if (!onResetPage) {
-          setIsResettingPassword(false)
-        }
+        setIsResettingPassword(false) // Toujours réinitialiser au signOut
       }
     })
 

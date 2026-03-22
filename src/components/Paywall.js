@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 
 export default function Paywall({ children }) {
-  const { isPro, getPlanInfo } = useAuth()
+  const { isPro, getPlanInfo, profile } = useAuth()
   const [loading, setLoading]  = useState(false)
 
   const planInfo = getPlanInfo()
@@ -15,16 +15,30 @@ export default function Paywall({ children }) {
   const handleUpgrade = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase.functions.invoke('create-portal-session', {
-        body: { returnUrl: window.location.href }
+
+      // Si l'utilisateur a déjà un stripe_customer_id → portal (gestion d'abonnement existant)
+      if (profile?.stripe_customer_id) {
+        const { data, error } = await supabase.functions.invoke('create-portal-session', {
+          body: { returnUrl: window.location.href }
+        })
+        if (error) throw new Error(error.message || 'Verbindungsfehler')
+        if (data?.error) throw new Error(data.error)
+        if (data?.url) { window.location.href = data.url; return }
+      }
+
+      // Sinon → checkout (nouvel abonnement)
+      const priceId = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId }
       })
-      if (error) throw error
+      if (error) throw new Error(error.message || 'Verbindungsfehler')
+      if (data?.error) throw new Error(data.error)
       if (data?.url) {
         window.location.href = data.url
       }
     } catch (err) {
-      console.error(err)
-      // On ignore l'alerte bloquante, console error suffit pour un portail
+      console.error('Checkout error:', err)
+      alert('Fehler: ' + err.message)
     } finally {
       setLoading(false)
     }
