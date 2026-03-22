@@ -106,6 +106,23 @@ function markdownToHtml(md) {
   return html
 }
 
+// Normalise l'orientation EXIF via canvas (le navigateur applique auto l'EXIF)
+function normalizeBlob(blob) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob)
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      canvas.getContext('2d').drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
+      canvas.toBlob(resolve, 'image/jpeg', 0.92)
+    }
+    img.src = url
+  })
+}
+
 const SYSTEM_PROMPT = 'Du bist ein klinischer Entscheidungsassistent für Krankenhausärzte in Deutschland. Deine Aufgabe ist nicht nur zusammenzufassen, sondern aktiv mitzudenken — wie ein erfahrener Kollege, der das Dokument mitliest. Verwende klinische Abkürzungen (Z.n., ED, V.a., RR, NAS, etc.). Führe nur Abschnitte auf, die im Text vorhanden sind: 1) Wenn genau eine Hauptdiagnose: Titel "Hauptdiagnose", wenn mehrere: "Hauptdiagnosen". 2) Wenn genau eine weitere Diagnose: Titel "Weitere Diagnose", wenn mehrere: "Weitere Diagnosen". 3) Aufenthalt: Aufnahmegrund in einem Satz ("Grund:") + kurzer Verlauf 2-3 Sätze ("Verlauf:") — nur klinisch relevante Wendepunkte, chronologisch sortiert. 4) Wichtige Befunde — nur pathologische oder klinisch entscheidende Werte. 5) Aktuelle Medikation. 6) Aktuelle Empfehlungen. 7) Nächste Schritte. 8) ⚠️ Nicht übersehen — IMMER aufführen: Widersprüche, fehlende Angaben, klinische Lücken, fehlende Standardmedikamente. Sortiere nach: 🔴 kritisch · 🟡 wichtig · 🟢 beachten. Wenn es in einer Kategorie (🔴, 🟡 oder 🟢) keine Einträge gibt, wird diese Kategorie vollständig weggelassen — kein leerer Titel, kein "Keine Auffälligkeiten", kein Platzhalter. Keine Schlussformeln. Kein Disclaimer.'
 
 export default function Scan() {
@@ -128,6 +145,10 @@ export default function Scan() {
   const [blackouts, setBlackouts] = useState([])
   const [selectedBk, setSelectedBk] = useState(null)
   const [copied, setCopied] = useState(false)
+
+  // Mobile multi-photo state
+  const [mobilePhotos, setMobilePhotos] = useState([]) // { file, preview }[]
+  const [showMobileMultiUI, setShowMobileMultiUI] = useState(false)
 
   // Mobile Scan state
   const [showMobileScanOptions, setShowMobileScanOptions] = useState(false)
@@ -228,23 +249,6 @@ export default function Scan() {
             const raw = payload.new.image_url
             const filenames = raw.startsWith('[') ? JSON.parse(raw) : [raw]
 
-            // Normalise l'orientation EXIF via canvas (le navigateur applique auto l'EXIF)
-            async function normalizeBlob(blob) {
-              return new Promise((resolve) => {
-                const url = URL.createObjectURL(blob)
-                const img = new Image()
-                img.onload = () => {
-                  const canvas = document.createElement('canvas')
-                  canvas.width = img.naturalWidth
-                  canvas.height = img.naturalHeight
-                  canvas.getContext('2d').drawImage(img, 0, 0)
-                  URL.revokeObjectURL(url)
-                  canvas.toBlob(resolve, 'image/jpeg', 0.92)
-                }
-                img.src = url
-              })
-            }
-
             if (filenames.length === 1) {
               // Une seule image — normalise l'orientation puis loadFile
               const { data: blob, error } = await supabase.storage
@@ -284,6 +288,27 @@ export default function Scan() {
 
   // ── Steps ─────────────────────────────────────────────────────────────────
   function goStep(n) { setStep(n) }
+
+  async function handleMobileFinish() {
+    if (mobilePhotos.length === 1) {
+      const normalized = await normalizeBlob(mobilePhotos[0].file)
+      loadFile(new File([normalized], 'scan.jpg', { type: 'image/jpeg' }))
+    } else {
+      const pdfDoc = await PDFDocument.create()
+      for (const { file } of mobilePhotos) {
+        const normalized = await normalizeBlob(file)
+        const arrayBuffer = await normalized.arrayBuffer()
+        const img = await pdfDoc.embedJpg(arrayBuffer)
+        const page = pdfDoc.addPage([img.width, img.height])
+        page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height })
+      }
+      const pdfBytes = await pdfDoc.save()
+      const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' })
+      loadFile(new File([pdfBlob], 'scan.pdf', { type: 'application/pdf' }))
+    }
+    setShowMobileMultiUI(false)
+    setMobilePhotos([])
+  }
 
   // ── File loading ───────────────────────────────────────────────────────────
   async function loadFile(file) {
@@ -682,7 +707,14 @@ export default function Scan() {
                 <div className="scan-drop-formats">JPG · PNG · PDF · HEIC</div>
               </div>
               <input type="file" ref={fileInputRef} accept="image/*,application/pdf" style={{ display: 'none' }} onChange={e => { const f = e.target.files[0]; if (f) loadFile(f) }} />
-              <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => { const f = e.target.files[0]; if (f) loadFile(f) }} />
+              <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => {
+                const f = e.target.files[0]
+                if (!f) return
+                e.target.value = ''
+                const preview = URL.createObjectURL(f)
+                setMobilePhotos(prev => [...prev, { file: f, preview }])
+                setShowMobileMultiUI(true)
+              }} />
               <div style={{ marginTop: 'auto' }}>
                 <div style={{ textAlign: 'center', marginTop: 2 }}><span style={{ fontSize: 12, color: 'var(--text-3)' }}>oder</span></div>
                 <div style={{ margin: '0 20px', position: 'relative', zIndex: 1, display: 'flex', gap: 8, marginTop: 22 }}>
@@ -895,6 +927,42 @@ export default function Scan() {
           </div>
         </div>
       </div>
+
+      {/* ── Mobile multi-photo overlay ── */}
+      {showMobileMultiUI && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+          <div style={{ background: 'white', borderRadius: '20px 20px 0 0', padding: '24px 20px 40px', width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#1C1C1E', textAlign: 'center' }}>
+              {mobilePhotos.length} Seite{mobilePhotos.length > 1 ? 'n' : ''} aufgenommen
+            </div>
+            {/* Thumbnails */}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {mobilePhotos.map((p, i) => (
+                <div key={i} style={{ position: 'relative' }}>
+                  <img src={p.preview} alt={`Seite ${i + 1}`} style={{ width: 72, height: 90, objectFit: 'cover', borderRadius: 8, border: '2px solid #E5E5EA' }} />
+                  <div style={{ position: 'absolute', top: 4, left: 4, background: '#D94B0A', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 6px' }}>{i + 1}</div>
+                </div>
+              ))}
+            </div>
+            {/* Weitere Seite */}
+            <button onClick={() => cameraInputRef.current.click()}
+              style={{ padding: '14px', borderRadius: 12, border: '2px solid #D94B0A', background: 'white', color: '#D94B0A', fontSize: 15, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D94B0A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Weitere Seite
+            </button>
+            {/* Fertig */}
+            <button onClick={handleMobileFinish}
+              style={{ padding: '14px', borderRadius: 12, border: 'none', background: '#D94B0A', color: 'white', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
+              Fertig — {mobilePhotos.length} Seite{mobilePhotos.length > 1 ? 'n' : ''} analysieren
+            </button>
+            {/* Abbrechen */}
+            <button onClick={() => { setShowMobileMultiUI(false); setMobilePhotos([]) }}
+              style={{ padding: '12px', borderRadius: 10, border: 'none', background: '#F2F2F7', color: '#3C3C43', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
 
       {showMobileScanOptions && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setShowMobileScanOptions(false)}>
