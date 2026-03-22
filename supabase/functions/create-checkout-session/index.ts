@@ -86,9 +86,8 @@ serve(async (req) => {
     sessionParams.append('cancel_url', `${origin}/profil?canceled=true`)
     sessionParams.append('allow_promotion_codes', 'true')
     sessionParams.append('billing_address_collection', 'auto')
-    sessionParams.append('payment_method_types[0]', 'card')
-    sessionParams.append('payment_method_types[1]', 'sepa_debit')
-    sessionParams.append('payment_method_types[2]', 'paypal')
+    sessionParams.append('automatic_payment_methods[enabled]', 'true')
+    sessionParams.append('automatic_payment_methods[allow_redirects]', 'never')
     sessionParams.append('subscription_data[metadata][user_id]', user.id)
 
     const sessionRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {

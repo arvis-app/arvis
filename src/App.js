@@ -11,8 +11,8 @@ import Dateien        from './pages/Dateien'
 import Paywall        from './components/Paywall'
 import Profil         from './pages/Profil'
 import MobileScan     from './pages/MobileScan'
-import ErrorBoundary  from './components/ErrorBoundary'
-import ResetPasswordModal from './components/ResetPasswordModal'
+import ErrorBoundary      from './components/ErrorBoundary'
+import ResetPasswordPage  from './pages/ResetPasswordPage'
 import './App.css'
 
 function PrivateRoute({ children }) {
@@ -22,39 +22,33 @@ function PrivateRoute({ children }) {
 }
 
 function PublicRoute({ children }) {
-  const { user, loading, isResettingPassword } = useAuth()
+  const { user, loading } = useAuth()
   if (loading) return <div className="app-loader"><div className="spinner" /></div>
-  // During password reset flow, stay on login page even if user is set
-  if (isResettingPassword) return children
   return user ? <Navigate to="/dashboard" replace /> : children
 }
 
 function AppRoutes() {
-  const { isResettingPassword } = useAuth()
-
   return (
-    <>
-      {isResettingPassword && <ResetPasswordModal />}
-      <Routes>
-        <Route path="/login" element={
-          <PublicRoute><LoginPage /></PublicRoute>
-        } />
-        <Route path="/" element={
-          <PrivateRoute><AppLayout /></PrivateRoute>
-        }>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard"    element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
-          <Route path="scan"         element={<Paywall><ErrorBoundary><Scan /></ErrorBoundary></Paywall>} />
-          <Route path="briefschreiber" element={<Paywall><ErrorBoundary><BriefSchreiber /></ErrorBoundary></Paywall>} />
-          <Route path="bausteine"    element={<Paywall><ErrorBoundary><Bausteine /></ErrorBoundary></Paywall>} />
-          <Route path="uebersetzung" element={<Paywall><ErrorBoundary><Uebersetzung /></ErrorBoundary></Paywall>} />
-          <Route path="dateien"      element={<Paywall><ErrorBoundary><Dateien /></ErrorBoundary></Paywall>} />
-          <Route path="profil"       element={<ErrorBoundary><Profil /></ErrorBoundary>} />
-          <Route path="mobile-scan/:token" element={<MobileScan />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/login" element={
+        <PublicRoute><LoginPage /></PublicRoute>
+      } />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/" element={
+        <PrivateRoute><AppLayout /></PrivateRoute>
+      }>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard"      element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+        <Route path="scan"           element={<Paywall><ErrorBoundary><Scan /></ErrorBoundary></Paywall>} />
+        <Route path="briefschreiber" element={<Paywall><ErrorBoundary><BriefSchreiber /></ErrorBoundary></Paywall>} />
+        <Route path="bausteine"      element={<Paywall><ErrorBoundary><Bausteine /></ErrorBoundary></Paywall>} />
+        <Route path="uebersetzung"   element={<Paywall><ErrorBoundary><Uebersetzung /></ErrorBoundary></Paywall>} />
+        <Route path="dateien"        element={<Paywall><ErrorBoundary><Dateien /></ErrorBoundary></Paywall>} />
+        <Route path="profil"         element={<ErrorBoundary><Profil /></ErrorBoundary>} />
+        <Route path="mobile-scan/:token" element={<MobileScan />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   )
 }
 
