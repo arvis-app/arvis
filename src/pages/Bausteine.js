@@ -296,7 +296,7 @@ export default function Bausteine() {
 
   function sendDirectToBrief() {
     if (!selected) return
-    localStorage.setItem('arvis_brief_input', formatBausteinText(selected.text))
+    localStorage.setItem('arvis_brief_input', selected.text)
     navigate('/briefschreiber')
   }
 
