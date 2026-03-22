@@ -35,7 +35,7 @@ serve(async (req) => {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeKey) throw new Error('STRIPE_SECRET_KEY nicht konfiguriert')
 
-    const { priceId } = await req.json()
+    const { priceId, applyCoupon } = await req.json()
     if (!priceId) throw new Error('priceId fehlt')
 
     const origin = req.headers.get('origin') || 'https://arvis-app.de'
@@ -95,9 +95,17 @@ serve(async (req) => {
     sessionParams.append('line_items[0][quantity]', '1')
     sessionParams.append('success_url', `${origin}/profil?success=true`)
     sessionParams.append('cancel_url', `${origin}/profil?canceled=true`)
-    sessionParams.append('allow_promotion_codes', 'true')
     sessionParams.append('billing_address_collection', 'auto')
     sessionParams.append('subscription_data[metadata][user_id]', user.id)
+
+    // Appliquer le coupon automatiquement si demandé (mensuel uniquement)
+    const couponId = applyCoupon ? Deno.env.get('STRIPE_COUPON_MONTHLY') : null
+    if (couponId) {
+      sessionParams.append('discounts[0][coupon]', couponId)
+    } else {
+      // Sinon afficher le champ code promo
+      sessionParams.append('allow_promotion_codes', 'true')
+    }
 
     const sessionRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',

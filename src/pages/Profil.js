@@ -79,7 +79,7 @@ export default function Profil() {
     setCheckoutLoading(true)
     try {
       const priceId = yearly ? STRIPE_PRICE_YEARLY : STRIPE_PRICE_MONTHLY
-      const data = await invokeEdgeFunction('create-checkout-session', { priceId })
+      const data = await invokeEdgeFunction('create-checkout-session', { priceId, applyCoupon: !yearly })
       if (data?.url) window.location.href = data.url
     } catch (err) {
       showToast('Fehler: ' + err.message, false)

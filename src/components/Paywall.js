@@ -26,7 +26,7 @@ export default function Paywall({ children }) {
 
       // Nouvel utilisateur → Stripe Checkout
       const priceId = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-      const data = await invokeEdgeFunction('create-checkout-session', { priceId })
+      const data = await invokeEdgeFunction('create-checkout-session', { priceId, applyCoupon: true })
       if (data?.url) {
         window.location.href = data.url
       }
