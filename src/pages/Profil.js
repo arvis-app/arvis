@@ -38,7 +38,7 @@ const CardIcon = ({ brand }) => {
 }
 
 export default function Profil() {
-  const { user, profile, updateProfile, getInitials, getPlanInfo, logout } = useAuth()
+  const { user, profile, updateProfile, getInitials, getPlanInfo, logout, refreshProfile } = useAuth()
   const [toast, setToast] = useState(null)
   const [errors, setErrors] = useState({})
   const photoInputRef = useRef(null)
@@ -102,6 +102,20 @@ export default function Profil() {
       setShowCancelModal(false)
     }
   }
+
+  // Rafraîchir le profil au retour de Stripe Checkout
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('success') === 'true') {
+      // Nettoyer l'URL
+      window.history.replaceState({}, '', window.location.pathname)
+      // Attendre un peu que le webhook Stripe ait mis à jour la DB, puis rafraîchir
+      const timer1 = setTimeout(() => refreshProfile(), 1500)
+      const timer2 = setTimeout(() => refreshProfile(), 5000)
+      const timer3 = setTimeout(() => refreshProfile(), 10000)
+      return () => { clearTimeout(timer1); clearTimeout(timer2); clearTimeout(timer3) }
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!profile) return
