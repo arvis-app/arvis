@@ -4,6 +4,8 @@ import { supabase } from '../supabaseClient'
 
 const STRIPE_PRICE_MONTHLY = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
 const STRIPE_PRICE_YEARLY  = process.env.REACT_APP_STRIPE_PRICE_YEARLY
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL
+const SUPABASE_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY
 
 function EyeIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -75,24 +77,34 @@ export default function Profil() {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
 
+  // Appel direct fetch vers les Edge Functions
+  async function callEdgeFunction(fnName, body) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('Nicht eingeloggt. Bitte erneut anmelden.')
+
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify(body)
+    })
+
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`)
+    if (data.error) throw new Error(data.error)
+    return data
+  }
+
   async function handleCheckout() {
     setCheckoutLoading(true)
     try {
-      // Récupérer le token JWT frais de la session active
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Nicht eingeloggt. Bitte erneut anmelden.')
-      const authHeaders = { Authorization: `Bearer ${session.access_token}` }
-
       const priceId = yearly ? STRIPE_PRICE_YEARLY : STRIPE_PRICE_MONTHLY
-      if (!priceId) {
-        throw new Error('Stripe Price ID ist nicht konfiguriert.')
-      }
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId },
-        headers: authHeaders
-      })
-      if (error) throw new Error(error.message)
-      if (data?.error) throw new Error(data.error)
+      if (!priceId) throw new Error('Stripe Price ID ist nicht konfiguriert.')
+
+      const data = await callEdgeFunction('create-checkout-session', { priceId })
       if (data?.url) {
         window.location.href = data.url
       } else {
@@ -109,16 +121,11 @@ export default function Profil() {
   async function manageSubscription() {
     setPortalLoading(true)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Nicht eingeloggt.')
-      const { data, error } = await supabase.functions.invoke('create-portal-session', {
-        headers: { Authorization: `Bearer ${session.access_token}` }
+      const data = await callEdgeFunction('create-portal-session', {
+        returnUrl: window.location.href
       })
-      if (error) throw new Error(error.message)
       if (data?.url) {
         window.location.href = data.url
-      } else if (data?.error) {
-        throw new Error(data.error)
       }
     } catch (err) {
       showToast('Fehler: ' + err.message, false)

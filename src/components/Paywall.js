@@ -2,6 +2,9 @@ import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL
+const SUPABASE_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY
+
 export default function Paywall({ children }) {
   const { isPro, getPlanInfo, profile } = useAuth()
   const [loading, setLoading]  = useState(false)
@@ -12,38 +15,44 @@ export default function Paywall({ children }) {
     return children
   }
 
+  // Appel direct fetch vers les Edge Functions (contourne les bugs de supabase.functions.invoke)
+  async function callEdgeFunction(fnName, body) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('Nicht eingeloggt. Bitte erneut anmelden.')
+
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify(body)
+    })
+
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`)
+    if (data.error) throw new Error(data.error)
+    return data
+  }
+
   const handleUpgrade = async () => {
     try {
       setLoading(true)
 
-      // Récupérer le token JWT frais de la session active
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Nicht eingeloggt. Bitte erneut anmelden.')
-      const authHeaders = { Authorization: `Bearer ${session.access_token}` }
-
-      // Si l'utilisateur a déjà un stripe_customer_id → portal (gestion d'abonnement existant)
+      // Si l'utilisateur a déjà un stripe_customer_id → portal
       if (profile?.stripe_customer_id) {
-        const { data, error } = await supabase.functions.invoke('create-portal-session', {
-          body: { returnUrl: window.location.href },
-          headers: authHeaders
+        const data = await callEdgeFunction('create-portal-session', {
+          returnUrl: window.location.href
         })
-        if (error) throw new Error(error.message)
-        if (data?.error) throw new Error(data.error)
         if (data?.url) { window.location.href = data.url; return }
       }
 
       // Sinon → checkout (nouvel abonnement)
       const priceId = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-      if (!priceId) {
-        throw new Error('REACT_APP_STRIPE_PRICE_MONTHLY ist nicht konfiguriert')
-      }
+      if (!priceId) throw new Error('REACT_APP_STRIPE_PRICE_MONTHLY ist nicht konfiguriert')
 
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId },
-        headers: authHeaders
-      })
-      if (error) throw new Error(error.message)
-      if (data?.error) throw new Error(data.error)
+      const data = await callEdgeFunction('create-checkout-session', { priceId })
       if (data?.url) {
         window.location.href = data.url
       } else {
