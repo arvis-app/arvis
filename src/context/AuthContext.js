@@ -54,8 +54,10 @@ export function AuthProvider({ children }) {
 
     // Écouter les changements d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Si l'utilisateur est sur /reset-password, ne pas interférer avec le flux de reset
+      const onResetPage = window.location.pathname === '/reset-password'
+
       if (event === 'PASSWORD_RECOVERY') {
-        // L'utilisateur a cliqué sur le lien de reset → on l'authentifie et on affiche le form
         setUser(session.user)
         setIsResettingPassword(true)
         setLoading(false)
@@ -63,13 +65,18 @@ export function AuthProvider({ children }) {
       }
       if (session) {
         setUser(session.user)
-        loadProfile(session.user.id)
-        setIsResettingPassword(false)
+        // Ne pas charger le profil ni réinitialiser isResettingPassword sur la page reset
+        if (!onResetPage) {
+          loadProfile(session.user.id)
+          setIsResettingPassword(false)
+        }
       } else {
         setUser(null)
         setProfile(null)
         setIsPro(false)
-        setIsResettingPassword(false)
+        if (!onResetPage) {
+          setIsResettingPassword(false)
+        }
       }
     })
 

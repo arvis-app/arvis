@@ -18,7 +18,7 @@ import './App.css'
 function PrivateRoute({ children }) {
   const { user, loading, isResettingPassword } = useAuth()
   if (loading) return <div className="app-loader"><div className="spinner" /></div>
-  if (isResettingPassword) return <Navigate to="/login" replace />
+  if (isResettingPassword) return <Navigate to="/reset-password" replace />
   return user ? children : <Navigate to="/login" replace />
 }
 

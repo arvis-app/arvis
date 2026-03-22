@@ -78,11 +78,22 @@ export default function Profil() {
   async function handleCheckout() {
     setCheckoutLoading(true)
     try {
+      // Essayer d'abord create-checkout-session (pour nouveaux abonnés)
       const priceId = yearly ? STRIPE_PRICE_YEARLY : STRIPE_PRICE_MONTHLY
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId }
       })
-      if (error) throw new Error(error.message || 'Verbindungsfehler')
+      if (error) {
+        // Si la fonction n'est pas déployée (non-2xx), fallback sur create-portal-session
+        console.warn('create-checkout-session non disponible, fallback sur portal:', error.message)
+        const { data: portalData, error: portalError } = await supabase.functions.invoke('create-portal-session', {
+          body: { returnUrl: window.location.href }
+        })
+        if (portalError) throw new Error(portalError.message || 'Verbindungsfehler')
+        if (portalData?.error) throw new Error(portalData.error)
+        if (portalData?.url) window.location.href = portalData.url
+        return
+      }
       if (data?.error) throw new Error(data.error)
       if (data?.url) window.location.href = data.url
     } catch (err) {

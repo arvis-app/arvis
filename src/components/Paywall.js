@@ -5,7 +5,7 @@ import { supabase } from '../supabaseClient'
 export default function Paywall({ children }) {
   const { isPro, getPlanInfo } = useAuth()
   const [loading, setLoading]  = useState(false)
-  
+
   const planInfo = getPlanInfo()
 
   if (isPro) {
@@ -15,18 +15,16 @@ export default function Paywall({ children }) {
   const handleUpgrade = async () => {
     try {
       setLoading(true)
-      const priceId = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId }
+      const { data, error } = await supabase.functions.invoke('create-portal-session', {
+        body: { returnUrl: window.location.href }
       })
-      if (error) throw new Error(error.message || 'Verbindungsfehler')
-      if (data?.error) throw new Error(data.error)
+      if (error) throw error
       if (data?.url) {
         window.location.href = data.url
       }
     } catch (err) {
-      console.error('Checkout error:', err)
-      alert('Fehler: ' + err.message)
+      console.error(err)
+      // On ignore l'alerte bloquante, console error suffit pour un portail
     } finally {
       setLoading(false)
     }
@@ -38,7 +36,7 @@ export default function Paywall({ children }) {
         <h1 className="section-title">Abonnement Erforderlich ✨</h1>
         <p className="section-subtitle">Schalten Sie alle Funktionen von Arvis frei</p>
       </div>
-      
+
       <div style={{
         background: 'var(--bg-2)',
         border: '1px solid var(--border)',
@@ -59,20 +57,20 @@ export default function Paywall({ children }) {
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
         </div>
-        
+
         <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>
-          {planInfo.plan === 'canceled' 
+          {planInfo.plan === 'canceled'
             ? 'Ihr Abonnement wurde gekündigt'
             : 'Ihr Probemonat ist abgelaufen'}
         </h2>
-        
+
         <p style={{ color: 'var(--text-2)', fontSize: 15, lineHeight: 1.6, marginBottom: 32 }}>
           {planInfo.plan === 'canceled'
             ? 'Ihr vorheriges Abonnement ist nicht mehr aktiv. Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und Premium-Funktionen zu haben, reaktivieren Sie bitte Ihr Abonnement.'
             : 'Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und andere Premium-Funktionen zu haben, upgraden Sie bitte auf Arvis Pro.'}
         </p>
 
-        <button 
+        <button
           onClick={handleUpgrade}
           disabled={loading}
           style={{

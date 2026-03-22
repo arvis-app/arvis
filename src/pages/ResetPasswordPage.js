@@ -12,15 +12,49 @@ export default function ResetPasswordPage() {
   const [success, setSuccess]     = useState(false)
   const [sessionReady, setSessionReady] = useState(false)
 
-  // Supabase traite automatiquement le token dans l'URL et crée la session
   useEffect(() => {
+    let cancelled = false
+
+    // Check if there's a code param (PKCE flow) or hash tokens (implicit flow)
+    const hasCode = new URLSearchParams(window.location.search).has('code')
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''))
+    const hasHashToken = hashParams.has('access_token')
+
+    if (hasCode || hasHashToken) {
+      // Wait for Supabase to exchange the code/token for a session
+      // This fires PASSWORD_RECOVERY or SIGNED_IN
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (cancelled) return
+        if (session) {
+          setSessionReady(true)
+        }
+      })
+
+      // Also check if session is already available (exchange happened before listener)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!cancelled && session) {
+          setSessionReady(true)
+        }
+      })
+
+      return () => {
+        cancelled = true
+        subscription.unsubscribe()
+      }
+    }
+
+    // No code or token in URL — check for existing session (direct navigation)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate('/login', { replace: true })
-      } else {
+      if (cancelled) return
+      if (session) {
         setSessionReady(true)
+      } else {
+        // No session and no recovery token — redirect to login
+        navigate('/login', { replace: true })
       }
     })
+
+    return () => { cancelled = true }
   }, [navigate])
 
   async function handleSubmit() {
@@ -34,7 +68,10 @@ export default function ResetPasswordPage() {
       const { error: err } = await supabase.auth.updateUser({ password })
       if (err) throw err
       setSuccess(true)
-      setTimeout(() => navigate('/dashboard', { replace: true }), 2000)
+      setTimeout(() => {
+        // Sign out and redirect to login so user logs in with new password
+        supabase.auth.signOut().then(() => navigate('/login', { replace: true }))
+      }, 2000)
     } catch (e) {
       setError(e.message || 'Fehler beim Ändern des Passworts.')
     } finally {
@@ -44,7 +81,7 @@ export default function ResetPasswordPage() {
 
   if (!sessionReady) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-1, #0d0d1a)' }}>
         <div className="spinner" />
       </div>
     )
@@ -68,7 +105,7 @@ export default function ResetPasswordPage() {
         </div>
         <div className="login-headline">
           <h2>Sicher.<br/>Einfach.<br/>Schnell.</h2>
-          <p>Legen Sie Ihr neues Passwort fest und kehren Sie zu Ihrem Arvis-Konto zurück.</p>
+          <p>Legen Sie Ihr neues Passwort fest und kehren Sie zu Ihrem Arvis-Konto zurueck.</p>
         </div>
       </div>
 
@@ -98,7 +135,7 @@ export default function ResetPasswordPage() {
               background: 'rgba(46,125,50,0.07)', borderRadius: 8,
               color: '#2e7d32', fontWeight: 600, fontSize: 14
             }}>
-              ✓ Passwort erfolgreich geändert — Sie werden weitergeleitet…
+              Passwort erfolgreich geaendert — Sie werden zur Anmeldung weitergeleitet...
             </div>
           ) : (
             <>
@@ -136,7 +173,7 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="form-group" style={{ marginTop: 12 }}>
-                <label className="form-label">Passwort bestätigen</label>
+                <label className="form-label">Passwort bestaetigen</label>
                 <input
                   type={showPw ? 'text' : 'password'}
                   className="form-input"
@@ -153,7 +190,7 @@ export default function ResetPasswordPage() {
                 disabled={loading}
                 style={{ marginTop: 20 }}
               >
-                {loading ? 'Speichern…' : 'Passwort speichern'}
+                {loading ? 'Speichern...' : 'Passwort speichern'}
               </button>
             </>
           )}
