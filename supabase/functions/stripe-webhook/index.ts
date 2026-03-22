@@ -44,18 +44,20 @@ serve(async (req) => {
         const customerId = subscription.customer as string
         const status = subscription.status
         const cancelAtPeriodEnd = subscription.cancel_at_period_end
+        const cancelAt = subscription.cancel_at // timestamp Unix si annulation planifiée
 
         let plan = 'trial'
-        if (status === 'active' && cancelAtPeriodEnd) plan = 'canceled_pending'
+        if (status === 'active' && (cancelAtPeriodEnd || cancelAt)) plan = 'canceled_pending'
         else if (status === 'active') plan = 'pro'
         else if (status === 'past_due' || status === 'unpaid') plan = 'trial'
         else if (status === 'canceled') plan = 'canceled'
 
         const updateData: any = { plan }
 
-        // Sauvegarder la date de fin de période
-        if (subscription.current_period_end) {
-          updateData.subscription_end_date = new Date(subscription.current_period_end * 1000).toISOString()
+        // Sauvegarder la date de fin : cancel_at si annulation planifiée, sinon current_period_end
+        const endTimestamp = cancelAt || subscription.current_period_end
+        if (endTimestamp) {
+          updateData.subscription_end_date = new Date(endTimestamp * 1000).toISOString()
         }
         
         // If a default payment method is attached natively to the subscription
