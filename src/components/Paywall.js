@@ -15,19 +15,16 @@ export default function Paywall({ children }) {
   const handleUpgrade = async () => {
     try {
       setLoading(true)
-      const priceId = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-      const { data: { session } } = await supabase.auth.getSession()
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId },
-        headers: session ? { Authorization: `Bearer ${session.access_token}` } : {}
+      const { data, error } = await supabase.functions.invoke('create-portal-session', {
+        body: { returnUrl: window.location.href }
       })
       if (error) throw error
-      if (data?.error) throw new Error(data.error)
       if (data?.url) {
         window.location.href = data.url
       }
     } catch (err) {
-      console.error('Checkout error:', err)
+      console.error(err)
+      // On ignore l'alerte bloquante, console error suffit pour un portail
     } finally {
       setLoading(false)
     }

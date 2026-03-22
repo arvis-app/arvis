@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
-import { useNavigate } from 'react-router-dom'
 
-const STRIPE_PRICE_MONTHLY = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-const STRIPE_PRICE_YEARLY = process.env.REACT_APP_STRIPE_PRICE_YEARLY
+const STRIPE_PRICE_MONTHLY = 'price_monthly'
+const STRIPE_PRICE_YEARLY = 'price_yearly'
 
 function EyeIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -39,16 +38,14 @@ const CardIcon = ({ brand }) => {
 }
 
 export default function Profil() {
-  const { user, profile, updateProfile, getInitials, getPlanInfo, logout, refreshProfile } = useAuth()
+  const { user, profile, updateProfile, getInitials, getPlanInfo, logout } = useAuth()
   const [toast, setToast] = useState(null)
   const [errors, setErrors] = useState({})
   const photoInputRef = useRef(null)
-  const navigate = useNavigate()
 
   // Plan
   const planInfo = getPlanInfo()
   const [yearly, setYearly] = useState(false)
-  const [checkoutLoading, setCheckoutLoading] = useState(false)
 
   // Profil fields
   const [titel, setTitel] = useState('')
@@ -76,41 +73,6 @@ export default function Profil() {
   // Modals
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
-
-  // ── Checkout (neues Abo) ────────────────────────────────────────────────────
-  async function handleCheckout() {
-    setCheckoutLoading(true)
-    try {
-      const priceId = yearly
-        ? process.env.REACT_APP_STRIPE_PRICE_YEARLY
-        : process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-      const { data: { session } } = await supabase.auth.getSession()
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId },
-        headers: session ? { Authorization: `Bearer ${session.access_token}` } : {}
-      })
-      if (error) throw new Error(error.message)
-      if (data?.error) throw new Error(data.error)
-      if (data?.url) window.location.href = data.url
-    } catch (err) {
-      showToast('Fehler: ' + err.message, false)
-    } finally {
-      setCheckoutLoading(false)
-    }
-  }
-
-  // ── Handle Stripe redirect (success / cancel) ───────────────────────────────
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('success') === 'true') {
-      showToast('Abonnement erfolgreich aktiviert! 🎉')
-      if (typeof refreshProfile === 'function') refreshProfile()
-      navigate('/profil', { replace: true })
-    } else if (params.get('canceled') === 'true') {
-      showToast('Zahlung abgebrochen', false)
-      navigate('/profil', { replace: true })
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function manageSubscription() {
     setPortalLoading(true)
@@ -437,13 +399,10 @@ export default function Profil() {
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={handleCheckout}
-                    disabled={checkoutLoading}
-                    style={{ width: '100%', padding: 11, borderRadius: 6, border: 'none', background: checkoutLoading ? 'var(--orange-dark)' : 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 600, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.2s', opacity: checkoutLoading ? 0.8 : 1 }}
-                    onMouseOver={e => { if (!checkoutLoading) e.target.style.background = 'var(--orange-dark)' }}
-                    onMouseOut={e => { if (!checkoutLoading) e.target.style.background = 'var(--orange)' }}>
-                    {checkoutLoading ? 'Weiterleitung...' : yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
+                  <button onClick={manageSubscription}
+                    style={{ width: '100%', padding: 11, borderRadius: 6, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.2s' }}
+                    onMouseOver={e => e.target.style.background = 'var(--orange-dark)'} onMouseOut={e => e.target.style.background = 'var(--orange)'}>
+                    {yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
                   </button>
                 </div>
               )}
