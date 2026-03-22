@@ -176,9 +176,6 @@ export default function Uebersetzung() {
                     <div className="ueb-detail-term">{selected.de}</div>
                     <div className="ueb-detail-cat">{selected.cat}</div>
                   </div>
-                  <button className="result-action-btn" onClick={copyAll} title="Alle kopieren" style={{flexShrink:0}}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  </button>
                 </div>
                 <div className="ueb-detail-rows">
                   {/* DE Fachbegriff */}

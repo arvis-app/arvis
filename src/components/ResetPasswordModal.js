@@ -22,7 +22,7 @@ export default function ResetPasswordModal() {
       const { error: err } = await supabase.auth.updateUser({ password })
       if (err) throw err
       setSuccess(true)
-      setTimeout(() => navigate('/dashboard'), 2000)
+      setTimeout(() => navigate('/app/dashboard'), 2000)
     } catch (e) {
       setError(e.message || 'Fehler beim Ändern des Passworts.')
     } finally {

@@ -93,8 +93,8 @@ serve(async (req) => {
     sessionParams.append('mode', 'subscription')
     sessionParams.append('line_items[0][price]', priceId)
     sessionParams.append('line_items[0][quantity]', '1')
-    sessionParams.append('success_url', `${origin}/profil?success=true`)
-    sessionParams.append('cancel_url', `${origin}/profil?canceled=true`)
+    sessionParams.append('success_url', `${origin}/app/profil?success=true`)
+    sessionParams.append('cancel_url', `${origin}/app/profil?canceled=true`)
     sessionParams.append('billing_address_collection', 'auto')
     sessionParams.append('subscription_data[metadata][user_id]', user.id)
 
