@@ -42,7 +42,23 @@ serve(async (req) => {
 
     let customerId = profile?.stripe_customer_id
 
-    // Stripe-Kunde erstellen falls noch nicht vorhanden
+    // Vérifier que le client Stripe existe encore (peut avoir été supprimé)
+    if (customerId) {
+      const checkRes = await fetch(`https://api.stripe.com/v1/customers/${customerId}`, {
+        headers: { 'Authorization': `Basic ${btoa(stripeKey + ':')}` }
+      })
+      const checkData = await checkRes.json()
+      if (!checkRes.ok || checkData.deleted) {
+        // Client supprimé dans Stripe → réinitialiser
+        customerId = null
+        await supabaseAdmin
+          .from('users')
+          .update({ stripe_customer_id: null, card_brand: null, card_last4: null, plan: 'trial' })
+          .eq('id', user.id)
+      }
+    }
+
+    // Créer un nouveau client Stripe si nécessaire
     if (!customerId) {
       const customerParams = new URLSearchParams()
       customerParams.append('email', user.email ?? '')
