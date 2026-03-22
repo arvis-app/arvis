@@ -2,10 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 
-const STRIPE_PRICE_MONTHLY = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-const STRIPE_PRICE_YEARLY  = process.env.REACT_APP_STRIPE_PRICE_YEARLY
-const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL
-const SUPABASE_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY
+const STRIPE_PRICE_MONTHLY = 'price_monthly'
+const STRIPE_PRICE_YEARLY = 'price_yearly'
 
 function EyeIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -48,7 +46,6 @@ export default function Profil() {
   // Plan
   const planInfo = getPlanInfo()
   const [yearly, setYearly] = useState(false)
-  const [checkoutLoading, setCheckoutLoading] = useState(false)
 
   // Profil fields
   const [titel, setTitel] = useState('')
@@ -77,55 +74,15 @@ export default function Profil() {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
 
-  // Appel direct fetch vers les Edge Functions
-  async function callEdgeFunction(fnName, body) {
-    const { data: { session }, error: sessionError } = await supabase.auth.refreshSession()
-    if (sessionError || !session) throw new Error('Sitzung abgelaufen. Bitte erneut anmelden.')
-
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify(body)
-    })
-
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`)
-    if (data.error) throw new Error(data.error)
-    return data
-  }
-
-  async function handleCheckout() {
-    setCheckoutLoading(true)
-    try {
-      const priceId = yearly ? STRIPE_PRICE_YEARLY : STRIPE_PRICE_MONTHLY
-      if (!priceId) throw new Error('Stripe Price ID ist nicht konfiguriert.')
-
-      const data = await callEdgeFunction('create-checkout-session', { priceId })
-      if (data?.url) {
-        window.location.href = data.url
-      } else {
-        throw new Error('Keine Checkout-URL erhalten.')
-      }
-    } catch (err) {
-      console.error('Checkout error:', err)
-      showToast('Fehler: ' + err.message, false)
-    } finally {
-      setCheckoutLoading(false)
-    }
-  }
-
   async function manageSubscription() {
     setPortalLoading(true)
     try {
-      const data = await callEdgeFunction('create-portal-session', {
-        returnUrl: window.location.href
-      })
+      const { data, error } = await supabase.functions.invoke('create-portal-session')
+      if (error) throw new Error(error.message)
       if (data?.url) {
         window.location.href = data.url
+      } else if (data?.error) {
+        throw new Error(data.error)
       }
     } catch (err) {
       showToast('Fehler: ' + err.message, false)
@@ -181,7 +138,7 @@ export default function Profil() {
       avatar_url: photo || null,
     })
     if (error) { showToast('Fehler beim Speichern'); return }
-    showToast('Profil gespeichert')
+    showToast('✓ Profil gespeichert')
   }
 
   // ── Save password ──────────────────────────────────────────────────────────
@@ -212,7 +169,7 @@ export default function Profil() {
   const displayName = [titel, vorname ? vorname[0] + '.' : '', nachname].filter(Boolean).join(' ') || 'Arvis'
 
   return (
-    <div className="page active" id="page-profil">
+    <div className="page active">
       <div className="page-header">
         <div>
           <div className="page-title">Mein Profil</div>
@@ -220,7 +177,7 @@ export default function Profil() {
         </div>
       </div>
 
-      <div className="profil-layout">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
 
         {/* ── Linke Spalte: Persönliche Infos ── */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -241,9 +198,12 @@ export default function Profil() {
               <div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => photoInputRef.current?.click()}>Foto ändern</button>
-                  <button
-                    className="btn-danger"
+                  <button 
+                    className="btn-secondary" 
+                    style={{ fontSize: 12, color: '#e53e3e', borderColor: '#e53e3e', transition: 'background 0.2s' }} 
                     onClick={() => setPhoto(null)}
+                    onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
+                    onMouseOut={e=>e.target.style.background=''}
                   >
                     Foto löschen
                   </button>
@@ -442,10 +402,10 @@ export default function Profil() {
                       </div>
                     </div>
                   </div>
-                  <button onClick={handleCheckout} disabled={checkoutLoading}
-                    style={{ width: '100%', padding: 11, borderRadius: 6, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 600, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.2s', opacity: checkoutLoading ? 0.7 : 1 }}
-                    onMouseOver={e => { if (!checkoutLoading) e.target.style.background = 'var(--orange-dark)' }} onMouseOut={e => e.target.style.background = 'var(--orange)'}>
-                    {checkoutLoading ? 'Laden…' : yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
+                  <button onClick={() => showToast('Stripe-Integration folgt')}
+                    style={{ width: '100%', padding: 11, borderRadius: 6, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.2s' }}
+                    onMouseOver={e => e.target.style.background = 'var(--orange-dark)'} onMouseOut={e => e.target.style.background = 'var(--orange)'}>
+                    {yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
                   </button>
                 </div>
               )}
@@ -456,7 +416,12 @@ export default function Profil() {
                   <div style={{ paddingTop: 8, borderTop: '1px solid var(--border)' }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Abonnement kündigen</div>
                     <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 12 }}>Ihr Zugang bleibt bis zum Ende des aktuellen Abrechnungszeitraums aktiv.</div>
-                    <button className="btn-danger" onClick={() => setShowCancelModal(true)}>
+                    <button 
+                      onClick={() => setShowCancelModal(true)} 
+                      style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid #e53e3e', background: 'transparent', color: '#e53e3e', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition:'background 0.2s' }}
+                      onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
+                      onMouseOut={e=>e.target.style.background='transparent'}
+                    >
                       Abonnement kündigen
                     </button>
                   </div>
