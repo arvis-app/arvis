@@ -431,7 +431,8 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   width: 3px; border-radius: 0 3px 3px 0;
   background: var(--orange);
 }
-.nav-item-icon { font-size: 17px; width: 22px; text-align: center; }
+.nav-item-icon { font-size: 17px; width: 22px; text-align: center; line-height: 1; }
+.nav-item-icon svg { display: block; margin: 0 auto; vertical-align: middle; }
 .nav-item-badge {
   margin-left: auto; font-size: 10px; font-weight: 700;
   background: var(--orange); color: white;
@@ -465,6 +466,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 /* Main content */
 .main-content {
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 28px;
   background: var(--bg);
   box-sizing: border-box;
@@ -927,22 +929,26 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
 
   /* Übersetzung — drapeau seul + panels empilés */
   .ueb-layout { min-height: 400px; grid-template-columns: 1fr !important; }
+  .ueb-list-container { height: auto !important; max-height: 300px; }
   .ueb-item { grid-template-columns: 1fr; }
   .ueb-lang-toggle { padding: 8px 10px; min-width: 38px; flex: 0 0 auto; }
   .ueb-lang-toggle span { display: none; }
   .ueb-lang-toggle svg { width: 22px; height: 15px; }
+  .ueb-detail-rows { padding: 8px 0 !important; }
   .ueb-detail-row {
     display: grid !important;
-    grid-template-columns: 24px auto 1fr !important;
-    grid-template-areas: "flag label copy" "val val val" !important;
+    grid-template-columns: 28px 1fr !important;
+    grid-template-areas: "flag label" "val val" !important;
+    column-gap: 8px !important;
     row-gap: 6px !important;
     align-items: center !important;
-    padding: 10px 14px !important;
+    padding: 10px 50px 16px 14px !important;
+    position: relative !important;
   }
   .ueb-detail-lang { grid-area: flag; }
-  .ueb-detail-label { grid-area: label; display: flex; align-items: center; margin-left: 6px; }
-  .ueb-detail-copy { grid-area: copy; justify-self: end; margin-left: auto; }
-  .ueb-detail-val { grid-area: val; font-size: 16px; padding-left: 0; font-weight: 600; margin-top: 4px; word-break: break-word; }
+  .ueb-detail-label { grid-area: label; display: flex; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ueb-detail-copy { position: absolute !important; right: 14px !important; top: 10px !important; }
+  .ueb-detail-val { grid-area: val; font-size: 15px; padding: 4px 0 0; font-weight: 600; word-break: break-word; }
 
   /* Dateien — boutons côte à côte */
   .dateien-toolbar { flex-wrap: wrap; }
@@ -956,7 +962,7 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
   .dateien-header-actions button { flex: 1; width: auto !important; justify-content: center; padding: 10px 6px; font-size: 12px; margin: 0; }
 
   /* Brief & Scan header resets */
-  .page-header > *:last-child { margin-left: auto !important; }
+  .page-header > *:nth-child(2) { margin-left: auto !important; }
 
   /* Brief modes gap filling */
   .brief-modes { display: flex; width: 100%; gap: 8px; justify-content: space-between; margin-bottom: 16px; box-sizing: border-box; }
@@ -965,6 +971,7 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
   /* Brief — éviter overflow horizontal */
   .brief-panel, .brief-panel:last-child { height: auto !important; min-height: 480px; min-width: 0; max-width: 100%; overflow-x: hidden; }
   .brief-options { flex-wrap: wrap; gap: 10px; padding: 12px; justify-content: flex-start; }
+  .brief-option-btns { flex-wrap: wrap; }
   .brief-action-row { gap: 8px; flex-wrap: wrap; }
   .brief-action-row .btn-diktieren, .brief-action-row .brief-submit-btn { flex: 1; width: auto; min-width: 0; }
 }
@@ -1167,13 +1174,9 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
    ÜBERSETZUNG PAGE
 ═══════════════════════════════════ */
 
-/* Übersetzung : labels abrégés sur écran étroit */
+/* Übersetzung : toujours label complet */
 .ueb-lbl-abbr { display: none; }
 .ueb-lbl-full { display: inline; }
-@media (max-width: 700px) {
-  .ueb-lbl-abbr { display: inline; }
-  .ueb-lbl-full { display: none; }
-}
 .ueb-search-box { display:flex; align-items:center; gap:10px; background:var(--card); border:1.5px solid var(--border); border-radius: 8px; padding:10px 16px; box-shadow:var(--shadow); transition:border-color 0.2s; margin-bottom:8px; }
 .ueb-search-box:focus-within { border-color:var(--orange); }
 .ueb-search-box input { flex:1; border:none; background:transparent; color:var(--text); font-size:15px; font-family:'DM Sans',sans-serif; outline:none; }
@@ -1218,8 +1221,7 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
 .ueb-detail-lang { width:28px; flex-shrink:0; display:flex; align-items:center; }
 .ueb-detail-val { word-break:break-word; overflow-wrap:break-word; flex:1; min-width:60px; padding-left:12px; font-size:14px; color:var(--text); font-weight:500; }
 .ueb-detail-val.empty { color:var(--text-3); font-style:italic; font-weight:400; }
-.ueb-detail-copy { width:26px; height:26px; border-radius:7px; border:1px solid var(--border); background:var(--bg); color:var(--text-3); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; flex-shrink:0; opacity:0; }
-.ueb-detail-row:hover .ueb-detail-copy { opacity:1; }
+.ueb-detail-copy { width:26px; height:26px; border-radius:7px; border:1px solid var(--border); background:var(--bg); color:var(--text-3); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; flex-shrink:0; }
 .ueb-detail-copy:hover { color:var(--orange); border-color:var(--orange); }
 .ueb-detail-divider { height:1px; background:var(--border); margin:6px 20px; }
 .ueb-controls { display:flex; flex-direction:column; margin-bottom:10px; }
