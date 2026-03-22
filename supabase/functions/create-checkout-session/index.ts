@@ -112,11 +112,18 @@ serve(async (req) => {
     const couponsData = await couponsRes.json()
     const activeCoupon = couponsData?.data?.find((c: any) => {
       if (!c.valid) return false
-      // Si le coupon a une restriction applies_to, vérifier que ce produit est inclus
+
+      // Priorité 1 : restriction par price_id dans les métadonnées du coupon
+      if (c.metadata?.price_id) {
+        return c.metadata.price_id === priceId
+      }
+
+      // Priorité 2 : restriction par produit (applies_to)
       if (c.applies_to?.products?.length > 0) {
         return productId && c.applies_to.products.includes(productId)
       }
-      // Coupon sans restriction → applicable partout
+
+      // Pas de restriction → applicable à tous les prix
       return true
     })
 
