@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 
 export default function LoginPage() {
   const { login, register, loginWithGoogle, isResettingPassword } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const redirectTo = location.state?.from?.pathname || '/dashboard'
 
   const [tab, setTab]               = useState('login')
   const [error, setError]           = useState('')
@@ -47,7 +49,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(loginEmail, loginPassword)
-      navigate('/dashboard')
+      navigate(redirectTo, { replace: true })
     } catch {
       setError('E-Mail-Adresse oder Passwort ist falsch.')
     } finally {

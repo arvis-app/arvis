@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import LoginPage      from './pages/LoginPage'
 import AppLayout      from './components/AppLayout'
@@ -17,9 +17,10 @@ import './App.css'
 
 function PrivateRoute({ children }) {
   const { user, loading, isResettingPassword } = useAuth()
+  const location = useLocation()
   if (loading) return <div className="app-loader"><div className="spinner" /></div>
   if (isResettingPassword) return <Navigate to="/reset-password" replace />
-  return user ? children : <Navigate to="/login" replace />
+  return user ? children : <Navigate to="/login" state={{ from: location }} replace />
 }
 
 function PublicRoute({ children }) {
