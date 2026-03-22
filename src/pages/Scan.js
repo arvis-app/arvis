@@ -228,13 +228,31 @@ export default function Scan() {
             const raw = payload.new.image_url
             const filenames = raw.startsWith('[') ? JSON.parse(raw) : [raw]
 
+            // Normalise l'orientation EXIF via canvas (le navigateur applique auto l'EXIF)
+            async function normalizeBlob(blob) {
+              return new Promise((resolve) => {
+                const url = URL.createObjectURL(blob)
+                const img = new Image()
+                img.onload = () => {
+                  const canvas = document.createElement('canvas')
+                  canvas.width = img.naturalWidth
+                  canvas.height = img.naturalHeight
+                  canvas.getContext('2d').drawImage(img, 0, 0)
+                  URL.revokeObjectURL(url)
+                  canvas.toBlob(resolve, 'image/jpeg', 0.92)
+                }
+                img.src = url
+              })
+            }
+
             if (filenames.length === 1) {
-              // Une seule image — comportement original
+              // Une seule image — normalise l'orientation puis loadFile
               const { data: blob, error } = await supabase.storage
                 .from('scan-images')
                 .download(filenames[0])
               if (error) throw error
-              loadFile(new File([blob], 'mobile_scan.jpg', { type: blob.type }))
+              const normalized = await normalizeBlob(blob)
+              loadFile(new File([normalized], 'mobile_scan.jpg', { type: 'image/jpeg' }))
             } else {
               // Plusieurs images → assemblage en PDF multi-pages
               const pdfDoc = await PDFDocument.create()
@@ -243,14 +261,9 @@ export default function Scan() {
                   .from('scan-images')
                   .download(filename)
                 if (error) throw error
-                const arrayBuffer = await blob.arrayBuffer()
-                const ext = filename.toLowerCase()
-                let img
-                if (ext.endsWith('.png')) {
-                  img = await pdfDoc.embedPng(arrayBuffer)
-                } else {
-                  img = await pdfDoc.embedJpg(arrayBuffer)
-                }
+                const normalized = await normalizeBlob(blob)
+                const arrayBuffer = await normalized.arrayBuffer()
+                const img = await pdfDoc.embedJpg(arrayBuffer)
                 const page = pdfDoc.addPage([img.width, img.height])
                 page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height })
               }
