@@ -204,7 +204,7 @@ export default function Profil() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+      <div className="profil-layout">
 
         {/* ── Linke Spalte: Persönliche Infos ── */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { downloadAsWord } from '../utils/downloadWord'
 import { QRCodeSVG } from 'qrcode.react'
+import { PDFDocument } from 'pdf-lib'
 
 // ── Markdown → HTML (fidèle à l'original) ─────────────────────────────────────
 function markdownToHtml(md) {
@@ -224,20 +225,39 @@ export default function Scan() {
           setShowQrModal(false)
           channel.unsubscribe()
           try {
-            // "image_url" contient maintenant le bucket filePath (filename)
-            const filename = payload.new.image_url
+            const raw = payload.new.image_url
+            const filenames = raw.startsWith('[') ? JSON.parse(raw) : [raw]
 
-            // Téléchargement sécurisé via le client Supabase (utilise le token d'auth du PC)
-            const { data: blob, error } = await supabase.storage
-              .from('scan-images')
-              .download(filename)
-
-            if (error) {
-              throw error
+            if (filenames.length === 1) {
+              // Une seule image — comportement original
+              const { data: blob, error } = await supabase.storage
+                .from('scan-images')
+                .download(filenames[0])
+              if (error) throw error
+              loadFile(new File([blob], 'mobile_scan.jpg', { type: blob.type }))
+            } else {
+              // Plusieurs images → assemblage en PDF multi-pages
+              const pdfDoc = await PDFDocument.create()
+              for (const filename of filenames) {
+                const { data: blob, error } = await supabase.storage
+                  .from('scan-images')
+                  .download(filename)
+                if (error) throw error
+                const arrayBuffer = await blob.arrayBuffer()
+                const ext = filename.toLowerCase()
+                let img
+                if (ext.endsWith('.png')) {
+                  img = await pdfDoc.embedPng(arrayBuffer)
+                } else {
+                  img = await pdfDoc.embedJpg(arrayBuffer)
+                }
+                const page = pdfDoc.addPage([img.width, img.height])
+                page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height })
+              }
+              const pdfBytes = await pdfDoc.save()
+              const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' })
+              loadFile(new File([pdfBlob], 'mobile_scan.pdf', { type: 'application/pdf' }))
             }
-
-            const file = new File([blob], "mobile_scan.jpg", { type: blob.type })
-            loadFile(file)
           } catch (e) {
             console.error("Failed to download secure image", e)
             alert("Erreur de téléchargement depuis le bucket privé : " + e.message)

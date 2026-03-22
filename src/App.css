@@ -793,8 +793,6 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   background: rgba(0,0,0,0.45);
   z-index: 99;
 }
-body.menu-open .sidebar-overlay { display: block; }
-body.menu-open .sidebar { transform: translateX(0) !important; }
 
 /* ── Hamburger + sidebar overlay dès ≤1100px ── */
 @media (max-width: 1100px) {
@@ -828,7 +826,7 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
     transition: transform 0.3s cubic-bezier(.4,0,.2,1);
     box-shadow: none;
   }
-  body.menu-open .sidebar {
+  .app-layout.menu-open .sidebar {
     box-shadow: 4px 0 24px rgba(0,0,0,0.2);
   }
 
@@ -982,9 +980,8 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
   .bausteine-left { min-width: 0; }
   .bausteine-left-col { height: auto !important; }
   .bausteine-list { max-height: 300px !important; }
-  #page-bausteine > div:not(.page-header) { flex-direction: column !important; width: 100% !important; box-sizing: border-box !important; margin: 0 !important; }
-  #page-bausteine > div:not(.page-header) > div { width: 100% !important; box-sizing: border-box !important; flex: unset !important; max-width: 100%; min-width: 0; overflow-x: hidden; }
-  #page-bausteine > div:not(.page-header) > div:first-child { position: static !important; height: auto !important; }
+  .bausteine-left, .bausteine-right { width: 100%; box-sizing: border-box; max-width: 100%; overflow-x: hidden; }
+  .bausteine-left { height: auto !important; }
 }
 
 /* ── Petits téléphones (≤480px) ── */
@@ -1095,7 +1092,8 @@ body.menu-open .sidebar { transform: translateX(0) !important; }
    BAUSTEINE PAGE
 ═══════════════════════════════════ */
 .bausteine-layout { display:grid; grid-template-columns:320px 1fr; gap:20px; align-items:start; min-width:0; overflow-x:auto; }
-.bausteine-left { display:flex; flex-direction:column; gap:10px; min-width:320px; flex-shrink:0; }
+.bausteine-left { display:flex; flex-direction:column; gap:12px; min-width:0; }
+.bausteine-right { display:flex; flex-direction:column; gap:12px; min-width:0; }
 .bausteine-search { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius: 8px; box-shadow:var(--shadow); }
 .bausteine-search input { flex:1; border:none; background:transparent; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; }
 .bausteine-search input::placeholder { color:var(--text-3); }

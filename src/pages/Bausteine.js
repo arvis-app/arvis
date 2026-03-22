@@ -352,10 +352,10 @@ export default function Bausteine() {
         </button>
       </div>
 
-      <div style={{display:'flex',gap:16,alignItems:'flex-start',paddingTop:4}}>
+      <div className="bausteine-layout" style={{paddingTop:4}}>
 
         {/* LEFT: Search + List */}
-        <div className="bausteine-left-col" style={{flex:2,display:'flex',flexDirection:'column',gap:12,minWidth:0,height:basket.length>0?Math.max(560,rightH):560}}>
+        <div className="bausteine-left bausteine-left-col" style={{height:basket.length>0?Math.max(560,rightH):560}}>
 
           {/* Search */}
           <div id="bausteineSearchBox" style={{position:'relative',background:'var(--card)',border:'1.5px solid var(--border)',borderRadius:8,overflow:'hidden',boxShadow:'var(--shadow)'}}>
@@ -408,7 +408,7 @@ export default function Bausteine() {
         </div>
 
         {/* RIGHT: Preview + Basket */}
-        <div ref={rightRef} style={{flex:3,display:'flex',flexDirection:'column',gap:12,minWidth:0}}>
+        <div ref={rightRef} className="bausteine-right">
 
           {/* Preview */}
           <div style={{border:'1px solid var(--border)',borderRadius:8,padding:16,background:'var(--card)',boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flexShrink:0}}>
