@@ -2,6 +2,17 @@
 <html lang="de" data-theme="light">
 <head>
 <meta charset="UTF-8">
+<script>
+  try {
+    const raw = localStorage.getItem('sb-jmanxlmzvfnhpgcxsqly-auth-token')
+    if (raw) {
+      const session = JSON.parse(raw)
+      if (session?.expires_at && Date.now() / 1000 < session.expires_at) {
+        window.location.replace('/dashboard')
+      }
+    }
+  } catch (e) {}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arvis — Ihr digitaler Klinik-Begleiter</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
