@@ -16,22 +16,18 @@ export default function Paywall({ children }) {
     try {
       setLoading(true)
 
+      // Récupérer le token JWT frais de la session active
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Nicht eingeloggt. Bitte erneut anmelden.')
+      const authHeaders = { Authorization: `Bearer ${session.access_token}` }
+
       // Si l'utilisateur a déjà un stripe_customer_id → portal (gestion d'abonnement existant)
       if (profile?.stripe_customer_id) {
-        const { data, error, response } = await supabase.functions.invoke('create-portal-session', {
-          body: { returnUrl: window.location.href }
+        const { data, error } = await supabase.functions.invoke('create-portal-session', {
+          body: { returnUrl: window.location.href },
+          headers: authHeaders
         })
-        if (error) {
-          // Lire le corps de la réponse pour le vrai message d'erreur
-          let msg = error.message
-          try {
-            if (response) {
-              const body = await response.text()
-              msg += ' | Response: ' + body
-            }
-          } catch {}
-          throw new Error(msg)
-        }
+        if (error) throw new Error(error.message)
         if (data?.error) throw new Error(data.error)
         if (data?.url) { window.location.href = data.url; return }
       }
@@ -42,25 +38,16 @@ export default function Paywall({ children }) {
         throw new Error('REACT_APP_STRIPE_PRICE_MONTHLY ist nicht konfiguriert')
       }
 
-      const { data, error, response } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId }
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId },
+        headers: authHeaders
       })
-      if (error) {
-        // Lire le corps de la réponse pour le vrai message d'erreur
-        let msg = error.message
-        try {
-          if (response) {
-            const body = await response.text()
-            msg += ' | Status: ' + response.status + ' | Response: ' + body
-          }
-        } catch {}
-        throw new Error(msg)
-      }
+      if (error) throw new Error(error.message)
       if (data?.error) throw new Error(data.error)
       if (data?.url) {
         window.location.href = data.url
       } else {
-        throw new Error('Keine Checkout-URL erhalten. Data: ' + JSON.stringify(data))
+        throw new Error('Keine Checkout-URL erhalten.')
       }
     } catch (err) {
       console.error('Checkout error:', err)

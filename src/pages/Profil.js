@@ -78,23 +78,20 @@ export default function Profil() {
   async function handleCheckout() {
     setCheckoutLoading(true)
     try {
+      // Récupérer le token JWT frais de la session active
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Nicht eingeloggt. Bitte erneut anmelden.')
+      const authHeaders = { Authorization: `Bearer ${session.access_token}` }
+
       const priceId = yearly ? STRIPE_PRICE_YEARLY : STRIPE_PRICE_MONTHLY
       if (!priceId) {
-        throw new Error('Stripe Price ID ist nicht konfiguriert. Bitte Umgebungsvariablen prüfen.')
+        throw new Error('Stripe Price ID ist nicht konfiguriert.')
       }
-      const { data, error, response } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId }
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId },
+        headers: authHeaders
       })
-      if (error) {
-        let msg = error.message
-        try {
-          if (response) {
-            const body = await response.text()
-            msg += ' | Status: ' + response.status + ' | ' + body
-          }
-        } catch {}
-        throw new Error(msg)
-      }
+      if (error) throw new Error(error.message)
       if (data?.error) throw new Error(data.error)
       if (data?.url) {
         window.location.href = data.url
@@ -112,7 +109,11 @@ export default function Profil() {
   async function manageSubscription() {
     setPortalLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('create-portal-session')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Nicht eingeloggt.')
+      const { data, error } = await supabase.functions.invoke('create-portal-session', {
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      })
       if (error) throw new Error(error.message)
       if (data?.url) {
         window.location.href = data.url
