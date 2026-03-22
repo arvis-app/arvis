@@ -15,20 +15,18 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('No authorization header')
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    )
-
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) throw new Error('Not authenticated')
 
+    // Utiliser le service role pour valider le token (plus fiable)
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    if (authError || !user) {
+      throw new Error('Not authenticated: ' + (authError?.message || 'no user'))
+    }
 
     const { data: profile } = await supabaseAdmin
       .from('users')
@@ -45,9 +43,8 @@ serve(async (req) => {
       throw new Error('Server-Konfiguration fehlt: STRIPE_SECRET_KEY ist nicht gesetzt.')
     }
 
-    const origin = req.headers.get('origin') || 'http://localhost:3000'
-    
-    // Fallback auf die native Fetch-API, um Laufzeitfehler des Node-SDKs (Microtasks) zu vermeiden
+    const origin = req.headers.get('origin') || 'https://arvis-app.de'
+
     const params = new URLSearchParams()
     params.append('customer', profile.stripe_customer_id)
     params.append('return_url', `${origin}/profil`)

@@ -79,8 +79,8 @@ export default function Profil() {
 
   // Appel direct fetch vers les Edge Functions
   async function callEdgeFunction(fnName, body) {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('Nicht eingeloggt. Bitte erneut anmelden.')
+    const { data: { session }, error: sessionError } = await supabase.auth.refreshSession()
+    if (sessionError || !session) throw new Error('Sitzung abgelaufen. Bitte erneut anmelden.')
 
     const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
       method: 'POST',

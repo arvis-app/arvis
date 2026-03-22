@@ -15,20 +15,18 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('No authorization header')
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    )
-
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) throw new Error('Not authenticated')
 
+    // Utiliser le service role pour valider le token (plus fiable que le client anon)
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    if (authError || !user) {
+      throw new Error('Not authenticated: ' + (authError?.message || 'no user'))
+    }
 
     const { data: profile } = await supabaseAdmin
       .from('users')
@@ -42,7 +40,7 @@ serve(async (req) => {
     const { priceId } = await req.json()
     if (!priceId) throw new Error('priceId fehlt')
 
-    const origin = req.headers.get('origin') || 'https://arvis.app'
+    const origin = req.headers.get('origin') || 'https://arvis-app.de'
 
     let customerId = profile?.stripe_customer_id
 
