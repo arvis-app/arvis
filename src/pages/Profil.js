@@ -138,6 +138,11 @@ export default function Profil() {
   // ── Photo ──────────────────────────────────────────────────────────────────
   function handlePhoto(e) {
     const file = e.target.files[0]; if (!file) return
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Bild zu groß – max. 2 MB', false)
+      e.target.value = ''
+      return
+    }
     const reader = new FileReader()
     reader.onload = ev => { setPhoto(ev.target.result) }
     reader.readAsDataURL(file)
