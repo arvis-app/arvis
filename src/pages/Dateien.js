@@ -120,21 +120,27 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
     clearTimeout(timerRef.current)
     setSaved('...')
     timerRef.current = setTimeout(async () => {
-      const t = newTitle.trim() || 'Ohne Titel'
-      const c = newContent || editorRef.current?.innerHTML || ''
-      const now = new Date().toISOString()
-      if (noteIdRef.current) {
-        await supabase.from('notes').update({ title: t, content: c, modified_at: now }).eq('id', noteIdRef.current)
-      } else {
-        const { data: inserted } = await supabase.from('notes').insert({
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          folder_id: folderId || null, title: t, content: c,
-          file_type: 'note', modified_at: now
-        }).select().single()
-        if (inserted) noteIdRef.current = inserted.id
+      try {
+        const t = newTitle.trim() || 'Ohne Titel'
+        const c = newContent || editorRef.current?.innerHTML || ''
+        const now = new Date().toISOString()
+        if (noteIdRef.current) {
+          const { error } = await supabase.from('notes').update({ title: t, content: c, modified_at: now }).eq('id', noteIdRef.current)
+          if (error) throw error
+        } else {
+          const { data: inserted, error } = await supabase.from('notes').insert({
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            folder_id: folderId || null, title: t, content: c,
+            file_type: 'note', modified_at: now
+          }).select().single()
+          if (error) throw error
+          if (inserted) noteIdRef.current = inserted.id
+        }
+        onSave()
+        setSaved('✓ ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}))
+      } catch (e) {
+        setSaved('⚠ Fehler beim Speichern')
       }
-      onSave()
-      setSaved('✓ ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}))
     }, 600)
   }
 
