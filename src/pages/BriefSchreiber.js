@@ -168,6 +168,11 @@ export default function BriefSchreiber() {
   }, [popup.visible])
 
   function connectWs(token) {
+    // Le token est passé dans le subprotocol WebSocket : c'est le seul mécanisme
+    // supporté par l'API Realtime d'OpenAI depuis un navigateur (pas de header
+    // Authorization possible sur WebSocket). La protection réelle est assurée par
+    // le fait que ce token est ÉPHÉMÈRE (TTL ~60s) et généré côté serveur
+    // (edge function realtime-token) uniquement pour les utilisateurs authentifiés Pro.
     const ws = new WebSocket(
       'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
       ['realtime', `openai-insecure-api-key.${token}`, 'openai-beta.realtime-v1']

@@ -6,6 +6,23 @@ import { supabase } from '../supabaseClient'
 function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2,7) }
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
+// Sanitise le HTML stocké en base avant injection dans innerHTML.
+// Supprime <script>, <iframe>, <object>, <embed>, et tous les attributs
+// event-handler (onclick, onerror, onload…) ainsi que les href javascript:.
+function sanitizeHtml(html) {
+  const tmp = document.createElement('div')
+  tmp.innerHTML = html
+  tmp.querySelectorAll('script,style,iframe,object,embed,link,base').forEach(el => el.remove())
+  tmp.querySelectorAll('*').forEach(el => {
+    for (const attr of [...el.attributes]) {
+      if (attr.name.startsWith('on')) { el.removeAttribute(attr.name); continue }
+      if (attr.name === 'href' && /^\s*javascript:/i.test(attr.value)) el.removeAttribute(attr.name)
+      if (attr.name === 'src'  && /^\s*javascript:/i.test(attr.value)) el.removeAttribute(attr.name)
+    }
+  })
+  return tmp.innerHTML
+}
+
 // ── Supabase helpers ──────────────────────────────────────────────────────────
 async function fetchData(userId) {
   const [{ data: folders }, { data: notes }] = await Promise.all([
@@ -94,7 +111,7 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
 
   useEffect(() => {
     if (editorRef.current && note?.content) {
-      editorRef.current.innerHTML = note.content
+      editorRef.current.innerHTML = sanitizeHtml(note.content)
     }
     editorRef.current?.focus()
   }, [])
