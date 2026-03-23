@@ -1,5 +1,18 @@
 # CLAUDE.md — Arvis
 
+## Règle de conduite — À lire en priorité
+
+Avant toute modification de code :
+1. **Est-ce vraiment nécessaire ?** Si une protection existe déjà (ex: JWT valide les requêtes), ne pas ajouter une couche redondante qui peut casser.
+2. **Est-ce que ça peut casser quelque chose ?** Tester mentalement les cas limites (URLs, valeurs null, dépendances) avant d'écrire.
+3. En cas de doute : expliquer le pour/contre à Amine **avant** de toucher au code.
+
+## Profil utilisateur — À lire en priorité
+- **Amine est médecin**, pas développeur. Il a construit ce projet sans formation en coding.
+- **Toujours expliquer simplement** : pas de jargon technique sans explication, utiliser des analogies concrètes, aller droit au but.
+- Si un concept technique est nécessaire, l'expliquer comme à quelqu'un qui ne code pas — en une phrase claire, avec un exemple concret si possible.
+- Privilégier les **listes courtes** et le **langage du quotidien** plutôt que les termes techniques bruts.
+
 ## Stack technique
 - **Frontend** : React 19 + React Router v7 (Create React App), déployé sur **Vercel** à `arvis-app.de`
 - **Backend** : Supabase (Auth, Postgres, Edge Functions Deno, Storage)

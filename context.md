@@ -1,6 +1,11 @@
 # context.md — État du projet Arvis
 
-Dernière mise à jour : 22 mars 2026 (session 2)
+Dernière mise à jour : 23 mars 2026 (session 3)
+
+## Profil du créateur
+- **Amine est médecin**, pas développeur. Il a construit Arvis sans formation en coding.
+- Toujours expliquer de façon simple et concrète, sans jargon technique brut.
+- Utiliser des analogies médicales ou du quotidien quand c'est utile.
 
 ## Qu'est-ce qu'Arvis ?
 Application SaaS de documentation médicale assistée par IA pour le personnel médical allemand (médecins, infirmiers en hôpitaux). Permet de rédiger des courriers médicaux, scanner/analyser des documents, traduire, gérer des blocs de texte réutilisables et des fichiers.
@@ -111,6 +116,14 @@ Colonnes clés : `id`, `email`, `first_name`, `last_name`, `title`, `clinic`, `p
 - **Normalisation EXIF** : toutes les photos mobiles passent par canvas avant PDF → orientation portrait garantie
 - **Scan.js multi-photos mobile direct** : bouton "Foto aufnehmen" sur téléphone accumule les pages dans un overlay avant d'envoyer
 - **Redirect post-login** : après login, redirection vers l'URL d'origine (fix QR code → login → retour MobileScan)
+
+## Fait en session 3 (23 mars 2026) ✅
+- **Audit complet** du projet : sécurité, UX, qualité du code
+- **Fix XSS** dans `Dateien.js` : ajout de `sanitizeHtml()` avant injection dans `innerHTML`
+- **Fix `canceled_pending`** : les 3 edge functions IA (`ai-chat`, `ai-whisper`, `realtime-token`) reconnaissent maintenant ce plan comme Pro jusqu'à `subscription_end_date`
+- **Fix HTTP status** dans `create-portal-session` : erreur retourne maintenant 400 au lieu de 200
+- **Fix CORS** : toutes les edge functions remplacent `*` par une whitelist `arvis-app.de` + `localhost:3000`
+- **Commentaire WebSocket** dans `BriefSchreiber.js` : documente pourquoi le token éphémère est dans le subprotocol (contrainte OpenAI)
 
 ## Ce qui reste à faire / améliorations possibles
 - Personnalisation des emails Supabase en allemand

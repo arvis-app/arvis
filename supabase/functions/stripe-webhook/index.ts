@@ -46,11 +46,14 @@ serve(async (req) => {
         const cancelAtPeriodEnd = subscription.cancel_at_period_end
         const cancelAt = subscription.cancel_at // timestamp Unix si annulation planifiée
 
+        // Paiement initial en attente (3D Secure, etc.) → on ne touche rien, Stripe retentera
+        if (status === 'incomplete') break
+
         let plan = 'trial'
         if (status === 'active' && (cancelAtPeriodEnd || cancelAt)) plan = 'canceled_pending'
         else if (status === 'active') plan = 'pro'
         else if (status === 'past_due' || status === 'unpaid') plan = 'trial'
-        else if (status === 'canceled') plan = 'canceled'
+        else if (status === 'canceled' || status === 'incomplete_expired') plan = 'canceled'
 
         const updateData: any = { plan }
 

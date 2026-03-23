@@ -2,11 +2,12 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://arvis-app.de',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 serve(async (req) => {
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -47,9 +48,11 @@ serve(async (req) => {
       const checkRes = await fetch(`https://api.stripe.com/v1/customers/${customerId}`, {
         headers: { 'Authorization': `Basic ${btoa(stripeKey + ':')}` }
       })
+      // Panne Stripe momentanée → ne pas effacer le client, demander de réessayer
+      if (checkRes.status >= 500) throw new Error('Stripe ist momentan nicht verfügbar. Bitte versuche es erneut.')
       const checkData = await checkRes.json()
-      if (!checkRes.ok || checkData.deleted) {
-        // Client supprimé dans Stripe → réinitialiser
+      if (checkRes.status === 404 || checkData.deleted) {
+        // Client vraiment supprimé dans Stripe → réinitialiser
         customerId = null
         await supabaseAdmin
           .from('users')
@@ -93,8 +96,8 @@ serve(async (req) => {
     sessionParams.append('mode', 'subscription')
     sessionParams.append('line_items[0][price]', priceId)
     sessionParams.append('line_items[0][quantity]', '1')
-    sessionParams.append('success_url', `${origin}/app/profil?success=true`)
-    sessionParams.append('cancel_url', `${origin}/app/profil?canceled=true`)
+    sessionParams.append('success_url', `${origin}/profil?success=true`)
+    sessionParams.append('cancel_url', `${origin}/profil?canceled=true`)
     sessionParams.append('billing_address_collection', 'auto')
     sessionParams.append('subscription_data[metadata][user_id]', user.id)
 

@@ -13,6 +13,9 @@ import Profil         from './pages/Profil'
 import MobileScan     from './pages/MobileScan'
 import ErrorBoundary      from './components/ErrorBoundary'
 import ResetPasswordPage  from './pages/ResetPasswordPage'
+import Impressum   from './pages/Impressum'
+import Datenschutz from './pages/Datenschutz'
+import AGB         from './pages/AGB'
 import './App.css'
 
 function PrivateRoute({ children }) {
@@ -50,6 +53,9 @@ function AppRoutes() {
         <Route path="profil"         element={<ErrorBoundary><Profil /></ErrorBoundary>} />
         <Route path="mobile-scan/:token" element={<MobileScan />} />
       </Route>
+      <Route path="/impressum"   element={<Impressum />} />
+      <Route path="/datenschutz" element={<Datenschutz />} />
+      <Route path="/agb"         element={<AGB />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )

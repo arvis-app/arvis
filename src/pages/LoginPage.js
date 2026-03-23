@@ -343,7 +343,7 @@ export default function LoginPage() {
 
               <div className="dsgvo-note">
                 <span></span>
-                <span>Mit der Registrierung stimmen Sie unseren <a href="#" style={{color:'var(--orange)'}}>AGB</a> und der <a href="#" style={{color:'var(--orange)'}}>Datenschutzerklärung</a> zu.</span>
+                <span>Mit der Registrierung stimmen Sie unseren <a href="/agb" style={{color:'var(--orange)'}}>AGB</a> und der <a href="/datenschutz" style={{color:'var(--orange)'}}>Datenschutzerklärung</a> zu.</span>
               </div>
 
               <div className="form-footer">
@@ -352,6 +352,11 @@ export default function LoginPage() {
             </div>
           )}
         </div>
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-3)', marginTop: 24, paddingBottom: 24 }}>
+        <a href="/impressum"   style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>Impressum</a>·
+        <a href="/datenschutz" style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>Datenschutz</a>·
+        <a href="/agb"         style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>AGB</a>
       </div>
     </div>
   )

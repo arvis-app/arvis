@@ -2,11 +2,12 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://arvis-app.de',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 serve(async (req) => {
+
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
@@ -24,15 +25,17 @@ serve(async (req) => {
 
     const { data: profile } = await supabaseAdmin
       .from('users')
-      .select('plan, trial_started_at')
+      .select('plan, trial_started_at, subscription_end_date')
       .eq('id', user.id)
       .single()
 
     const now = new Date()
     let isPro = false
     if (profile) {
-      if (profile.plan === 'pro' || profile.plan === 'active') { // Adjust based on your actual pro status string
+      if (profile.plan === 'pro' || profile.plan === 'active') {
         isPro = true
+      } else if (profile.plan === 'canceled_pending') {
+        isPro = !profile.subscription_end_date || new Date(profile.subscription_end_date) > now
       } else if (profile.plan === 'trial' && profile.trial_started_at) {
         const start = new Date(profile.trial_started_at)
         const daysUsed = Math.floor((now.getTime() - start.getTime()) / 86400000)
