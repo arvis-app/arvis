@@ -5,6 +5,11 @@ import { downloadAsWord } from '../utils/downloadWord'
 import { QRCodeSVG } from 'qrcode.react'
 import { PDFDocument } from 'pdf-lib'
 
+// ── Utilitaire : échappe les caractères HTML dangereux dans une chaîne ────────
+function escHtml(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 // ── Markdown → HTML (fidèle à l'original) ─────────────────────────────────────
 function markdownToHtml(md) {
   // Add space after colons not already followed by a space
@@ -45,7 +50,7 @@ function markdownToHtml(md) {
     if (/^#{1,3} /.test(line)) {
       if (inList) { html += '</div>'; inList = false }
       secActive = false; secBg = 'transparent'; secColor = 'var(--text-2)'; secBorder = 'var(--border)'
-      let text = line.replace(/^#{1,3} /, '').replace(/\*\*(.+?)\*\*/g, '$1')
+      let text = escHtml(line.replace(/^#{1,3} /, '')).replace(/\*\*(.+?)\*\*/g, '$1')
       const mt = html === '' ? '0' : '22px'
       if (/nicht.übersehen/i.test(text)) {
         text = text.replace(/^[⚠️\s]+/, '')
@@ -56,14 +61,14 @@ function markdownToHtml(md) {
     } else if (/^\*\*[^*]+\*\*:?\s*$/.test(line.trim())) {
       if (inList) { html += '</div>'; inList = false }
       secActive = false; secBg = 'transparent'; secColor = 'var(--text-2)'; secBorder = 'var(--border)'
-      const text = line.replace(/\*\*(.+?)\*\*/g, '$1').replace(/:(\S)/g, ': $1')
+      const text = escHtml(line).replace(/\*\*(.+?)\*\*/g, '$1').replace(/:(\S)/g, ': $1')
       const mt2 = html === '' ? '0' : '22px'
       html += `<div style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt2};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;">${text}</div>`
     } else if (/^(🔴|🟡|🟢)/.test(line.trim())) {
       // Colored sub-section header: "🔴 Kritisch" / "🟡 Wichtig" / "🟢 Beachten"
       if (inList) { html += '</div>'; inList = false }
       const em = line.trim().match(/^(🔴|🟡|🟢)/)[1]
-      const label = line.trim().replace(/^(🔴|🟡|🟢)\s*/, '').replace(/\*\*/g, '').trim()
+      const label = escHtml(line.trim().replace(/^(🔴|🟡|🟢)\s*/, '')).replace(/\*\*/g, '').trim()
       let dot = '', dotColor = ''
       if (em === '🔴') { secBg = 'rgba(220,38,38,0.14)'; secColor = '#B91C1C'; secBorder = '#DC2626'; dotColor = '#DC2626' }
       else if (em === '🟡') { secBg = 'rgba(217,119,6,0.13)'; secColor = '#92400E'; secBorder = '#D97706'; dotColor = '#D97706' }
@@ -74,7 +79,7 @@ function markdownToHtml(md) {
       html += `<div style="font-size:14px;font-weight:800;color:${secColor};margin-top:${mt3};margin-bottom:6px;display:flex;align-items:center;">${dot}<span>${label}</span></div>`
     } else if (/^[-–] /.test(line)) {
       if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:4px;margin-top:2px;">'; inList = true }
-      let rawText = line.replace(/^[-–] /, '').trim()
+      let rawText = escHtml(line.replace(/^[-–] /, '').trim())
       // Check if item has its own emoji override
       const emojiMatch = rawText.match(/🔴|🟡|🟢/)
       let bg = secActive ? secBg : 'transparent'
@@ -95,10 +100,10 @@ function markdownToHtml(md) {
       if (inList) { html += '</div>'; inList = false }
       secActive = false; secBg = 'transparent'; secColor = 'var(--text-2)'; secBorder = 'var(--border)'
       const mt2 = html === '' ? '0' : '22px'
-      html += `<div style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt2};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;">${line.trim()}</div>`
+      html += `<div style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt2};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;">${escHtml(line.trim())}</div>`
     } else {
       if (inList) { html += '</div>'; inList = false }
-      const text = line.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text);font-weight:700;">$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/:(\S)/g, ': $1').replace(/\b([A-ZÄÖÜ][^:<]{1,40}):/g, '<strong style="color:var(--text);font-weight:700;">$1:</strong>')
+      const text = escHtml(line).replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text);font-weight:700;">$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/:(\S)/g, ': $1').replace(/\b([A-ZÄÖÜ][^:<]{1,40}):/g, '<strong style="color:var(--text);font-weight:700;">$1:</strong>')
       html += `<div style="font-size:12.5px;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;margin-top:4px;">${text}</div>`
     }
   }
