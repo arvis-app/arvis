@@ -130,3 +130,18 @@ STRIPE_COUPON_MONTHLY  (optionnel, remplacé par auto-fetch)
 2. **Triple refresh** : Au retour de Stripe (`?success=true`), polling toutes les 2s pendant 20s max jusqu'à détection `plan: pro`.
 3. **sed sur macOS** corrompt les gros fichiers — toujours utiliser l'outil Edit de Claude.
 4. **Vercel rewrites vs routes** : `rewrites` appliqués après filesystem → utiliser `routes` pour surcharger `/`.
+
+## Changelog récent (Mars 2026)
+
+### Pages légales
+- **Datenschutz.js** : Version complète refaite — fusion e-recht24 + Arvis spécifique. 13 sections. Inclut : Hosting Vercel+AVV, Art. 9 DSGVO (données médicales), §25 TDDDG, Art. 21 WIDERSPRUCH en MAJUSCULES, Drittanbieter (Supabase/Stripe/OpenAI/Vercel), Google Fonts.
+- **Impressum.js** : Conforme §5 TMG, complet (Haftung, Urheberrecht, Berufsrechtliche Angaben). Pas de modifications nécessaires.
+
+### LoginPage.js
+- Supprimé la barre du bas (footer avec Impressum/Datenschutz/AGB)
+- Liens Impressum · Datenschutz · AGB déplacés **en bas du panneau droit** (intégrés dans le conteneur form)
+
+### Logo
+- Logo Arvis créé en PNG via Python/Pillow (`arvis_logo.png` dans Downloads)
+- Robot : tête circulaire gradient teal→bleu, yeux blancs sans visière, sourire, oreillettes, lignes ECG horizontales
+- Script Python : `/tmp/logo6.py`

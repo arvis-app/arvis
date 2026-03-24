@@ -78,7 +78,7 @@ function Calendar({ currentDate, setCurrentDate, selectedDay, setSelectedDay, ev
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, padding: '0 8px' }}>
         <button className="cal-nav-btn" onClick={() => { const d = new Date(currentDate); d.setMonth(d.getMonth() - 1); setCurrentDate(d); setSelectedDay(1) }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
         </button>
@@ -181,7 +181,7 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
   const mins = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55']
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, marginTop: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, marginTop: 12, padding: '0 8px' }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--orange)' }}>{dayLabel}</span>
         <button className="btn-action" onClick={openAddForm} style={{ width: 28, height: 28, padding: 0, fontSize: 18, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 0 }}>+</button>
       </div>

@@ -74,6 +74,7 @@ body {
 .login-brand {
   position: relative; z-index: 1;
   margin-bottom: 64px;
+  text-align: left;
 }
 .login-logo {
   font-family: 'Bricolage Grotesque', sans-serif;
@@ -91,7 +92,7 @@ body {
   border: 1px solid rgba(255,255,255,0.2);
 }
 .login-tagline {
-  font-size: 14px; color: rgba(255,255,255,0.6);
+  font-size: 18px; color: rgba(255,255,255,0.6);
   font-weight: 300;
 }
 
@@ -331,8 +332,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   padding-left: 28px;
 }
 .app-layout.sidebar-collapsed .topbar-logo {
-  width: auto; padding: 0 16px; border-right-color: transparent;
-  position: absolute; left: 50%; transform: translateX(-50%);
+  display: none;
 }
 .topbar-logo-icon {
   width: 30px; height: 30px;

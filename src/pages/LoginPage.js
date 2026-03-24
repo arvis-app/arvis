@@ -126,16 +126,10 @@ export default function LoginPage() {
       {/* Left panel */}
       <div className="login-left">
         <div className="login-brand">
-          <a href="https://www.arvis-app.de/landing_page.html" className="login-logo" style={{textDecoration:'none',color:'inherit'}}>
-            <div className="login-logo-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </div>
-            Arvis
+          <a href="https://www.arvis-app.de/landing_page.html" style={{textDecoration:'none'}}>
+            <img src="/arvis-logo.svg" alt="Arvis" style={{ height: 68, display: 'block', filter: 'brightness(0) invert(1)', marginLeft: -10 }} />
           </a>
-          <div className="login-tagline">Ihr digitaler Klinik-Begleiter</div>
+          <div className="login-tagline">Ihr KI-Assistent</div>
         </div>
         <div className="login-headline">
           <h2>Effizienter.<br/>Präziser.<br/>Sicherer.</h2>
@@ -352,11 +346,11 @@ export default function LoginPage() {
             </div>
           )}
         </div>
-      </div>
-      <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-3)', marginTop: 24, paddingBottom: 24 }}>
-        <a href="/impressum"   style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>Impressum</a>·
-        <a href="/datenschutz" style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>Datenschutz</a>·
-        <a href="/agb"         style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>AGB</a>
+        <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-3)', marginTop: 24 }}>
+          <a href="/impressum"   style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>Impressum</a>·
+          <a href="/datenschutz" style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>Datenschutz</a>·
+          <a href="/agb"         style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>AGB</a>
+        </div>
       </div>
     </div>
   )
