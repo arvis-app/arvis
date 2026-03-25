@@ -266,8 +266,8 @@ export default function MobileScan() {
             </div>
           )}
 
-          {/* Toolbar — inside card */}
-          <div className="scan-viewer-toolbar" style={{ flexShrink: 0 }}>
+          {/* Toolbar — above viewer via z-index */}
+          <div className="scan-viewer-toolbar" style={{ flexShrink: 0, position: 'relative', zIndex: 2 }}>
             <button onClick={addBlackout} style={btnSchwärzen}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
               Schwärzen
@@ -291,7 +291,7 @@ export default function MobileScan() {
             </button>
           </div>
 
-          {/* Viewer — no overflow:hidden (same as Scan.js) */}
+          {/* Viewer — overflow:hidden clips zoom, height = natural ratio */}
           <div
             ref={viewerRef}
             onMouseDown={startPan}
@@ -299,6 +299,7 @@ export default function MobileScan() {
             onClick={(e) => { if (e.target === viewerRef.current || e.target === imgRef.current) setSelectedBk(null) }}
             style={{
               height: viewerHeight > 0 ? viewerHeight : 'auto',
+              overflow: 'hidden',
               cursor: isDragging ? 'grabbing' : zoom > 1 ? 'grab' : 'default',
               touchAction: zoom > 1 ? 'none' : 'pan-y'
             }}
