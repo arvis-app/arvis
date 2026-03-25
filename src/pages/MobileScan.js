@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 
-// Render a photo (objectURL) with blackout boxes baked in via canvas
 function renderWithBlackouts(src, bkOuts, containerWidth) {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -30,8 +29,8 @@ function renderWithBlackouts(src, bkOuts, containerWidth) {
 
 export default function MobileScan() {
   const { token } = useParams()
-  const [status, setStatus] = useState('ready') // ready | schwarzen | uploading | done | error
-  const [photos, setPhotos] = useState([]) // { preview: objectURL }
+  const [status, setStatus] = useState('ready')
+  const [photos, setPhotos] = useState([])
   const [addingPhoto, setAddingPhoto] = useState(false)
 
   // Schwarzen state
@@ -42,23 +41,22 @@ export default function MobileScan() {
   const [panX, setPanX] = useState(0)
   const [panY, setPanY] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  // ── Point 3: fixed viewer height = rendered image height at 100% width ────
+  const [viewerHeight, setViewerHeight] = useState(0)
 
   const imgRef = useRef(null)
   const cropInnerRef = useRef(null)
   const viewerRef = useRef(null)
   const blackoutsByPhotoRef = useRef({})
-
-  // Refs for stable pinch-to-zoom (avoid stale closures)
   const lastPinchDistRef = useRef(null)
   const zoomRef = useRef(1)
   useEffect(() => { zoomRef.current = zoom }, [zoom])
 
-  // ── Pinch-to-zoom — non-passive, uses refs to avoid stale-closure bug ──────
+  // ── Pinch-to-zoom — non-passive, refs to avoid stale closures ─────────────
   useEffect(() => {
     if (status !== 'schwarzen') return
     const viewer = viewerRef.current
     if (!viewer) return
-
     const onStart = (e) => {
       if (e.touches.length === 2) {
         const t1 = e.touches[0], t2 = e.touches[1]
@@ -70,7 +68,6 @@ export default function MobileScan() {
       e.preventDefault()
       const t1 = e.touches[0], t2 = e.touches[1]
       const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY)
-      // Initialize on first move if onStart didn't fire yet (safety)
       if (lastPinchDistRef.current === null) { lastPinchDistRef.current = dist; return }
       const newZ = Math.max(1, Math.min(4, zoomRef.current * (dist / lastPinchDistRef.current)))
       zoomRef.current = newZ
@@ -79,7 +76,6 @@ export default function MobileScan() {
       lastPinchDistRef.current = dist
     }
     const onEnd = (e) => { if (e.touches.length < 2) lastPinchDistRef.current = null }
-
     viewer.addEventListener('touchstart', onStart, { passive: true })
     viewer.addEventListener('touchmove', onMove, { passive: false })
     viewer.addEventListener('touchend', onEnd, { passive: true })
@@ -90,7 +86,15 @@ export default function MobileScan() {
     }
   }, [status, sIdx])
 
-  // ── Photo capture (local only) ────────────────────────────────────────────
+  // ── Point 3: capture rendered height on image load (same as Scan.js) ──────
+  function handleImageLoad() {
+    const img = imgRef.current
+    if (!img) return
+    setViewerHeight(img.offsetHeight)
+    setZoom(1); zoomRef.current = 1
+    setPanX(0); setPanY(0)
+  }
+
   function handlePhoto(e) {
     const file = e.target.files[0]
     if (!file) return
@@ -105,11 +109,11 @@ export default function MobileScan() {
     setSIdx(0)
     setBlackouts([])
     setSelectedBk(null)
-    setZoom(1); zoomRef.current = 1; setPanX(0); setPanY(0)
+    setZoom(1); zoomRef.current = 1; setPanX(0); setPanY(0); setViewerHeight(0)
     setStatus('schwarzen')
   }
 
-  // ── Pan — only when zoom > 1 ──────────────────────────────────────────────
+  // ── Pan — clamped exactly like Scan.js ────────────────────────────────────
   function startPan(e) {
     if (e.touches && e.touches.length !== 1) return
     if (zoom <= 1) return
@@ -118,10 +122,16 @@ export default function MobileScan() {
     const touch = e.touches ? e.touches[0] : e
     const sx = touch.clientX, sy = touch.clientY
     const spx = panX, spy = panY
+    // Capture dimensions now (same as Scan.js)
+    const cw = viewerRef.current?.offsetWidth || 0
+    const ch = viewerHeight || (viewerRef.current?.offsetHeight || 0)
     const onMove = (ev) => {
       const t = ev.touches ? ev.touches[0] : ev
-      setPanX(spx + (t.clientX - sx))
-      setPanY(spy + (t.clientY - sy))
+      // Scan.js clamping: image cannot leave the container
+      const minX = Math.min(0, cw - cw * zoom)
+      const minY = Math.min(0, ch - ch * zoom)
+      setPanX(Math.max(minX, Math.min(0, spx + (t.clientX - sx))))
+      setPanY(Math.max(minY, Math.min(0, spy + (t.clientY - sy))))
     }
     const onUp = () => {
       setIsDragging(false)
@@ -142,7 +152,6 @@ export default function MobileScan() {
     setBlackouts(prev => [...prev, box])
     setSelectedBk(box.id)
   }
-
   function undoBlackout() { setBlackouts(prev => prev.slice(0, -1)); setSelectedBk(null) }
   function deleteBlackout(id) { setBlackouts(prev => prev.filter(b => b.id !== id)); setSelectedBk(null) }
 
@@ -197,10 +206,11 @@ export default function MobileScan() {
     setBlackouts(blackoutsByPhotoRef.current[newIdx]?.map(b => ({ ...b })) || [])
     setSelectedBk(null)
     setZoom(1); zoomRef.current = 1; setPanX(0); setPanY(0)
+    setViewerHeight(0) // Reset so handleImageLoad recalculates for new photo
     setSIdx(newIdx)
   }
 
-  // ── Send: apply blackouts via canvas then upload ──────────────────────────
+  // ── Send ──────────────────────────────────────────────────────────────────
   async function handleSend() {
     blackoutsByPhotoRef.current[sIdx] = blackouts.map(b => ({ ...b }))
     const containerWidth = viewerRef.current?.offsetWidth || 400
@@ -229,46 +239,41 @@ export default function MobileScan() {
     }
   }
 
-  // Shared black button style for "Schwärzen"
   const btnSchwärzen = { height: 32, padding: '0 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: '#1C1C1E', color: 'white', border: 'none', borderRadius: 6, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: 'pointer' }
 
   // ── Schwarzen screen ──────────────────────────────────────────────────────
   if (status === 'schwarzen') {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg, #F6F4F1)', overflow: 'hidden' }}>
+      // Outer background
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg, #F6F4F1)', overflow: 'hidden', padding: '12px 16px 16px' }}>
 
-        {/* Warning — border-bottom only */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEE2E2', borderBottom: '1px solid #FCA5A5', padding: '10px 16px', flexShrink: 0 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#DC2626' }}>Bitte alle Patientendaten schwärzen, bevor Sie fortfahren.</span>
-        </div>
+        {/* ── Point 1: single card wraps ALL elements ── */}
+        <div style={{ flex: 1, background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
-        {/* Page navigation */}
-        {photos.length > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', justifyContent: 'center', borderBottom: '1px solid var(--border, #E5E5EA)', flexShrink: 0 }}>
-            <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => goToPhoto(sIdx - 1)} disabled={sIdx === 0}>←</button>
-            <span style={{ fontSize: 13, color: 'var(--text-2, #3A3A3C)' }}>Seite {sIdx + 1} / {photos.length}</span>
-            <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => goToPhoto(sIdx + 1)} disabled={sIdx === photos.length - 1}>→</button>
+          {/* Warning banner — inside card, border-bottom only */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEE2E2', borderBottom: '1px solid #FCA5A5', padding: '10px 16px', flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#DC2626' }}>Bitte alle Patientendaten schwärzen, bevor Sie fortfahren.</span>
           </div>
-        )}
 
-        {/* Card wrapping toolbar + viewer — fix 1 */}
-        <div style={{ flex: 1, margin: '12px 16px 16px', background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {/* Page navigation — inside card */}
+          {photos.length > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', justifyContent: 'center', borderBottom: '1px solid var(--border, #E5E5EA)', flexShrink: 0 }}>
+              <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => goToPhoto(sIdx - 1)} disabled={sIdx === 0}>←</button>
+              <span style={{ fontSize: 13, color: 'var(--text-2, #3A3A3C)' }}>Seite {sIdx + 1} / {photos.length}</span>
+              <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => goToPhoto(sIdx + 1)} disabled={sIdx === photos.length - 1}>→</button>
+            </div>
+          )}
 
-          {/* Toolbar */}
+          {/* Toolbar — inside card */}
           <div className="scan-viewer-toolbar" style={{ flexShrink: 0 }}>
-            {/* Schwärzen — noir/blanc, fix 5 */}
             <button onClick={addBlackout} style={btnSchwärzen}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
               Schwärzen
             </button>
-
-            {/* Undo — icon only */}
             <button className="btn-secondary" onClick={undoBlackout} title="Rückgängig" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
             </button>
-
-            {/* Zoom controls — fix 2: min 1 */}
             <div className="scan-toolbar-zoom">
               <button className="btn-secondary" onClick={() => { const z = Math.max(1, zoom - 0.25); setZoom(z); zoomRef.current = z; if (z === 1) { setPanX(0); setPanY(0) } }} title="Verkleinern" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
@@ -280,21 +285,21 @@ export default function MobileScan() {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
               </button>
             </div>
-
             <button className="btn-action scan-toolbar-weiter" onClick={handleSend}>
               {photos.length > 1 ? `Senden (${photos.length})` : 'Senden'}
             </button>
           </div>
 
-          {/* Viewer — fix 3: no pan/translate when zoom=1 */}
+          {/* ── Point 3: viewer height fixed = rendered image height (same as Scan.js) */}
           <div
             ref={viewerRef}
             onMouseDown={startPan}
             onTouchStart={startPan}
             onClick={(e) => { if (e.target === viewerRef.current || e.target === imgRef.current) setSelectedBk(null) }}
             style={{
-              flex: 1,
+              height: viewerHeight > 0 ? viewerHeight : 'auto',
               overflow: 'hidden',
+              flexShrink: 0,
               cursor: isDragging ? 'grabbing' : zoom > 1 ? 'grab' : 'default',
               touchAction: zoom > 1 ? 'none' : 'pan-y'
             }}
@@ -305,7 +310,7 @@ export default function MobileScan() {
                 position: 'relative',
                 width: '100%',
                 transformOrigin: 'top left',
-                // fix 3: no translate when zoom=1
+                // ── Point 3: no transform when zoom=1 (photo stays fixed)
                 transform: zoom > 1 ? `translate(${panX}px,${panY}px) scale(${zoom})` : 'none'
               }}
             >
@@ -315,35 +320,34 @@ export default function MobileScan() {
                 alt={`Seite ${sIdx + 1}`}
                 style={{ width: '100%', display: 'block', userSelect: 'none' }}
                 draggable={false}
+                onLoad={handleImageLoad}
                 onClick={() => setSelectedBk(null)}
               />
               {blackouts.map(box => (
-                <div
-                  key={box.id}
+                <div key={box.id}
                   onMouseDown={e => startDragBlackout(e, box)}
                   onTouchStart={e => startDragBlackout(e, box)}
                   style={{ position: 'absolute', background: '#000', boxSizing: 'border-box', left: box.x, top: box.y, width: box.w, height: box.h, border: selectedBk === box.id ? '2px solid #EF4444' : '2px solid transparent', cursor: 'move', minWidth: 20, minHeight: 10, userSelect: 'none', touchAction: 'none' }}
                 >
-                  {selectedBk === box.id && (
-                    <>
-                      <div onMouseDown={e => e.stopPropagation()} onTouchStart={e => { e.stopPropagation(); e.preventDefault() }} onClick={() => deleteBlackout(box.id)}
-                        style={{ position: 'absolute', top: -10, right: -10, width: 20, height: 20, borderRadius: '50%', background: '#EF4444', color: 'white', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>×</div>
-                      <div onMouseDown={e => startResizeBlackout(e, box)} onTouchStart={e => startResizeBlackout(e, box)}
-                        style={{ position: 'absolute', bottom: -9, right: -9, width: 18, height: 18, background: '#EF4444', borderRadius: '50%', cursor: 'se-resize', zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'none' }}>
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'scaleY(-1)' }}><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
-                      </div>
-                    </>
-                  )}
+                  {selectedBk === box.id && (<>
+                    <div onMouseDown={e => e.stopPropagation()} onTouchStart={e => { e.stopPropagation(); e.preventDefault() }} onClick={() => deleteBlackout(box.id)}
+                      style={{ position: 'absolute', top: -10, right: -10, width: 20, height: 20, borderRadius: '50%', background: '#EF4444', color: 'white', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>×</div>
+                    <div onMouseDown={e => startResizeBlackout(e, box)} onTouchStart={e => startResizeBlackout(e, box)}
+                      style={{ position: 'absolute', bottom: -9, right: -9, width: 18, height: 18, background: '#EF4444', borderRadius: '50%', cursor: 'se-resize', zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'none' }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'scaleY(-1)' }}><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
+                    </div>
+                  </>)}
                 </div>
               ))}
             </div>
           </div>
-        </div>
+
+        </div>{/* end card */}
       </div>
     )
   }
 
-  // ── Main render (ready / uploading / done / error) ────────────────────────
+  // ── Main render ───────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 24, background: '#fff', gap: 20, paddingTop: 48 }}>
       <div style={{ width: 64, height: 64, borderRadius: 16, background: '#FDEAE0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -351,38 +355,34 @@ export default function MobileScan() {
       </div>
       <div style={{ fontSize: 20, fontWeight: 700, color: '#1C1C1E', textAlign: 'center' }}>Dokument fotografieren</div>
 
-      {status === 'ready' && (
-        <>
-          {photos.length > 0 && (
-            <div style={{ width: '100%', maxWidth: 360 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#8E8E93', marginBottom: 10 }}>{photos.length} Seite{photos.length > 1 ? 'n' : ''} hinzugefügt</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                {photos.map((p, i) => (
-                  <div key={i} style={{ position: 'relative' }}>
-                    <img src={p.preview} alt={`Seite ${i + 1}`} style={{ width: 80, height: 100, objectFit: 'cover', borderRadius: 8, border: '2px solid #E5E5EA' }} />
-                    <div style={{ position: 'absolute', top: 4, left: 4, background: '#D94B0A', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 6px' }}>{i + 1}</div>
-                  </div>
-                ))}
-              </div>
+      {status === 'ready' && (<>
+        {photos.length > 0 && (
+          <div style={{ width: '100%', maxWidth: 360 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#8E8E93', marginBottom: 10 }}>{photos.length} Seite{photos.length > 1 ? 'n' : ''} hinzugefügt</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {photos.map((p, i) => (
+                <div key={i} style={{ position: 'relative' }}>
+                  <img src={p.preview} alt={`Seite ${i + 1}`} style={{ width: 80, height: 100, objectFit: 'cover', borderRadius: 8, border: '2px solid #E5E5EA' }} />
+                  <div style={{ position: 'absolute', top: 4, left: 4, background: '#D94B0A', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 6px' }}>{i + 1}</div>
+                </div>
+              ))}
             </div>
-          )}
-          <label style={{ width: '100%', maxWidth: 360, padding: '14px 0', background: addingPhoto ? '#E5E5EA' : '#D94B0A', color: addingPhoto ? '#8E8E93' : 'white', borderRadius: 10, fontSize: 16, fontWeight: 600, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer', display: 'block' }}>
-            {addingPhoto ? 'Wird geladen…' : (<>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, verticalAlign: 'middle' }}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              {photos.length === 0 ? 'Foto aufnehmen' : 'Weitere Seite'}
-            </>)}
-            <input type="file" accept="image/jpeg, image/png, image/webp" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} disabled={addingPhoto} />
-          </label>
-          {photos.length > 0 && (
-            <button onClick={handleFinish} disabled={addingPhoto} style={{ width: '100%', maxWidth: 360, padding: '14px 0', background: 'white', color: '#D94B0A', border: '2px solid #D94B0A', borderRadius: 10, fontSize: 16, fontWeight: 600, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer' }}>
-              Fertig — {photos.length} Seite{photos.length > 1 ? 'n' : ''} schwärzen &amp; senden
-            </button>
-          )}
-          {!photos.length && (
-            <div style={{ fontSize: 13, color: '#8E8E93', textAlign: 'center' }}>Das Foto wird nach dem Schwärzen auf Ihren Computer übertragen</div>
-          )}
-        </>
-      )}
+          </div>
+        )}
+        <label style={{ width: '100%', maxWidth: 360, padding: '14px 0', background: addingPhoto ? '#E5E5EA' : '#D94B0A', color: addingPhoto ? '#8E8E93' : 'white', borderRadius: 10, fontSize: 16, fontWeight: 600, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer', display: 'block' }}>
+          {addingPhoto ? 'Wird geladen…' : (<>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, verticalAlign: 'middle' }}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            {photos.length === 0 ? 'Foto aufnehmen' : 'Weitere Seite'}
+          </>)}
+          <input type="file" accept="image/jpeg, image/png, image/webp" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} disabled={addingPhoto} />
+        </label>
+        {photos.length > 0 && (
+          <button onClick={handleFinish} disabled={addingPhoto} style={{ width: '100%', maxWidth: 360, padding: '14px 0', background: 'white', color: '#D94B0A', border: '2px solid #D94B0A', borderRadius: 10, fontSize: 16, fontWeight: 600, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer' }}>
+            Fertig — {photos.length} Seite{photos.length > 1 ? 'n' : ''} schwärzen &amp; senden
+          </button>
+        )}
+        {!photos.length && <div style={{ fontSize: 13, color: '#8E8E93', textAlign: 'center' }}>Das Foto wird nach dem Schwärzen auf Ihren Computer übertragen</div>}
+      </>)}
 
       {status === 'uploading' && <div style={{ textAlign: 'center', color: '#D94B0A', fontSize: 16, fontWeight: 600 }}>Wird übertragen…</div>}
 
