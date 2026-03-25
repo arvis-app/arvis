@@ -251,8 +251,8 @@ export default function MobileScan() {
         {/* Card wraps content — no fixed height */}
         <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: 32 }}>
 
-          {/* Warning banner — inside card, border-bottom only */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEE2E2', borderBottom: '1px solid #FCA5A5', padding: '10px 16px', flexShrink: 0 }}>
+          {/* Warning banner — border top + bottom */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEE2E2', borderTop: '1px solid #FCA5A5', borderBottom: '1px solid #FCA5A5', padding: '10px 16px', flexShrink: 0 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             <span style={{ fontSize: 13, fontWeight: 600, color: '#DC2626' }}>Bitte alle Patientendaten schwärzen, bevor Sie fortfahren.</span>
           </div>
@@ -260,34 +260,34 @@ export default function MobileScan() {
           {/* Page navigation — inside card */}
           {photos.length > 1 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', justifyContent: 'center', borderBottom: '1px solid var(--border, #E5E5EA)', flexShrink: 0 }}>
-              <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => goToPhoto(sIdx - 1)} disabled={sIdx === 0}>←</button>
+              <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => goToPhoto(sIdx - 1)} disabled={sIdx === 0} onTouchEnd={e => e.currentTarget.blur()}>←</button>
               <span style={{ fontSize: 13, color: 'var(--text-2, #3A3A3C)' }}>Seite {sIdx + 1} / {photos.length}</span>
-              <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => goToPhoto(sIdx + 1)} disabled={sIdx === photos.length - 1}>→</button>
+              <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => goToPhoto(sIdx + 1)} disabled={sIdx === photos.length - 1} onTouchEnd={e => e.currentTarget.blur()}>→</button>
             </div>
           )}
 
           {/* Toolbar — above viewer via z-index */}
           <div className="scan-viewer-toolbar" style={{ flexShrink: 0, position: 'relative', zIndex: 2 }}>
-            <button onClick={addBlackout} style={btnSchwärzen}>
+            <button onClick={addBlackout} style={btnSchwärzen} onTouchEnd={e => e.currentTarget.blur()}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
               Schwärzen
             </button>
-            <button className="btn-secondary" onClick={undoBlackout} title="Rückgängig" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <button className="btn-secondary" onClick={undoBlackout} title="Rückgängig" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} onTouchEnd={e => e.currentTarget.blur()}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
             </button>
             <div className="scan-toolbar-zoom">
-              <button className="btn-secondary" onClick={() => { const z = Math.max(1, zoom - 0.25); setZoom(z); zoomRef.current = z; if (z === 1) { setPanX(0); setPanY(0) } }} title="Verkleinern" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={() => { const z = Math.max(1, zoom - 0.25); setZoom(z); zoomRef.current = z; if (z === 1) { setPanX(0); setPanY(0) } }} title="Verkleinern" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onTouchEnd={e => e.currentTarget.blur()}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
               </button>
-              <button className="btn-secondary" onClick={() => { setZoom(1); zoomRef.current = 1; setPanX(0); setPanY(0) }} title="Zurücksetzen" style={{ height: 32, minWidth: 42, padding: '0 6px', fontSize: 11, fontWeight: 600, color: 'var(--text-2)' }}>
+              <button className="btn-secondary" onClick={() => { setZoom(1); zoomRef.current = 1; setPanX(0); setPanY(0) }} title="Zurücksetzen" style={{ height: 32, minWidth: 42, padding: '0 6px', fontSize: 11, fontWeight: 600, color: 'var(--text-2)' }} onTouchEnd={e => e.currentTarget.blur()}>
                 {Math.round(zoom * 100)}%
               </button>
-              <button className="btn-secondary" onClick={() => { const z = Math.min(4, zoom + 0.25); setZoom(z); zoomRef.current = z }} title="Vergrößern" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={() => { const z = Math.min(4, zoom + 0.25); setZoom(z); zoomRef.current = z }} title="Vergrößern" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onTouchEnd={e => e.currentTarget.blur()}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
               </button>
             </div>
-            <button className="btn-action scan-toolbar-weiter" onClick={handleSend}>
-              {photos.length > 1 ? `Senden (${photos.length})` : 'Senden'}
+            <button className="btn-action scan-toolbar-weiter" onClick={handleSend} onTouchEnd={e => e.currentTarget.blur()}>
+              Senden
             </button>
           </div>
 
