@@ -72,27 +72,23 @@ export default function AppLayout() {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
 
-        {/* Left slot: icon + toggle button */}
-        {!sidebarCollapsed && (
-          <div className="topbar-logo" style={{ justifyContent: 'center', padding: '0 20px' }}>
-            <img src="/arvis-icon.svg" alt="Arvis" style={{ height: 52, display: 'block' }} />
-          </div>
-        )}
+        {/* Left slot: always in DOM, fades with sidebar */}
+        <div className="topbar-logo" style={{ justifyContent: 'center', padding: '0 20px' }}>
+          <img src="/arvis-icon.svg" alt="Arvis" style={{ height: 52, display: 'block' }} />
+        </div>
 
         <button className="topbar-btn" onClick={() => setSidebarCollapsed(v => !v)} title="Sidebar ein-/ausblenden">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
         </button>
 
-        {/* Center slot: centered in remaining space */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {sidebarCollapsed
-            ? <img src="/arvis-logo.svg" alt="Arvis" style={{ height: 56, display: 'block' }} />
-            : <span style={{
-                fontFamily: "'Bricolage Grotesque', sans-serif",
-                fontWeight: 800, fontSize: 38, color: 'var(--text)',
-                letterSpacing: '-0.02em', userSelect: 'none'
-              }}>Arvis</span>
-          }
+        {/* Center slot: both elements always in DOM, cross-fade via CSS */}
+        <div className="topbar-center-slot">
+          <img src="/arvis-logo.svg" alt="Arvis" className="topbar-center-logo" style={{ height: 56 }} />
+          <span className="topbar-center-text" style={{
+            fontFamily: "'Bricolage Grotesque', sans-serif",
+            fontWeight: 800, fontSize: 38, color: 'var(--text)',
+            letterSpacing: '-0.02em', userSelect: 'none'
+          }}>Arvis</span>
         </div>
 
         <div className="topbar-right">
