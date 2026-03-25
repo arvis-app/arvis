@@ -848,7 +848,7 @@ export default function Scan() {
             {/* Empty */}
             {(result === 'empty') && (
               <div className="scan-result-empty">
-                <img src="/arvis-icon.svg" width="90" height="90" alt="" style={{ display: 'block', filter: 'grayscale(1) opacity(0.35)' }} />
+                <img src="/arvis-icon-light.svg" width="90" height="90" alt="" style={{ display: 'block', filter: 'grayscale(1) opacity(0.35)' }} />
                 <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 12 }}>Ergebnis erscheint hier</div>
                 <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>Laden Sie zuerst ein Dokument</div>
               </div>
