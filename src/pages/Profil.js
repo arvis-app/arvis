@@ -224,15 +224,15 @@ export default function Profil() {
             {/* Avatar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
               <div id="profilAvatar" onClick={() => photoInputRef.current?.click()}
-                style={{ width: 100, height: 100, borderRadius: '50%', background: 'linear-gradient(135deg,var(--orange),var(--orange-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34, fontWeight: 700, color: 'white', flexShrink: 0, cursor: 'pointer', overflow: 'hidden' }}>
+                style={{ width: 100, height: 100, borderRadius: '50%', background: 'linear-gradient(135deg,var(--orange),var(--orange-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 700, color: 'white', flexShrink: 0, cursor: 'pointer', overflow: 'hidden' }}>
                 {photo ? <img src={photo} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : initials}
               </div>
               <div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button className="btn-secondary" style={{ fontSize: 12 }} onClick={() => photoInputRef.current?.click()}>Foto ändern</button>
+                  <button className="btn-secondary" style={{ fontSize: 14 }} onClick={() => photoInputRef.current?.click()}>Foto ändern</button>
                   <button 
                     className="btn-secondary" 
-                    style={{ fontSize: 12, color: '#e53e3e', borderColor: '#e53e3e', transition: 'background 0.2s' }} 
+                    style={{ fontSize: 14, color: '#e53e3e', borderColor: '#e53e3e', transition: 'background 0.2s' }} 
                     onClick={() => setPhoto(null)}
                     onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
                     onMouseOut={e=>e.target.style.background=''}
@@ -241,7 +241,7 @@ export default function Profil() {
                   </button>
                 </div>
                 <input ref={photoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhoto} />
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>JPG oder PNG, max. 2 MB</div>
+                <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>JPG oder PNG, max. 2 MB</div>
               </div>
             </div>
 
@@ -262,12 +262,12 @@ export default function Profil() {
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Vorname <span style={{ color: 'var(--orange)' }}>*</span></label>
                 <input type="text" className="form-input" value={vorname} onChange={e => setVorname(e.target.value)} placeholder="Hans" style={{ borderColor: errors.vorname ? '#e53e3e' : '' }} />
-                {errors.vorname && <div style={{ fontSize: 11, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
+                {errors.vorname && <div style={{ fontSize: 13, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
               </div>
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Nachname <span style={{ color: 'var(--orange)' }}>*</span></label>
                 <input type="text" className="form-input" value={nachname} onChange={e => setNachname(e.target.value)} placeholder="Müller" style={{ borderColor: errors.nachname ? '#e53e3e' : '' }} />
-                {errors.nachname && <div style={{ fontSize: 11, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
+                {errors.nachname && <div style={{ fontSize: 13, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
               </div>
             </div>
 
@@ -275,7 +275,7 @@ export default function Profil() {
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">E-Mail-Adresse <span style={{ color: 'var(--orange)' }}>*</span></label>
               <input type="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} placeholder="dr.mueller@klinik.de" style={{ borderColor: errors.email ? '#e53e3e' : '' }} />
-              {errors.email && <div style={{ fontSize: 11, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
+              {errors.email && <div style={{ fontSize: 13, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
             </div>
 
             {/* Klinik */}
@@ -285,7 +285,7 @@ export default function Profil() {
             </div>
 
             <div style={{ height: 1, background: 'var(--border)' }} />
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Rechnungsadresse</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)' }}>Rechnungsadresse</div>
 
             {/* Straße + Hausnummer */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12 }}>
@@ -312,7 +312,7 @@ export default function Profil() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border)', marginTop: -6 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-3)' }}><span style={{ color: 'var(--orange)' }}>*</span> Pflichtfeld</div>
+              <div style={{ fontSize: 13, color: 'var(--text-3)' }}><span style={{ color: 'var(--orange)' }}>*</span> Pflichtfeld</div>
               <button className="btn-action" onClick={saveProfile} style={{ padding: '10px 24px' }}>Speichern</button>
             </div>
           </div>
@@ -334,28 +334,28 @@ export default function Profil() {
               {/* Plan badge */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: planInfo.canceledPending ? 'rgba(245,158,11,0.08)' : planInfo.expired ? 'rgba(229,62,62,0.06)' : 'rgba(22,163,74,0.08)', border: planInfo.canceledPending ? '1px solid rgba(245,158,11,0.3)' : planInfo.expired ? '1px solid rgba(229,62,62,0.2)' : '1px solid rgba(22,163,74,0.3)', borderRadius: 8 }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>
                     {planInfo.plan === 'pro' ? 'Plan Pro' : planInfo.expired ? 'Testversion abgelaufen' : 'Testversion'}
                   </div>
                   {planInfo.canceledPending && (
-                    <div style={{ fontSize: 12, color: '#e53e3e', marginTop: 2 }}>
+                    <div style={{ fontSize: 14, color: '#e53e3e', marginTop: 2 }}>
                       Gekündigt · Noch {planInfo.daysLeft} Tag{planInfo.daysLeft !== 1 ? 'e' : ''} verbleibend
                     </div>
                   )}
                   {planInfo.plan !== 'pro' && (
-                    <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>
+                    <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 2 }}>
                       {planInfo.expired ? 'Abonnement erforderlich' : `Noch ${planInfo.daysLeft} Tag${planInfo.daysLeft !== 1 ? 'e' : ''} verbleibend`}
                     </div>
                   )}
                 </div>
-                <span style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? '#e53e3e' : '#16a34a', color: 'white', fontSize: 11, fontWeight: 700 }}>
+                <span style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? '#e53e3e' : '#16a34a', color: 'white', fontSize: 13, fontWeight: 700 }}>
                   {planInfo.canceledPending ? 'Gekündigt' : planInfo.plan === 'pro' ? 'Aktiv' : planInfo.expired ? 'Abgelaufen' : 'Trial'}
                 </span>
               </div>
 
               {/* Zahlungsmittel */}
               <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>Zahlungsmittel</div>
+                <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>Zahlungsmittel</div>
                 {paymentMethod ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     {['paypal', 'sepa', 'sepa_debit', 'apple_pay', 'applepay', 'apple pay'].includes(paymentMethod.brand?.toLowerCase()) ? (
@@ -364,10 +364,10 @@ export default function Profil() {
                           <CardIcon brand={paymentMethod.brand} />
                         </div>
                         <div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
                             {paymentMethod.brand?.toLowerCase() === 'paypal' ? paymentMethod.last4 : paymentMethod.last4 ? `•••• ${paymentMethod.last4}` : 'Apple Pay'}
                           </div>
-                          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
+                          <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
                             {paymentMethod.brand?.toLowerCase() === 'paypal' ? 'PayPal-Konto' :
                               paymentMethod.brand?.toLowerCase().includes('apple') ? 'Apple Wallet' : 'SEPA-Lastschrift'}
                           </div>
@@ -379,8 +379,8 @@ export default function Profil() {
                           <CardIcon brand={paymentMethod.brand} />
                         </div>
                         <div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>•••• {paymentMethod.last4}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
+                          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>•••• {paymentMethod.last4}</div>
+                          <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
                             Standardzahlungsmittel
                           </div>
                         </div>
@@ -389,7 +389,7 @@ export default function Profil() {
                     <button
                       onClick={manageSubscription}
                       disabled={portalLoading}
-                      style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 12, fontWeight: 600, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1, transition: 'all 0.2s' }}
+                      style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 14, fontWeight: 600, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1, transition: 'all 0.2s' }}
                       onMouseOver={e => { if (!portalLoading) { e.target.style.background = 'var(--orange-ghost)'; e.target.style.color = 'var(--orange)'; e.target.style.borderColor = 'var(--orange-dark)'; } }}
                       onMouseOut={e => { if (!portalLoading) { e.target.style.background = 'var(--bg-2)'; e.target.style.color = 'var(--text)'; e.target.style.borderColor = 'var(--border)'; } }}
                     >
@@ -402,9 +402,9 @@ export default function Profil() {
                       <div style={{ width: 38, height: 24, borderRadius: 5, background: 'var(--bg-3)', border: '1px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>
                       </div>
-                      <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Kein Zahlungsmittel hinterlegt</div>
+                      <div style={{ fontSize: 15, color: 'var(--text-3)' }}>Kein Zahlungsmittel hinterlegt</div>
                     </div>
-                    <button onClick={manageSubscription} disabled={portalLoading} style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 12, fontWeight: 600, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}>
+                    <button onClick={manageSubscription} disabled={portalLoading} style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 14, fontWeight: 600, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}>
                       {portalLoading ? '...' : 'Hinzufügen'}
                     </button>
                   </div>
@@ -418,29 +418,29 @@ export default function Profil() {
                   {!yearly && (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '6px 12px', background: '#fff7ed', border: '1px solid rgba(217,75,10,0.2)', borderRadius: 8 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--orange)' }}>Einführungsangebot –34% · erste 3 Monate</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--orange)' }}>Einführungsangebot –34% · erste 3 Monate</span>
                     </div>
                   )}
                   {/* Toggle Monatlich / Jährlich */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 10, background: 'var(--bg-2)', borderRadius: 6, border: '1px solid var(--border)' }}>
-                    <div onClick={() => setYearly(false)} style={{ fontSize: 13, fontWeight: 600, color: yearly ? 'var(--text-3)' : 'var(--text)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div onClick={() => setYearly(false)} style={{ fontSize: 15, fontWeight: 600, color: yearly ? 'var(--text-3)' : 'var(--text)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <span>Monatlich</span>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-3)' }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-3)' }}>
                         <span style={{ fontWeight: 700, color: yearly ? 'var(--text-3)' : 'var(--orange)' }}>19 €</span> <span style={{ textDecoration: 'line-through' }}>29 €</span>
                       </div>
                     </div>
                     <div onClick={() => setYearly(v => !v)} style={{ width: 44, height: 24, borderRadius: 999, background: 'var(--orange)', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
                       <div style={{ position: 'absolute', top: 3, left: 3, width: 18, height: 18, borderRadius: '50%', background: 'white', transition: 'transform 0.2s', transform: yearly ? 'translateX(20px)' : 'translateX(0)' }} />
                     </div>
-                    <div onClick={() => setYearly(true)} style={{ fontSize: 13, fontWeight: 600, color: yearly ? 'var(--text)' : 'var(--text-3)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div onClick={() => setYearly(true)} style={{ fontSize: 15, fontWeight: 600, color: yearly ? 'var(--text)' : 'var(--text-3)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <span>Jährlich</span>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: yearly ? 'var(--orange)' : 'var(--text-3)' }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: yearly ? 'var(--orange)' : 'var(--text-3)' }}>
                         249 € <span style={{ color: '#16a34a' }}>–28%</span>
                       </div>
                     </div>
                   </div>
                   <button onClick={handleCheckout} disabled={checkoutLoading}
-                    style={{ width: '100%', padding: 11, borderRadius: 6, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.2s' }}
+                    style={{ width: '100%', padding: 11, borderRadius: 6, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.2s' }}
                     onMouseOver={e => e.target.style.background = 'var(--orange-dark)'} onMouseOut={e => e.target.style.background = 'var(--orange)'}>
                     {checkoutLoading ? 'Laden...' : yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
                   </button>
@@ -451,11 +451,11 @@ export default function Profil() {
               {planInfo.plan === 'pro' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div style={{ paddingTop: 8, borderTop: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Abonnement kündigen</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 12 }}>Ihr Zugang bleibt bis zum Ende des aktuellen Abrechnungszeitraums aktiv.</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Abonnement kündigen</div>
+                    <div style={{ fontSize: 14, color: 'var(--text-3)', marginBottom: 12 }}>Ihr Zugang bleibt bis zum Ende des aktuellen Abrechnungszeitraums aktiv.</div>
                     <button 
                       onClick={() => setShowCancelModal(true)} 
-                      style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid #e53e3e', background: 'transparent', color: '#e53e3e', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition:'background 0.2s' }}
+                      style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid #e53e3e', background: 'transparent', color: '#e53e3e', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition:'background 0.2s' }}
                       onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
                       onMouseOut={e=>e.target.style.background='transparent'}
                     >
@@ -513,18 +513,18 @@ export default function Profil() {
               <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(229,62,62,0.1)', border: '1px solid rgba(229,62,62,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
               </div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>Abonnement kündigen</div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>Abonnement kündigen</div>
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 8, lineHeight: 1.6 }}>Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?</div>
-            <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 22, padding: '10px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 8, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 15, color: 'var(--text-3)', marginBottom: 8, lineHeight: 1.6 }}>Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?</div>
+            <div style={{ fontSize: 15, color: 'var(--text-2)', marginBottom: 22, padding: '10px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 8, lineHeight: 1.6 }}>
               Ihr Zugang bleibt bis zum <strong>Ende des Abrechnungszeitraums</strong> aktiv.
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <button className="btn-secondary" onClick={() => setShowCancelModal(false)} style={{ height: 38, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
+              <button className="btn-secondary" onClick={() => setShowCancelModal(false)} style={{ height: 38, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
               <button
                 onClick={manageSubscription}
                 disabled={portalLoading}
-                style={{ height: 38, fontSize: 13, fontWeight: 500, borderRadius: 6, border: 'none', background: '#e53e3e', color: 'white', cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}
+                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: '#e53e3e', color: 'white', cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}
               >
                 {portalLoading ? 'Lädt...' : 'Kündigen'}
               </button>
@@ -533,7 +533,7 @@ export default function Profil() {
         </div>
       )}
 
-      {toast && <div style={{ position: 'fixed', bottom: 28, left: 'calc(50% + 120px)', transform: 'translateX(-50%)', background: toast.light ? 'var(--orange-ghost)' : 'var(--orange)', color: toast.light ? 'var(--orange)' : 'white', border: 'none', padding: '10px 22px', borderRadius: 6, fontSize: 14, fontWeight: 600, zIndex: 99999 }}>{toast.msg}</div>}
+      {toast && <div style={{ position: 'fixed', bottom: 28, left: 'calc(50% + 120px)', transform: 'translateX(-50%)', background: toast.light ? 'var(--orange-ghost)' : 'var(--orange)', color: toast.light ? 'var(--orange)' : 'white', border: 'none', padding: '10px 22px', borderRadius: 6, fontSize: 16, fontWeight: 600, zIndex: 99999 }}>{toast.msg}</div>}
     </div>
   )
 }

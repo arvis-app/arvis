@@ -227,7 +227,7 @@ export default function LoginPage() {
               <div className="form-sub">Geben Sie Ihr neues Passwort ein</div>
 
               {resetSuccess ? (
-                <p style={{ textAlign: 'center', padding: '16px', borderRadius: 8, background: 'rgba(46,125,50,0.07)', color: '#2e7d32', fontWeight: 600, fontSize: 14 }}>
+                <p style={{ textAlign: 'center', padding: '16px', borderRadius: 8, background: 'rgba(46,125,50,0.07)', color: '#2e7d32', fontWeight: 600, fontSize: 16 }}>
                   ✓ Passwort erfolgreich geändert — Sie werden weitergeleitet…
                 </p>
               ) : (
@@ -346,7 +346,7 @@ export default function LoginPage() {
             </div>
           )}
         </div>
-        <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-3)', marginTop: 24 }}>
+        <div style={{ textAlign: 'center', fontSize: 14, color: 'var(--text-3)', marginTop: 24 }}>
           <a href="/impressum"   style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>Impressum</a>·
           <a href="/datenschutz" style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>Datenschutz</a>·
           <a href="/agb"         style={{ color: 'var(--text-3)', textDecoration: 'none', margin: '0 8px' }}>AGB</a>

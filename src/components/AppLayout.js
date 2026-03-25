@@ -88,7 +88,7 @@ export default function AppLayout() {
           <img src="/arvis-icon.svg" alt="" className="topbar-center-icon" style={{ height: 57 }} />
           <span style={{
             fontFamily: "'Bricolage Grotesque', sans-serif",
-            fontWeight: 800, fontSize: 38, color: 'var(--text)',
+            fontWeight: 800, fontSize: 40, color: 'var(--text)',
             letterSpacing: '-0.02em', userSelect: 'none', marginTop: 3
           }}>Arvis</span>
         </div>
@@ -101,14 +101,14 @@ export default function AppLayout() {
             {avatarOpen && (
               <div style={{position:'absolute',right:0,top:'calc(100% + 8px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
                 <div onClick={() => { setAvatarOpen(false); navigate('/profil') }}
-                  style={{padding:'11px 16px',fontSize:13,fontWeight:600,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
+                  style={{padding:'11px 16px',fontSize:15,fontWeight:600,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
                   onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   Mein Profil
                 </div>
                 <div style={{height:1,background:'var(--border)',margin:'0 12px'}}/>
                 <div onClick={handleLogout}
-                  style={{padding:'11px 16px',fontSize:13,fontWeight:600,color:'#D94B0A',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
+                  style={{padding:'11px 16px',fontSize:15,fontWeight:600,color:'#D94B0A',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
                   onMouseOver={e=>e.currentTarget.style.background='rgba(217,75,10,0.07)'} onMouseOut={e=>e.currentTarget.style.background=''}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D94B0A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                   Abmelden
@@ -156,7 +156,7 @@ export default function AppLayout() {
               padding: '6px 10px',
               background: 'var(--orange-ghost)',
               borderRadius: 6,
-              fontSize: 11,
+              fontSize: 13,
               color: 'var(--orange)',
               fontWeight: 600,
               textAlign: 'center',

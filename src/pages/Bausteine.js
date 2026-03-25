@@ -42,8 +42,8 @@ function ConfirmModal({ opts, onOk, onCancel }) {
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           {opts.icon && <div style={{width:36,height:36,borderRadius: 6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:opts.iconBg||'var(--bg-3)'}} dangerouslySetInnerHTML={{__html:opts.icon}}/>}
           <div>
-            <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>{opts.title}</div>
-            <div style={{fontSize:13,color:'var(--text-2)',marginTop:3,lineHeight:1.5,whiteSpace:'pre-line'}}>{opts.msg}</div>
+            <div style={{fontSize:17,fontWeight:700,color:'var(--text)'}}>{opts.title}</div>
+            <div style={{fontSize:15,color:'var(--text-2)',marginTop:3,lineHeight:1.5,whiteSpace:'pre-line'}}>{opts.msg}</div>
           </div>
         </div>
         <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
@@ -86,32 +86,32 @@ function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }
     <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{background:'var(--card)',borderRadius: 8,padding:24,width:'100%',maxWidth:520,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:14}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <span style={{fontSize:16,fontWeight:700,color:'var(--text)'}}>{editingBaustein ? 'Baustein bearbeiten' : 'Neuen Baustein erstellen'}</span>
-          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-3)',fontSize:20,lineHeight:1,padding:'2px 6px'}}>&times;</button>
+          <span style={{fontSize:18,fontWeight:700,color:'var(--text)'}}>{editingBaustein ? 'Baustein bearbeiten' : 'Neuen Baustein erstellen'}</span>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-3)',fontSize:22,lineHeight:1,padding:'2px 6px'}}>&times;</button>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:12,fontWeight:600,color:'var(--text-2)'}}>Titel *</label>
+          <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Titel *</label>
           <input value={titel} onChange={e=>setTitel(e.target.value)} type="text" placeholder="z.B. Allgemeine Anamnese"
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:14,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:16,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:12,fontWeight:600,color:'var(--text-2)'}}>Kategorie *</label>
+          <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Kategorie *</label>
           <select value={category} onChange={e=>setCategory(e.target.value)}
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:14,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}>
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:16,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}>
             {categories.map(c=><option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:12,fontWeight:600,color:'var(--text-2)'}}>Text *</label>
+          <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Text *</label>
           <textarea value={text} onChange={e=>setText(e.target.value)} rows={6} placeholder="Bausteintext eingeben…"
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:13,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',resize:'vertical',lineHeight:1.6}}/>
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:15,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',resize:'vertical',lineHeight:1.6}}/>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:12,fontWeight:600,color:'var(--text-2)'}}>Schlüsselwörter <span style={{fontWeight:400,color:'var(--text-3)'}}>(optional, durch Komma getrennt)</span></label>
+          <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Schlüsselwörter <span style={{fontWeight:400,color:'var(--text-3)'}}>(optional, durch Komma getrennt)</span></label>
           <input value={keywords} onChange={e=>setKeywords(e.target.value)} type="text" placeholder="z.B. anamnese, aufnahme, patient"
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:14,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:8,fontSize:16,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
         </div>
-        {error && <div style={{fontSize:12,color:'var(--orange)',padding:'6px 10px',background:'rgba(217,75,10,0.07)',borderRadius:6}}>{error}</div>}
+        {error && <div style={{fontSize:14,color:'var(--orange)',padding:'6px 10px',background:'rgba(217,75,10,0.07)',borderRadius:6}}>{error}</div>}
         <div style={{display:'flex',gap:8,justifyContent:'flex-end',marginTop:4}}>
           <button className="btn-secondary" onClick={onClose}>Abbrechen</button>
           <button className="btn-action" onClick={handleSave}>
@@ -364,10 +364,10 @@ export default function Bausteine() {
               value={search}
               onChange={handleSearchInput}
               onKeyDown={handleSearchKeydown}
-              style={{position:'relative',zIndex:1,width:'100%',padding:'10px 14px',border:'none',outline:'none',fontSize:15,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',background:'transparent',color:'var(--text)',boxSizing:'border-box'}}
+              style={{position:'relative',zIndex:1,width:'100%',padding:'10px 14px',border:'none',outline:'none',fontSize:17,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',background:'transparent',color:'var(--text)',boxSizing:'border-box'}}
             />
             {suggestion && search && (
-              <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,padding:'10px 14px',fontSize:15,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text-3)',pointerEvents:'none',whiteSpace:'pre',overflow:'hidden',boxSizing:'border-box',zIndex:2}}>
+              <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,padding:'10px 14px',fontSize:17,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text-3)',pointerEvents:'none',whiteSpace:'pre',overflow:'hidden',boxSizing:'border-box',zIndex:2}}>
                 <span style={{visibility:'hidden'}}>{search}</span>{suggestion.slice(search.length)}
               </div>
             )}
@@ -378,7 +378,7 @@ export default function Bausteine() {
             <select
               value={activeCat||''}
               onChange={e=>{setActiveCat(e.target.value||null); e.target.blur()}}
-              style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'11px 40px 11px 14px',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text)',fontWeight:700,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
+              style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'11px 40px 11px 14px',fontSize:16,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text)',fontWeight:700,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
               <option value="">Alle Kategorien</option>
               <option value="Favoriten">★ Favoriten</option>
               <option value="MeineBausteine">✎ Meine Bausteine</option>
@@ -390,7 +390,7 @@ export default function Bausteine() {
           {/* List */}
           <div className="bausteine-list" style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',minHeight:0,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow)'}}>
             {filtered.length===0 && (
-              <div style={{padding:32,textAlign:'center',color:'var(--text-3)',fontSize:13}}>Keine Ergebnisse</div>
+              <div style={{padding:32,textAlign:'center',color:'var(--text-3)',fontSize:15}}>Keine Ergebnisse</div>
             )}
             {filtered.map(b=>(
               <div key={b.id}
@@ -398,8 +398,8 @@ export default function Bausteine() {
                 onClick={()=>setSelected(b)}>
                 <div className="baustein-item-title" style={{display:'flex',alignItems:'center',gap:4}}>
                   {b.title}
-                  {favs.includes(b.id) && <span style={{color:'var(--orange)',fontSize:10}} title="Favorit">★</span>}
-                  {b.custom && <span style={{fontSize:9,fontWeight:700,color:'var(--orange)',background:'var(--orange-ghost)',borderRadius:4,padding:'1px 5px'}}>MEIN</span>}
+                  {favs.includes(b.id) && <span style={{color:'var(--orange)',fontSize:12}} title="Favorit">★</span>}
+                  {b.custom && <span style={{fontSize:11,fontWeight:700,color:'var(--orange)',background:'var(--orange-ghost)',borderRadius:4,padding:'1px 5px'}}>MEIN</span>}
                 </div>
                 <div className="baustein-item-cat">{b.category}</div>
               </div>
@@ -413,7 +413,7 @@ export default function Bausteine() {
           {/* Preview */}
           <div style={{border:'1px solid var(--border)',borderRadius:8,padding:16,background:'var(--card)',boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flexShrink:0}}>
             {!selected && (
-              <div style={{minHeight:218,color:'var(--text-2)',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>Baustein auswählen</div>
+              <div style={{minHeight:218,color:'var(--text-2)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>Baustein auswählen</div>
             )}
             {selected && (
               <div style={{display:'flex',flexDirection:'column',flex:1,minHeight:0}}>
@@ -464,7 +464,7 @@ export default function Bausteine() {
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                 <span className="baustein-basket-title">Warenkorb</span>
                 <span className="baustein-basket-count">{basket.length} Baustein{basket.length>1?'e':''}</span>
-                <button className="result-action-btn" onClick={clearBasket} style={{marginLeft:'auto',width:'auto',padding:'0 10px',fontSize:12,fontWeight:600,fontFamily:'DM Sans,sans-serif'}}>Leeren</button>
+                <button className="result-action-btn" onClick={clearBasket} style={{marginLeft:'auto',width:'auto',padding:'0 10px',fontSize:14,fontWeight:600,fontFamily:'DM Sans,sans-serif'}}>Leeren</button>
               </div>
               <div ref={basketListRef} className="baustein-basket-items" style={{overflowY:'auto'}}>
                 {basket.map(b=>(

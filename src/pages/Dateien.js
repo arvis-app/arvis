@@ -88,8 +88,8 @@ function ConfirmModal({ opts, onOk, onCancel }) {
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <div style={{width:36,height:36,borderRadius: 6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'#D63B3B'}} dangerouslySetInnerHTML={{__html:opts.icon||''}}/>
           <div>
-            <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>{opts.title}</div>
-            <div style={{fontSize:13,color:'var(--text-2)',marginTop:3}}>{opts.msg}</div>
+            <div style={{fontSize:17,fontWeight:700,color:'var(--text)'}}>{opts.title}</div>
+            <div style={{fontSize:15,color:'var(--text-2)',marginTop:3}}>{opts.msg}</div>
           </div>
         </div>
         <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
@@ -161,9 +161,9 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 10px',borderBottom:'1px solid var(--border)'}}>
         <input value={title} onChange={e=>{setTitle(e.target.value);autoSave(e.target.value,'')}}
           placeholder="Titel..."
-          style={{flex:1,border:'none',background:'transparent',fontSize:16,fontWeight:700,color:'var(--text)',outline:'none',fontFamily:'Bricolage Grotesque,sans-serif'}}/>
+          style={{flex:1,border:'none',background:'transparent',fontSize:18,fontWeight:700,color:'var(--text)',outline:'none',fontFamily:'Bricolage Grotesque,sans-serif'}}/>
         <div style={{display:'flex',gap:6}}>
-          <button onClick={downloadDoc} style={{fontSize:12,height:32,padding:'0 10px',display:'flex',alignItems:'center',gap:5,background:'#2B579A',color:'white',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'DM Sans,sans-serif',fontWeight:600}}>
+          <button onClick={downloadDoc} style={{fontSize:14,height:32,padding:'0 10px',display:'flex',alignItems:'center',gap:5,background:'#2B579A',color:'white',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'DM Sans,sans-serif',fontWeight:600}}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Word
           </button>
@@ -175,18 +175,18 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
       <div style={{display:'flex',alignItems:'center',gap:6,padding:'8px 16px',borderBottom:'1px solid var(--border)',flexWrap:'wrap'}}>
         {[['bold','B',true],['italic','I',false],['underline','U',false]].map(([cmd,label,isBold])=>(
           <button key={cmd} onClick={()=>format(cmd)}
-            style={{width:28,height:28,borderRadius:6,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',fontWeight:isBold?700:400,fontStyle:cmd==='italic'?'italic':'normal',textDecoration:cmd==='underline'?'underline':'none',fontSize:13,fontFamily:'serif'}}>
+            style={{width:28,height:28,borderRadius:6,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',fontWeight:isBold?700:400,fontStyle:cmd==='italic'?'italic':'normal',textDecoration:cmd==='underline'?'underline':'none',fontSize:15,fontFamily:'serif'}}>
             {label}
           </button>
         ))}
         <span style={{width:1,height:20,background:'var(--border)',margin:'0 4px'}}/>
-        <button onClick={()=>format('insertUnorderedList')} style={{padding:'0 8px',height:28,borderRadius:6,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',fontSize:12}}>• Liste</button>
-        <button onClick={()=>format('insertOrderedList')} style={{padding:'0 8px',height:28,borderRadius:6,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',fontSize:12}}>1. Liste</button>
-        <span style={{marginLeft:'auto',fontSize:11,color:'var(--text-3)'}}>{saved}</span>
+        <button onClick={()=>format('insertUnorderedList')} style={{padding:'0 8px',height:28,borderRadius:6,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',fontSize:14}}>• Liste</button>
+        <button onClick={()=>format('insertOrderedList')} style={{padding:'0 8px',height:28,borderRadius:6,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',fontSize:14}}>1. Liste</button>
+        <span style={{marginLeft:'auto',fontSize:13,color:'var(--text-3)'}}>{saved}</span>
       </div>
       <div ref={editorRef} contentEditable suppressContentEditableWarning
         onInput={()=>autoSave(title, editorRef.current?.innerHTML)}
-        style={{flex:1,overflowY:'auto',padding:16,outline:'none',fontSize:14,lineHeight:1.7,color:'var(--text)',fontFamily:'DM Sans,sans-serif'}}
+        style={{flex:1,overflowY:'auto',padding:16,outline:'none',fontSize:16,lineHeight:1.7,color:'var(--text)',fontFamily:'DM Sans,sans-serif'}}
         data-placeholder="Schreiben..."/>
     </div>
   )
@@ -429,7 +429,7 @@ export default function Dateien() {
 
         {/* Breadcrumb */}
         <div className="dateien-breadcrumb" id="dateienBreadcrumb">
-          <span className={`dateien-bread-item${!currentFolder?' active':''}`} onClick={()=>{setCurrentFolder(null);setDetail(null)}} style={{cursor:'pointer',display:'flex',alignItems:'center',gap:6,fontSize:14,fontWeight:600}}>
+          <span className={`dateien-bread-item${!currentFolder?' active':''}`} onClick={()=>{setCurrentFolder(null);setDetail(null)}} style={{cursor:'pointer',display:'flex',alignItems:'center',gap:6,fontSize:16,fontWeight:600}}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
             Meine Dateien
           </span>
@@ -448,8 +448,8 @@ export default function Dateien() {
             {isEmpty ? (
               <div style={{textAlign:'center',padding:'60px 20px',color:'var(--text-muted)',display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
                 {ICO.empty}
-                <div style={{fontSize:14}}>{q ? 'Keine Ergebnisse' : 'Leerer Ordner'}</div>
-                {!q && <div style={{fontSize:12,color:'var(--text-muted)'}}>Notiz erstellen oder Datei hochladen</div>}
+                <div style={{fontSize:16}}>{q ? 'Keine Ergebnisse' : 'Leerer Ordner'}</div>
+                {!q && <div style={{fontSize:14,color:'var(--text-muted)'}}>Notiz erstellen oder Datei hochladen</div>}
               </div>
             ) : view==='grid' ? (
               <div id="dateienGrid" className="dateien-grid">
@@ -459,7 +459,7 @@ export default function Dateien() {
                     onMouseEnter={e=>e.currentTarget.style.borderColor='var(--orange)'}
                     onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}>
                     {ICO.folder}
-                    <div style={{fontSize:12,fontWeight:600,color:'var(--text)',textAlign:'center',lineHeight:1.3,alignSelf:'start',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',wordBreak:'break-all'}}>{f.name}</div>
+                    <div style={{fontSize:14,fontWeight:600,color:'var(--text)',textAlign:'center',lineHeight:1.3,alignSelf:'start',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',wordBreak:'break-all'}}>{f.name}</div>
                     <div style={{position:'absolute',top:6,right:6,display:'flex',gap:2,opacity:0}} className="dateien-item-actions">
                       <button onClick={e=>{e.stopPropagation();setRenameModal({id:f.id,name:f.name});setRenameName(f.name)}} style={{width:22,height:22,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{ICO.rename}</button>
                       <button onClick={e=>{e.stopPropagation();deleteItem(f.id,'folder')}} style={{width:22,height:22,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#dc2626'}}>{ICO.del}</button>
@@ -472,7 +472,7 @@ export default function Dateien() {
                     onMouseEnter={e=>e.currentTarget.style.borderColor='var(--orange)'}
                     onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}>
                     {getNoteType(n)==='image'&&n.dataUrl ? <img src={n.dataUrl} style={{width:44,height:44,objectFit:'cover',borderRadius:6}} alt=""/> : getNoteType(n)==='pdf' ? ICO.pdf : ICO.note}
-                    <div style={{fontSize:12,fontWeight:600,color:'var(--text)',textAlign:'center',lineHeight:1.3,alignSelf:'start',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',wordBreak:'break-all'}}>{n.title||'Ohne Titel'}</div>
+                    <div style={{fontSize:14,fontWeight:600,color:'var(--text)',textAlign:'center',lineHeight:1.3,alignSelf:'start',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',wordBreak:'break-all'}}>{n.title||'Ohne Titel'}</div>
                     <div style={{position:'absolute',top:6,right:6,opacity:0}} className="dateien-item-actions">
                       <button onClick={e=>{e.stopPropagation();deleteItem(n.id,'note')}} style={{width:22,height:22,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#dc2626'}}>{ICO.del}</button>
                     </div>
@@ -482,15 +482,15 @@ export default function Dateien() {
             ) : (
               <div id="dateienList" className="dateien-list-view">
                 <div style={{display:'grid',gridTemplateColumns:'1fr 120px 80px',gap:8,padding:'9px 16px',background:'var(--bg-3)',borderBottom:'1px solid var(--border)'}}>
-                  {['Name','Geändert',''].map((h,i)=><span key={i} style={{fontSize:10,fontWeight:700,color:'var(--text-3)',letterSpacing:'0.1em',textTransform:'uppercase'}}>{h}</span>)}
+                  {['Name','Geändert',''].map((h,i)=><span key={i} style={{fontSize:12,fontWeight:700,color:'var(--text-3)',letterSpacing:'0.1em',textTransform:'uppercase'}}>{h}</span>)}
                 </div>
                 {folders.map(f=>(
                   <div key={f.id} onDoubleClick={()=>{setCurrentFolder(f.id);setDetail(null)}}
                     style={{display:'grid',gridTemplateColumns:'1fr 120px 80px',gap:8,padding:'11px 16px',borderBottom:'1px solid var(--border)',cursor:'pointer',alignItems:'center'}}
                     onMouseEnter={e=>e.currentTarget.style.background='var(--bg)'}
                     onMouseLeave={e=>e.currentTarget.style.background=''}>
-                    <span style={{display:'flex',alignItems:'center',gap:8,fontSize:13,fontWeight:600,color:'var(--text)'}}>{ICO.folderSm}{f.name}</span>
-                    <span style={{fontSize:13,color:'var(--text-muted)'}}>—</span>
+                    <span style={{display:'flex',alignItems:'center',gap:8,fontSize:15,fontWeight:600,color:'var(--text)'}}>{ICO.folderSm}{f.name}</span>
+                    <span style={{fontSize:15,color:'var(--text-muted)'}}>—</span>
                     <span style={{display:'flex',gap:4}}>
                       <button onClick={e=>{e.stopPropagation();setRenameModal({id:f.id,name:f.name});setRenameName(f.name)}} style={{width:24,height:24,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{ICO.rename}</button>
                       <button onClick={e=>{e.stopPropagation();deleteItem(f.id,'folder')}} style={{width:24,height:24,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#dc2626'}}>{ICO.del}</button>
@@ -502,8 +502,8 @@ export default function Dateien() {
                     style={{display:'grid',gridTemplateColumns:'1fr 120px 80px',gap:8,padding:'11px 16px',borderBottom:'1px solid var(--border)',cursor:'pointer',alignItems:'center'}}
                     onMouseEnter={e=>e.currentTarget.style.background='var(--bg)'}
                     onMouseLeave={e=>e.currentTarget.style.background=''}>
-                    <span style={{display:'flex',alignItems:'center',gap:8,fontSize:13,fontWeight:600,color:'var(--text)'}}>{ICO.noteSm}{n.title||'Ohne Titel'}</span>
-                    <span style={{fontSize:13,color:'var(--text-muted)'}}>{n.modified?new Date(n.modified).toLocaleDateString('de-DE'):'—'}</span>
+                    <span style={{display:'flex',alignItems:'center',gap:8,fontSize:15,fontWeight:600,color:'var(--text)'}}>{ICO.noteSm}{n.title||'Ohne Titel'}</span>
+                    <span style={{fontSize:15,color:'var(--text-muted)'}}>{n.modified?new Date(n.modified).toLocaleDateString('de-DE'):'—'}</span>
                     <span style={{display:'flex',gap:4}}>
                       <button onClick={e=>{e.stopPropagation();deleteItem(n.id,'note')}} style={{width:24,height:24,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#dc2626'}}>{ICO.del}</button>
                     </span>

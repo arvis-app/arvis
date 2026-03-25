@@ -82,12 +82,12 @@ function Calendar({ currentDate, setCurrentDate, selectedDay, setSelectedDay, ev
         <button className="cal-nav-btn" onClick={() => { const d = new Date(currentDate); d.setMonth(d.getMonth() - 1); setCurrentDate(d); setSelectedDay(1) }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
         </button>
-        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>{MONTHS[month]} {year}</span>
+        <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{MONTHS[month]} {year}</span>
         <button className="cal-nav-btn" onClick={() => { const d = new Date(currentDate); d.setMonth(d.getMonth() + 1); setCurrentDate(d); setSelectedDay(1) }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
         </button>
       </div>
-      <div className="cal-grid" style={{ fontSize: 12 }}>
+      <div className="cal-grid" style={{ fontSize: 14 }}>
         {DAYS_S.map(d => <div key={d} className="cal-day-header">{d}</div>)}
         {cells.map((c, i) => {
           const isToday = !c.other && c.day === today.getDate() && month === today.getMonth() && year === today.getFullYear()
@@ -182,16 +182,16 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, marginTop: 12, padding: '0 8px' }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--orange)' }}>{dayLabel}</span>
-        <button className="btn-action" onClick={openAddForm} style={{ width: 28, height: 28, padding: 0, fontSize: 18, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 0 }}>+</button>
+        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--orange)' }}>{dayLabel}</span>
+        <button className="btn-action" onClick={openAddForm} style={{ width: 28, height: 28, padding: 0, fontSize: 20, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 0 }}>+</button>
       </div>
-      {dayEvs.length === 0 && !addOpen && <div style={{ textAlign: 'center', padding: '4px 0 16px', color: 'var(--text-muted)', fontSize: 13, fontStyle: 'italic' }}>Kein Termin</div>}
+      {dayEvs.length === 0 && !addOpen && <div style={{ textAlign: 'center', padding: '4px 0 16px', color: 'var(--text-muted)', fontSize: 15, fontStyle: 'italic' }}>Kein Termin</div>}
       <div style={{ paddingBottom: 8 }}>
         {dayEvs.map((e, i) => (
           <div key={i} className="event-item" style={{ opacity: isPast(e, e.date) ? 0.45 : 1 }}>
-            <div className="event-time" style={{ minWidth: 50, fontSize: 13, cursor: 'pointer' }} onClick={() => startEdit(e, e.date)}>{e.time}</div>
-            <div className="event-content" style={{ flex: 1, cursor: 'pointer' }} onClick={() => startEdit(e, e.date)}><div className="event-title" style={{ fontSize: 14 }}>{e.title}</div></div>
-            <button onClick={() => handleDel(e, e.date)} style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+            <div className="event-time" style={{ minWidth: 50, fontSize: 15, cursor: 'pointer' }} onClick={() => startEdit(e, e.date)}>{e.time}</div>
+            <div className="event-content" style={{ flex: 1, cursor: 'pointer' }} onClick={() => startEdit(e, e.date)}><div className="event-title" style={{ fontSize: 16 }}>{e.title}</div></div>
+            <button onClick={() => handleDel(e, e.date)} style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
           </div>
         ))}
       </div>
@@ -206,8 +206,8 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <button className="btn-action" onClick={handleAdd} style={{ height: 40, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>Hinzufügen</button>
-            <button className="btn-secondary" onClick={() => { setAddOpen(false); setEditing(null); setTitle('') }} style={{ height: 40, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
+            <button className="btn-action" onClick={handleAdd} style={{ height: 40, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>Hinzufügen</button>
+            <button className="btn-secondary" onClick={() => { setAddOpen(false); setEditing(null); setTitle('') }} style={{ height: 40, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
           </div>
         </div>
       )}
@@ -255,7 +255,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen })
         <span style={{ paddingLeft: 12 }}>Notiz</span>
       </div>
       <div id="patientList">
-        {patients.length === 0 && <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)', fontSize: 13, fontStyle: 'italic' }}>Keine Patienten</div>}
+        {patients.length === 0 && <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)', fontSize: 15, fontStyle: 'italic' }}>Keine Patienten</div>}
         {patients.map((p, i) => (
           <div key={i} className={`patient-row${selected === i ? ' selected' : ''}`} onClick={() => handleSel(i)}>
             <span className="patient-room">{p.room}</span>
@@ -269,13 +269,13 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen })
       {addOpen && (
         <div style={{ marginTop: 12, padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 8 }}>
-            <input className="mini-input" type="text" placeholder="101" value={newRoom} onChange={e => setNewRoom(e.target.value)} style={{ margin: 0, height: 40, fontSize: 14, boxSizing: 'border-box' }} />
-            <input className="mini-input" type="text" placeholder="Name, Vorname" value={newName} onChange={e => setNewName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 14, boxSizing: 'border-box' }} />
+            <input className="mini-input" type="text" placeholder="101" value={newRoom} onChange={e => setNewRoom(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
+            <input className="mini-input" type="text" placeholder="Name, Vorname" value={newName} onChange={e => setNewName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
           </div>
-          <textarea className="mini-input" placeholder="Notiz..." rows={1} value={newNote} onChange={e => setNewNote(e.target.value)} style={{ resize: 'none', lineHeight: 1.5, margin: 0, overflow: 'hidden', fontSize: 14 }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} />
+          <textarea className="mini-input" placeholder="Notiz..." rows={1} value={newNote} onChange={e => setNewNote(e.target.value)} style={{ resize: 'none', lineHeight: 1.5, margin: 0, overflow: 'hidden', fontSize: 16 }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <button className="btn-action" onClick={handleAdd} style={{ fontSize: 14, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>Hinzufügen</button>
-            <button className="btn-secondary" onClick={() => setAddOpen(false)} style={{ fontSize: 14, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
+            <button className="btn-action" onClick={handleAdd} style={{ fontSize: 16, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>Hinzufügen</button>
+            <button className="btn-secondary" onClick={() => setAddOpen(false)} style={{ fontSize: 16, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
           </div>
         </div>
       )}
@@ -284,13 +284,13 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen })
       {selected !== null && (
         <div className="patient-detail" id="patientDetail" style={{ marginTop: 12, padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 8 }}>
-            <input className="mini-input" type="text" placeholder="101" value={detailRoom} onChange={e => setDetailRoom(e.target.value)} style={{ margin: 0, height: 40, fontSize: 14, boxSizing: 'border-box' }} />
-            <input className="mini-input" type="text" placeholder="Name, Vorname" value={detailName} onChange={e => setDetailName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 14, boxSizing: 'border-box' }} />
+            <input className="mini-input" type="text" placeholder="101" value={detailRoom} onChange={e => setDetailRoom(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
+            <input className="mini-input" type="text" placeholder="Name, Vorname" value={detailName} onChange={e => setDetailName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
           </div>
-          <textarea className="mini-input" placeholder="Notiz..." rows={1} value={detailNote} onChange={e => setDetailNote(e.target.value)} style={{ resize: 'none', lineHeight: 1.5, margin: 0, overflow: 'hidden', fontSize: 14 }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} />
+          <textarea className="mini-input" placeholder="Notiz..." rows={1} value={detailNote} onChange={e => setDetailNote(e.target.value)} style={{ resize: 'none', lineHeight: 1.5, margin: 0, overflow: 'hidden', fontSize: 16 }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <button className="btn-action" onClick={handleSave} style={{ fontSize: 14, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Speichern</button>
-            <button className="btn-danger" onClick={() => setConfirmDel(selected)} style={{ fontSize: 14, height: 40, justifyContent: 'center' }}>Löschen</button>
+            <button className="btn-action" onClick={handleSave} style={{ fontSize: 16, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Speichern</button>
+            <button className="btn-danger" onClick={() => setConfirmDel(selected)} style={{ fontSize: 16, height: 40, justifyContent: 'center' }}>Löschen</button>
           </div>
         </div>
       )}
@@ -298,10 +298,10 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen })
       {confirmDel !== null && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: 'var(--bg)', borderRadius: 8, padding: 28, maxWidth: 340, width: '90%', textAlign: 'center' }}>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>{patients[confirmDel]?.name} wirklich löschen?</div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 20 }}>{patients[confirmDel]?.name} wirklich löschen?</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <button className="btn-secondary" onClick={() => setConfirmDel(null)} style={{ height: 40, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
-              <button className="btn-action" onClick={handleDel} style={{ height: 40, fontSize: 14, background: '#e53e3e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Löschen</button>
+              <button className="btn-secondary" onClick={() => setConfirmDel(null)} style={{ height: 40, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
+              <button className="btn-action" onClick={handleDel} style={{ height: 40, fontSize: 16, background: '#e53e3e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Löschen</button>
             </div>
           </div>
         </div>
@@ -345,7 +345,7 @@ export default function Dashboard() {
   return (
     <div className="page active" id="page-dashboard">
       {fetchError && (
-        <div style={{ margin: '0 0 16px', padding: '10px 16px', borderRadius: 8, background: 'rgba(217,75,10,0.07)', color: '#D94B0A', fontWeight: 600, fontSize: 13 }}>
+        <div style={{ margin: '0 0 16px', padding: '10px 16px', borderRadius: 8, background: 'rgba(217,75,10,0.07)', color: '#D94B0A', fontWeight: 600, fontSize: 15 }}>
           {fetchError}
         </div>
       )}
@@ -385,7 +385,7 @@ export default function Dashboard() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                 Patienten
               </div>
-              <button className="btn-action" onClick={() => setPatientAddOpen(v => !v)} style={{ width: 28, height: 28, padding: 0, fontSize: 18, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+              <button className="btn-action" onClick={() => setPatientAddOpen(v => !v)} style={{ width: 28, height: 28, padding: 0, fontSize: 20, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
             </div>
             <div className="card-body" style={{ padding: 14 }}>
               <PatientsList patients={patients} setPatients={setPatients} showToast={showToast} addOpen={patientAddOpen} setAddOpen={setPatientAddOpen} />

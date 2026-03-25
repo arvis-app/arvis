@@ -133,7 +133,7 @@ export default function ResetPasswordPage() {
             <div style={{
               textAlign: 'center', padding: '16px',
               background: 'rgba(46,125,50,0.07)', borderRadius: 8,
-              color: '#2e7d32', fontWeight: 600, fontSize: 14
+              color: '#2e7d32', fontWeight: 600, fontSize: 16
             }}>
               Passwort erfolgreich geaendert — Sie werden zur Anmeldung weitergeleitet...
             </div>
@@ -141,7 +141,7 @@ export default function ResetPasswordPage() {
             <>
               {error && (
                 <p style={{
-                  margin: '0 0 16px', fontSize: 13, fontWeight: 600, textAlign: 'center',
+                  margin: '0 0 16px', fontSize: 15, fontWeight: 600, textAlign: 'center',
                   borderRadius: 8, padding: '8px 12px',
                   background: 'rgba(217,75,10,0.07)', color: '#D94B0A'
                 }}>

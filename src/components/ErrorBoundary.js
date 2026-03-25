@@ -30,7 +30,7 @@ export default class ErrorBoundary extends React.Component {
           <h3 style={{ color: 'var(--text)', fontWeight: 700, margin: 0 }}>
             Ein Fehler ist aufgetreten
           </h3>
-          <p style={{ color: 'var(--text-2)', fontSize: 14, margin: 0, textAlign: 'center' }}>
+          <p style={{ color: 'var(--text-2)', fontSize: 16, margin: 0, textAlign: 'center' }}>
             {this.state.error?.message || 'Unbekannter Fehler'}
           </p>
           <button
@@ -38,7 +38,7 @@ export default class ErrorBoundary extends React.Component {
             style={{
               background: 'var(--accent)', color: '#000', border: 'none',
               padding: '10px 22px', borderRadius: 8, fontWeight: 700,
-              fontSize: 14, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif'
+              fontSize: 16, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif'
             }}
           >
             Erneut versuchen

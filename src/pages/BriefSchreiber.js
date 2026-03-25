@@ -452,7 +452,7 @@ export default function BriefSchreiber() {
                   }
                 </button>
                 <button onClick={downloadDoc} title="Als Word herunterladen"
-                  style={{ height: 28, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#2B579A', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', fontWeight: 600, fontSize: 12, flexShrink: 0 }}>
+                  style={{ height: 28, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#2B579A', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', fontWeight: 600, fontSize: 14, flexShrink: 0 }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                   Word
                 </button>
@@ -463,15 +463,15 @@ export default function BriefSchreiber() {
           {state === 'empty' && (
             <div className="brief-output-empty">
               <img src="/arvis-icon-light.svg" width="90" height="90" alt="" style={{ display: 'block', filter: 'grayscale(1) opacity(0.35)' }} />
-              <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 12 }}>KI-Ergebnis erscheint hier</div>
-              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>Text eingeben und analysieren</div>
+              <div style={{ fontSize: 15, color: 'var(--text-3)', marginTop: 12 }}>KI-Ergebnis erscheint hier</div>
+              <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 4 }}>Text eingeben und analysieren</div>
             </div>
           )}
 
           {state === 'loading' && (
             <div className="brief-output-loading">
               <div className="scan-spinner" />
-              <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 14, fontWeight: 600 }}>KI verarbeitet...</div>
+              <div style={{ fontSize: 15, color: 'var(--text-2)', marginTop: 14, fontWeight: 600 }}>KI verarbeitet...</div>
             </div>
           )}
 

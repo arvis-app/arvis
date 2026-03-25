@@ -166,7 +166,7 @@ export default function Uebersetzung() {
             {!selected && (
               <div className="ueb-detail-empty">
                 <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <div style={{fontSize:13,color:'var(--text-3)',marginTop:12}}>Begriff auswählen</div>
+                <div style={{fontSize:15,color:'var(--text-3)',marginTop:12}}>Begriff auswählen</div>
               </div>
             )}
             {selected && (

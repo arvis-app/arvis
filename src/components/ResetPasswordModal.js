@@ -55,10 +55,10 @@ export default function ResetPasswordModal() {
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
           </div>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', margin: 0 }}>
             Neues Passwort festlegen
           </h2>
-          <p style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 6 }}>
+          <p style={{ fontSize: 15, color: 'var(--text-2)', marginTop: 6 }}>
             Geben Sie Ihr neues Passwort ein.
           </p>
         </div>
@@ -67,7 +67,7 @@ export default function ResetPasswordModal() {
           <div style={{
             textAlign: 'center', padding: '16px',
             background: 'rgba(46,125,50,0.07)', borderRadius: 8,
-            color: '#2e7d32', fontWeight: 600, fontSize: 14
+            color: '#2e7d32', fontWeight: 600, fontSize: 16
           }}>
             ✓ Passwort erfolgreich geändert — Sie werden weitergeleitet…
           </div>
@@ -75,7 +75,7 @@ export default function ResetPasswordModal() {
           <>
             {error && (
               <p style={{
-                margin: '0 0 16px', fontSize: 13, fontWeight: 600, textAlign: 'center',
+                margin: '0 0 16px', fontSize: 15, fontWeight: 600, textAlign: 'center',
                 borderRadius: 8, padding: '8px 12px',
                 background: 'rgba(217,75,10,0.07)', color: '#D94B0A'
               }}>

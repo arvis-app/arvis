@@ -66,13 +66,13 @@ export default function Paywall({ children }) {
           </svg>
         </div>
 
-        <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>
           {planInfo.plan === 'canceled'
             ? 'Ihr Abonnement wurde gekündigt'
             : 'Ihr Probemonat ist abgelaufen'}
         </h2>
 
-        <p style={{ color: 'var(--text-2)', fontSize: 15, lineHeight: 1.6, marginBottom: 32 }}>
+        <p style={{ color: 'var(--text-2)', fontSize: 17, lineHeight: 1.6, marginBottom: 32 }}>
           {planInfo.plan === 'canceled'
             ? 'Ihr vorheriges Abonnement ist nicht mehr aktiv. Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und Premium-Funktionen zu haben, reaktivieren Sie bitte Ihr Abonnement.'
             : 'Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und andere Premium-Funktionen zu haben, upgraden Sie bitte auf Arvis Pro.'}
@@ -87,7 +87,7 @@ export default function Paywall({ children }) {
             border: 'none',
             padding: '14px 28px',
             borderRadius: 8,
-            fontSize: 15,
+            fontSize: 17,
             fontWeight: 700,
             cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.7 : 1,
