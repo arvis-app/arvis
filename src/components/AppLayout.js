@@ -75,7 +75,7 @@ export default function AppLayout() {
         {/* Left slot: wrapper animates width, inner logo stays fixed 240px */}
         <div className="topbar-logo-wrap">
           <div className="topbar-logo">
-            <img src="/arvis-icon.svg" alt="Arvis" style={{ height: 52, display: 'block' }} />
+            <img src="/arvis-icon.svg" alt="Arvis" style={{ height: 57, display: 'block' }} />
           </div>
         </div>
 
@@ -85,7 +85,7 @@ export default function AppLayout() {
 
         {/* Center slot */}
         <div className="topbar-center-slot">
-          <img src="/arvis-icon.svg" alt="" className="topbar-center-icon" style={{ height: 52 }} />
+          <img src="/arvis-icon.svg" alt="" className="topbar-center-icon" style={{ height: 57 }} />
           <span style={{
             fontFamily: "'Bricolage Grotesque', sans-serif",
             fontWeight: 800, fontSize: 38, color: 'var(--text)',

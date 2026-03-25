@@ -336,7 +336,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 }
 .topbar-center-slot {
   flex: 1;
-  display: flex; align-items: center; justify-content: center; gap: 7px;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
 }
 .topbar-center-icon {
   opacity: 0;
