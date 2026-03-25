@@ -89,7 +89,7 @@ export default function AppLayout() {
           <span style={{
             fontFamily: "'Bricolage Grotesque', sans-serif",
             fontWeight: 800, fontSize: 38, color: 'var(--text)',
-            letterSpacing: '-0.02em', userSelect: 'none'
+            letterSpacing: '-0.02em', userSelect: 'none', marginTop: 3
           }}>Arvis</span>
         </div>
 
