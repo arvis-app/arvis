@@ -72,9 +72,11 @@ export default function AppLayout() {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
 
-        {/* Left slot: always in DOM, fades with sidebar */}
-        <div className="topbar-logo" style={{ justifyContent: 'center', padding: '0 20px' }}>
-          <img src="/arvis-icon.svg" alt="Arvis" style={{ height: 52, display: 'block' }} />
+        {/* Left slot: wrapper animates width, inner logo stays fixed 240px */}
+        <div className="topbar-logo-wrap">
+          <div className="topbar-logo">
+            <img src="/arvis-icon.svg" alt="Arvis" style={{ height: 52, display: 'block' }} />
+          </div>
         </div>
 
         <button className="topbar-btn" onClick={() => setSidebarCollapsed(v => !v)} title="Sidebar ein-/ausblenden">
@@ -83,7 +85,7 @@ export default function AppLayout() {
 
         {/* Center slot */}
         <div className="topbar-center-slot">
-          <img src="/arvis-icon.svg" alt="" className="topbar-center-icon" style={{ height: 34 }} />
+          <img src="/arvis-icon.svg" alt="" className="topbar-center-icon" style={{ height: 52 }} />
           <span style={{
             fontFamily: "'Bricolage Grotesque', sans-serif",
             fontWeight: 800, fontSize: 38, color: 'var(--text)',

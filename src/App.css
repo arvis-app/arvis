@@ -313,31 +313,30 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   position: sticky;
   top: 0;
 }
-.topbar-logo {
+.topbar-logo-wrap {
   width: 240px;
   min-width: 0;
-  padding: 0 24px;
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 18px; font-weight: 800;
-  color: var(--text);
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: width 0.25s ease;
+}
+.app-layout.sidebar-collapsed .topbar-logo-wrap {
+  width: 0;
+}
+.topbar-logo {
+  width: 240px;
+  min-width: 240px;
+  padding: 0 20px;
   border-right: 1px solid var(--border);
   height: 100%;
-  display: flex; align-items: center; gap: 10px;
-  transition: width 0.25s ease, padding 0.25s ease, border-color 0.25s ease, margin-right 0.25s ease;
-  overflow: hidden; white-space: nowrap; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
 }
 .app-layout.sidebar-collapsed .topbar {
-  padding-left: 16px;
-}
-.app-layout.sidebar-collapsed .topbar-logo {
-  width: 0;
-  padding: 0;
-  border-color: transparent;
-  margin-right: -16px;
+  padding-left: 12px;
 }
 .topbar-center-slot {
   flex: 1;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
 }
 .topbar-center-icon {
   opacity: 0;
@@ -384,6 +383,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   transition: all 0.2s; position: relative;
 }
 .topbar-btn:hover { background: var(--bg-3); }
+.app-layout:not(.sidebar-collapsed) .topbar-btn { margin-left: 12px; }
 .mobile-menu-btn { display: none; }
 
 .notif-dot {
@@ -845,7 +845,8 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 
   /* Topbar */
   .topbar, .app-layout.sidebar-collapsed .topbar { position: sticky; top: 0; z-index: 100; padding: 0 16px; gap: 10px; }
-  .topbar-logo, .app-layout.sidebar-collapsed .topbar-logo { width: auto; border-right: none; padding: 0 8px; position: static; transform: none; opacity: 1; pointer-events: auto; }
+  .topbar-logo-wrap, .app-layout.sidebar-collapsed .topbar-logo-wrap { width: auto; transition: none; }
+  .topbar-logo, .app-layout.sidebar-collapsed .topbar-logo { width: auto; min-width: 0; border-right: none; padding: 0 8px; }
   .mobile-menu-btn { display: flex; }
   .topbar-btn { display: none; }
 
