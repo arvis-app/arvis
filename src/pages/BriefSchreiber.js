@@ -462,7 +462,7 @@ export default function BriefSchreiber() {
 
           {state === 'empty' && (
             <div className="brief-output-empty">
-              <img src="/arvis-icon.svg" width="40" height="40" alt="" style={{ display: 'block', opacity: 0.25 }} />
+              <img src="/arvis-icon.svg" width="56" height="56" alt="" style={{ display: 'block', filter: 'grayscale(1) opacity(0.35)' }} />
               <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 12 }}>KI-Ergebnis erscheint hier</div>
               <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>Text eingeben und analysieren</div>
             </div>
