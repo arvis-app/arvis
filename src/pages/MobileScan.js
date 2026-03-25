@@ -86,11 +86,12 @@ export default function MobileScan() {
     }
   }, [status, sIdx])
 
-  // ── Point 3: capture rendered height on image load (same as Scan.js) ──────
+  // ── Viewer height = natural ratio (not constrained by parent layout) ───────
   function handleImageLoad() {
     const img = imgRef.current
     if (!img) return
-    setViewerHeight(img.offsetHeight)
+    const naturalH = Math.round((img.naturalHeight / img.naturalWidth) * img.offsetWidth)
+    setViewerHeight(naturalH)
     setZoom(1); zoomRef.current = 1
     setPanX(0); setPanY(0)
   }
@@ -244,11 +245,11 @@ export default function MobileScan() {
   // ── Schwarzen screen ──────────────────────────────────────────────────────
   if (status === 'schwarzen') {
     return (
-      // Outer background
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg, #F6F4F1)', overflow: 'hidden', padding: '12px 16px 16px' }}>
+      // Outer background — scrollable, wraps content
+      <div style={{ minHeight: '100vh', background: 'var(--bg, #F6F4F1)', overflowY: 'auto', padding: '12px 16px 16px' }}>
 
-        {/* ── Point 1: single card wraps ALL elements ── */}
-        <div style={{ flex: 1, background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {/* Card wraps content — no fixed height */}
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
           {/* Warning banner — inside card, border-bottom only */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEE2E2', borderBottom: '1px solid #FCA5A5', padding: '10px 16px', flexShrink: 0 }}>
@@ -290,7 +291,7 @@ export default function MobileScan() {
             </button>
           </div>
 
-          {/* ── Point 3: viewer height fixed = rendered image height (same as Scan.js) */}
+          {/* Viewer — no overflow:hidden (same as Scan.js) */}
           <div
             ref={viewerRef}
             onMouseDown={startPan}
@@ -298,8 +299,6 @@ export default function MobileScan() {
             onClick={(e) => { if (e.target === viewerRef.current || e.target === imgRef.current) setSelectedBk(null) }}
             style={{
               height: viewerHeight > 0 ? viewerHeight : 'auto',
-              overflow: 'hidden',
-              flexShrink: 0,
               cursor: isDragging ? 'grabbing' : zoom > 1 ? 'grab' : 'default',
               touchAction: zoom > 1 ? 'none' : 'pan-y'
             }}
