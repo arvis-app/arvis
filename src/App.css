@@ -340,10 +340,13 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 }
 .topbar-center-icon {
   opacity: 0;
-  transition: opacity 0.25s ease;
+  max-width: 0;
+  overflow: hidden;
+  transition: opacity 0.25s ease, max-width 0.25s ease;
 }
 .app-layout.sidebar-collapsed .topbar-center-icon {
   opacity: 1;
+  max-width: 57px;
 }
 
 .topbar-logo-icon {
