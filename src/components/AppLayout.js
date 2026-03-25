@@ -81,10 +81,9 @@ export default function AppLayout() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
         </button>
 
-        {/* Center slot: both elements always in DOM, cross-fade via CSS */}
+        {/* Center slot */}
         <div className="topbar-center-slot">
-          <img src="/arvis-logo.svg" alt="Arvis" className="topbar-center-logo" style={{ height: 56 }} />
-          <span className="topbar-center-text" style={{
+          <span style={{
             fontFamily: "'Bricolage Grotesque', sans-serif",
             fontWeight: 800, fontSize: 38, color: 'var(--text)',
             letterSpacing: '-0.02em', userSelect: 'none'

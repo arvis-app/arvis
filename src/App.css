@@ -322,7 +322,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   border-right: 1px solid var(--border);
   height: 100%;
   display: flex; align-items: center; gap: 10px;
-  transition: width 0.25s ease, padding 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
+  transition: width 0.25s ease, padding 0.25s ease, border-color 0.25s ease, opacity 0.25s ease, margin-right 0.25s ease;
   overflow: hidden; white-space: nowrap; flex-shrink: 0;
 }
 .app-layout.sidebar-collapsed .topbar {
@@ -334,33 +334,11 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   border-color: transparent;
   opacity: 0;
   pointer-events: none;
+  margin-right: -16px;
 }
 .topbar-center-slot {
   flex: 1;
   display: flex; align-items: center; justify-content: center;
-  position: relative; height: 100%;
-}
-.topbar-center-logo,
-.topbar-center-text {
-  position: absolute;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  pointer-events: none;
-}
-.topbar-center-logo {
-  opacity: 0;
-  transform: scale(0.95);
-}
-.topbar-center-text {
-  opacity: 1;
-  transform: scale(1);
-}
-.app-layout.sidebar-collapsed .topbar-center-logo {
-  opacity: 1;
-  transform: scale(1);
-}
-.app-layout.sidebar-collapsed .topbar-center-text {
-  opacity: 0;
-  transform: scale(0.95);
 }
 
 .topbar-logo-icon {
