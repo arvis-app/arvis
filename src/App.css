@@ -315,6 +315,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 }
 .topbar-logo {
   width: 240px;
+  min-width: 0;
   padding: 0 24px;
   font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 18px; font-weight: 800;
@@ -322,23 +323,28 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   border-right: 1px solid var(--border);
   height: 100%;
   display: flex; align-items: center; gap: 10px;
-  transition: width 0.25s ease, padding 0.25s ease, border-color 0.25s ease, opacity 0.25s ease, margin-right 0.25s ease;
+  transition: width 0.25s ease, padding 0.25s ease, border-color 0.25s ease, margin-right 0.25s ease;
   overflow: hidden; white-space: nowrap; flex-shrink: 0;
 }
 .app-layout.sidebar-collapsed .topbar {
-  padding-left: 28px;
+  padding-left: 16px;
 }
 .app-layout.sidebar-collapsed .topbar-logo {
   width: 0;
   padding: 0;
   border-color: transparent;
-  opacity: 0;
-  pointer-events: none;
   margin-right: -16px;
 }
 .topbar-center-slot {
   flex: 1;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.topbar-center-icon {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.app-layout.sidebar-collapsed .topbar-center-icon {
+  opacity: 1;
 }
 
 .topbar-logo-icon {

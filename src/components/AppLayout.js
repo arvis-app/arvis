@@ -83,6 +83,7 @@ export default function AppLayout() {
 
         {/* Center slot */}
         <div className="topbar-center-slot">
+          <img src="/arvis-icon.svg" alt="" className="topbar-center-icon" style={{ height: 34 }} />
           <span style={{
             fontFamily: "'Bricolage Grotesque', sans-serif",
             fontWeight: 800, fontSize: 38, color: 'var(--text)',
