@@ -824,7 +824,7 @@ export default function Scan() {
             <div className="scan-mode-toggle">
               <div className={`scan-mode-btn${mode === 'ai' ? ' active' : ''}`} onClick={() => setMode('ai')}>
                 <div className="scan-mode-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" /><circle cx="12" cy="5" r="2" /><line x1="12" y1="7" x2="12" y2="11" /><line x1="8" y1="15" x2="8" y2="17" /><line x1="12" y1="15" x2="12" y2="17" /><line x1="16" y1="15" x2="16" y2="17" /></svg>
+                  <img src="/arvis-icon.svg" width="20" height="20" alt="" style={{ display: 'block' }} />
                 </div>
                 <div>
                   <div className="scan-mode-name">KI-Analyse</div>
@@ -848,7 +848,7 @@ export default function Scan() {
             {/* Empty */}
             {(result === 'empty') && (
               <div className="scan-result-empty">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+                <img src="/arvis-icon.svg" width="48" height="48" alt="" style={{ display: 'block', opacity: 0.25 }} />
                 <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 12 }}>Ergebnis erscheint hier</div>
                 <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>Laden Sie zuerst ein Dokument</div>
               </div>
@@ -873,7 +873,7 @@ export default function Scan() {
                 <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
                   <div className="result-header">
                     <div className="result-badge ai">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" /><circle cx="12" cy="5" r="2" /><line x1="12" y1="7" x2="12" y2="11" /></svg>
+                      <img src="/arvis-icon.svg" width="13" height="13" alt="" style={{ display: 'block' }} />
                       KI-Analyse
                     </div>
                     <div className="result-actions">
