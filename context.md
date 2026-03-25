@@ -1,6 +1,6 @@
 # context.md — État du projet Arvis
 
-Dernière mise à jour : 23 mars 2026 (session 3)
+Dernière mise à jour : 25 mars 2026 (session 5)
 
 ## Profil du créateur
 - **Amine est médecin**, pas développeur. Il a construit Arvis sans formation en coding.
@@ -124,6 +124,41 @@ Colonnes clés : `id`, `email`, `first_name`, `last_name`, `title`, `clinic`, `p
 - **Fix HTTP status** dans `create-portal-session` : erreur retourne maintenant 400 au lieu de 200
 - **Fix CORS** : toutes les edge functions remplacent `*` par une whitelist `arvis-app.de` + `localhost:3000`
 - **Commentaire WebSocket** dans `BriefSchreiber.js` : documente pourquoi le token éphémère est dans le subprotocol (contrainte OpenAI)
+
+## Compte de test
+- **Email** : amine.mabtoul@outlook.fr
+- **Mot de passe** : test1144
+- URL : https://arvis-app.de/login
+
+---
+
+## Fait en session 4-5 (25 mars 2026) ✅
+
+### Typographie
+- **+2px sur toutes les font-sizes** de l'app (App.css + tous les .js inline styles)
+- Patterns couverts : `font-size: Xpx` (CSS), `fontSize: X` et `fontSize:X` (JS inline styles sans espace)
+
+### AppLayout / Topbar
+- **Centrage "Arvis"** dans la topbar quand sidebar ouverte : `.topbar-center-icon` fixé avec `max-width:0; overflow:hidden` pour ne pas occuper d'espace invisible
+
+### Bausteine
+- Ratio des colonnes ajusté à **40/60** (liste de blocs / éditeur)
+
+### Landing page — Mockups
+- Agrandissement des cards mockup PC (features + section scan + section brief schreiber)
+- Card Translate : labels `Fachbegriff` / `Українська` ne se chevauchent plus (`width:85px;flex-shrink:0`)
+- Card Brief Schreiber : boutons Kopieren + Word à largeur égale
+- Section Brief Schreiber : boutons Kopieren (orange) + Word (bleu) ajoutés dans le mockup
+- Curseur clignotant supprimé de la card Brief Schreiber
+
+### Landing page — Autres
+- Nav header : couleur des liens = couleur "Arvis" (`var(--text)`)
+- Bouton "Kopieren · An Brief Schreiber" : orange plein sans `opacity:0.6`
+- Card Scan : saut de ligne entre `—` et `KI-Analyse`
+- Dashboard mockup topbar : logo maison SVG → `arvis-icon.svg`
+- Bouton copy scan : fond orange plein + texte blanc (plus de ghost button)
+
+---
 
 ## Ce qui reste à faire / améliorations possibles
 - Personnalisation des emails Supabase en allemand

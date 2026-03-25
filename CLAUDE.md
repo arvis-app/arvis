@@ -131,6 +131,11 @@ STRIPE_COUPON_MONTHLY  (optionnel, remplacé par auto-fetch)
 3. **sed sur macOS** corrompt les gros fichiers — toujours utiliser l'outil Edit de Claude.
 4. **Vercel rewrites vs routes** : `rewrites` appliqués après filesystem → utiliser `routes` pour surcharger `/`.
 
+## Compte de test
+- **Email** : amine.mabtoul@outlook.fr
+- **Mot de passe** : test1144
+- URL : https://arvis-app.de/login
+
 ## Changelog récent (Mars 2026)
 
 ### Pages légales
@@ -145,3 +150,21 @@ STRIPE_COUPON_MONTHLY  (optionnel, remplacé par auto-fetch)
 - Logo Arvis créé en PNG via Python/Pillow (`arvis_logo.png` dans Downloads)
 - Robot : tête circulaire gradient teal→bleu, yeux blancs sans visière, sourire, oreillettes, lignes ECG horizontales
 - Script Python : `/tmp/logo6.py`
+
+### Typographie & Design (session 4-5, 25 mars 2026)
+- **+2px sur toutes les font-sizes** : `App.css` (168 changements) + tous les `.js` inline styles (196 changements)
+  - Patterns couverts : `font-size: Xpx` (CSS), `fontSize: X` et `fontSize:X` (JS inline)
+- **Centrage "Arvis" dans topbar** : `.topbar-center-icon` utilisait `opacity:0` mais occupait toujours de l'espace → corrigé avec `max-width:0; overflow:hidden` quand sidebar ouverte
+- **Bausteine layout** : ratio cards ajusté à 40/60 (liste/éditeur)
+
+### Landing page (session 4-5, 25 mars 2026)
+- **Mockup cards agrandies** : `min-height 240px→300px`, hauteur image `160px→200px`, font-sizes 11-12px→13-14px
+- **Card Translate** : largeur labels `width:60px→85px;flex-shrink:0` (7 labels) pour éviter chevauchement Fachbegriff/Українська
+- **Card Brief Schreiber** : boutons Kopieren + Word à largeur égale (`flex:1`)
+- **Section Brief Schreiber mockup** : boutons Kopieren (orange) + Word (bleu #2B579A) ajoutés
+- **Nav header** : couleur liens = couleur texte "Arvis" (`var(--text)` au lieu de `var(--text-3)`)
+- **Curseur clignotant** supprimé de la card Brief Schreiber
+- **Bouton "Kopieren · An Brief Schreiber"** : `opacity:0.6` supprimé → orange plein `var(--orange)` (#D94B0A)
+- **Card Scan description** : saut de ligne ajouté entre `—` et `KI-Analyse`
+- **Dashboard mockup topbar** : logo maison SVG remplacé par `<img src="/arvis-icon.svg">`
+- **Bouton scan copy** : background `var(--orange-ghost)→var(--orange)`, couleur texte `var(--orange-dark)→white`
