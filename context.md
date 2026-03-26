@@ -148,3 +148,52 @@ Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `b
 - Activer l'onboarding quand les visuels seront prêts (réactiver import + route + redirect dans App.js).
 - Lancer les tests Playwright en CI (ajouter `TEST_TRIAL_EMAIL` / `TEST_TRIAL_PASSWORD` dans les secrets).
 - Affinage des prompts système IA (si les médecins font des retours sur la qualité de rédaction).
+
+---
+
+## Audit de sécurité & qualité (27 mars 2026)
+
+### 🔴 CRITIQUE
+
+1. **`supabaseClient.js`** — Clé Supabase anon hardcodée dans le code source (visible sur GitHub). À déplacer en variable d'environnement Vercel (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
+
+2. **`AdminStats.js:6`** — Protection admin côté client uniquement (`user.email !== ADMIN_EMAIL`). Contournable via DevTools. Nécessite une vérification côté serveur (Edge Function ou RLS).
+
+3. **`AuthContext.js` + `Paywall.js`** — `isPro` calculé côté client. Un user peut manipuler `profile.plan` dans DevTools pour débloquer les pages premium. Les Edge Functions (ai-chat, etc.) protègent l'IA côté serveur, mais pas les autres pages.
+
+4. **`stripe-webhook`** — Si la DB Supabase échoue pendant le traitement d'un événement, Stripe reçoit un 400 et peut ne pas renoncer. Risque de désynchronisation (user paye → reste Trial, ou annule → reste Pro).
+
+### 🟡 IMPORTANT
+
+5. **`BriefSchreiber.js`** — `sanitizeHtml()` maison ne bloque pas `<svg onload>`, `<img onerror>` → XSS partielle possible. Remplacer par DOMPurify.
+
+6. **`Profil.js:107`** — Polling Stripe post-paiement avec **closure stale** sur `planInfo` → s'arrête après 10s même si Pro pas encore détecté. Augmenter à 20 tentatives et corriger la closure.
+
+7. **`AuthContext.js:139`** — Google OAuth redirige vers `window.location.origin` (dynamique) au lieu de `https://arvis-app.de` (fixe). Risque de session hijacking si domaine compromis.
+
+8. **`Scan.js`** — Token QR code non invalidé après usage → réutilisable jusqu'à expiration. Ajouter `status: 'used'` après le premier upload et rejeter si `status !== 'waiting'`.
+
+9. **`BriefSchreiber.js`** — Token OpenAI Realtime transmis dans le subprotocol WebSocket (interceptable sur réseau public). Risque limité car TTL ~60s.
+
+10. **`AdminStats.js:6`** — Email admin hardcodé et visible sur GitHub (`amine.mabtoul@outlook.fr`).
+
+11. **Table `users`** — **Pas de RLS sur la table `users`** → tout utilisateur authentifié peut lire les emails, `stripe_customer_id`, tokens IA de tous les autres. Fix :
+    ```sql
+    ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+    CREATE POLICY "users_select_own" ON public.users FOR SELECT USING (auth.uid() = id);
+    CREATE POLICY "users_update_own" ON public.users FOR UPDATE USING (auth.uid() = id);
+    ```
+
+### 🟢 MINEUR
+
+- `console.error()` partout au lieu de Sentry → erreurs silencieuses en prod
+- Polling Profil sans `isMounted` guard → memory leak dans cas limite
+- `renderPlaceholders` limite 80 chars silencieuse (UX confus si placeholder long)
+- `Scan.js` monolithique (1054 lignes) — refactoriser en composants à terme
+- localStorage sans namespace par `user_id` → collision possible en dev multi-users
+- Pas de ESLint / Prettier configuré
+- `Permissions-Policy` dans `vercel.json` pourrait bloquer le micro de la dictée vocale — à tester
+
+### Priorités recommandées
+**Immédiat** : RLS sur `users` (2 lignes SQL) · Clé Supabase en env var · Closure stale polling Stripe
+**Court terme** : Protection admin serveur · DOMPurify · OAuth URL fixe · Token QR invalidation
