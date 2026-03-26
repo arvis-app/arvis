@@ -199,9 +199,13 @@ Colonnes clés : `id`, `email`, `first_name`, `last_name`, `title`, `clinic`, `p
 - **Tab title** : landing page `<title>` simplifié à `Arvis` (supprimé le sous-titre)
 - **Sentry** : DSN ajouté sur Vercel (`REACT_APP_SENTRY_DSN`), alertes email testées et confirmées ✅
 
+### Sécurité & Build (Vite)
+- **Supabase RLS** : policies ajoutées et activées sur `scan_sessions` et `users` (toutes les tables sont désormais protégées).
+- **Security Headers** : ajout de `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, et `Permissions-Policy` dans `vercel.json`.
+- **Migration Vite 6** : remplacement complet de Create React App (`react-scripts`) par Vite. Build 10x plus rapide et **0 vulnérabilités**. Variables d'environnement migrées de `REACT_APP_` vers `VITE_`.
+
 ---
 
 ## Ce qui reste à faire / améliorations possibles
-- `email-change.html` template à créer (changement d'adresse email)
 - Tests automatisés d'intégration (Cypress/Playwright pour flows complets)
 - Analytics avancées (feature usage, coûts OpenAI)

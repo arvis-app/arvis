@@ -53,7 +53,6 @@ export default function Profil() {
   const [vorname, setVorname] = useState('')
   const [nachname, setNachname] = useState('')
   const [email, setEmail] = useState('')
-  const [klinik, setKlinik] = useState('')
   const [strasse, setStrasse] = useState('')
   const [hausnummer, setHausnummer] = useState('')
   const [plz, setPlz] = useState('')
@@ -130,7 +129,6 @@ export default function Profil() {
     setVorname(profile.first_name || '')
     setNachname(profile.last_name || '')
     setEmail(profile.email || '')
-    setKlinik(profile.clinic || '')
     setStrasse(profile.strasse || '')
     setHausnummer(profile.hausnummer || '')
     setPlz(profile.plz || '')
@@ -162,20 +160,39 @@ export default function Profil() {
     setErrors(errs)
     if (Object.keys(errs).length) return
 
+    let emailChanged = false
+    if (user?.email && email.trim() !== user.email) {
+      const { error: authError } = await supabase.auth.updateUser({ email: email.trim() })
+      if (authError) {
+        showToast('Fehler bei E-Mail-Änderung: ' + authError.message, false)
+        return
+      }
+      emailChanged = true
+    }
+
     const { error } = await updateProfile({
       title: titel,
       first_name: vorname.trim(),
       last_name: nachname.trim(),
       email: email.trim(),
-      clinic: klinik.trim(),
+      clinic: null, // Removed Klinik
       strasse: strasse.trim(),
       hausnummer: hausnummer.trim(),
       plz: plz.trim(),
       stadt: stadt.trim(),
       avatar_url: photo || null,
     })
-    if (error) { showToast('Fehler beim Speichern'); return }
-    showToast('✓ Profil gespeichert')
+    
+    if (error) { 
+      showToast('Fehler beim Speichern', false); 
+      return 
+    }
+
+    if (emailChanged) {
+      showToast('Bestätigungslinks wurden an beide E-Mail-Adressen gesendet.', true)
+    } else {
+      showToast('✓ Profil gespeichert')
+    }
   }
 
   // ── Save password ──────────────────────────────────────────────────────────
@@ -280,12 +297,11 @@ export default function Profil() {
               <label className="form-label">E-Mail-Adresse <span style={{ color: 'var(--orange)' }}>*</span></label>
               <input type="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} placeholder="dr.mueller@klinik.de" style={{ borderColor: errors.email ? '#e53e3e' : '' }} />
               {errors.email && <div style={{ fontSize: 13, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
-            </div>
-
-            {/* Klinik */}
-            <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label">Klinik / Krankenhaus</label>
-              <input type="text" className="form-input" value={klinik} onChange={e => setKlinik(e.target.value)} placeholder="Universitätsklinikum Berlin" />
+              {user?.email && email.trim() !== user.email && (
+                <div style={{ fontSize: 13, color: 'var(--orange)', marginTop: 8, padding: '8px 10px', background: 'var(--orange-ghost)', borderRadius: 6 }}>
+                  Beim Speichern erhalten Sie eine Bestätigungs-E-Mail an die alte und neue Adresse.
+                </div>
+              )}
             </div>
 
             <div style={{ height: 1, background: 'var(--border)' }} />
