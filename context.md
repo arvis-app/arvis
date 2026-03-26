@@ -160,8 +160,36 @@ Colonnes clés : `id`, `email`, `first_name`, `last_name`, `title`, `clinic`, `p
 
 ---
 
+## Fait en session 6 (26 mars 2026) ✅
+
+### Audit & corrections de bugs
+- **Audit complet** du projet : sécurité, performance, UX, code qualité
+- **Fix XSS** dans `BriefSchreiber.js` : `sanitizeHtml()` ajouté avant injection `innerHTML` (contenu localStorage)
+- **Fix polling Stripe** dans `Profil.js` : réduit de 20s → 10s (5 tentatives), message `showToast` si timeout
+- **Fix `window._calClickedDate`** dans `Dashboard.js` : supprimé, remplacé par le state React déjà en place
+- **Fix fallback `window._begriffe`** dans `Uebersetzung.js` : message d'erreur rouge après 8s si données non chargées
+- **Fix topbar mobile** (`App.css`) : logo sorti de la sidebar masqué (`display:none`), `topbar-center-icon` forcé visible → logo + "Arvis" centrés comme desktop sidebar fermée
+
+### Nettoyage code
+- **Variables inutilisées supprimées** : `mediaRef`, `chunksRef` (BriefSchreiber), `DEFAULT_PATIENTS` (Dashboard), `logout`, `displayName` (Profil), `showToast`, `copyAll`, `toast`/`setToast` (Uebersetzung)
+- **Regex `\[` inutile** corrigée dans `renderPlaceholders` (BriefSchreiber)
+- **`window._calClickedDate`** et 2 références `window.xxx` supprimées de Dashboard.js
+- **`console.error` contextualisé** : préfixe `[NomFichier]` ajouté dans AuthContext, Bausteine, Dateien, Dashboard, AppLayout, BriefSchreiber, Scan
+
+### Nouvelles fonctionnalités
+- **Page 404** (`src/pages/NotFound.js`) : "Seite nicht gefunden", bouton retour dashboard, route catch-all `*`
+- **Page stats admin** (`src/pages/AdminStats.js`) : accessible à `/admin/stats` (protégée par email admin), affiche total utilisateurs, nouveaux cette semaine, taux de conversion, répartition par plan
+- **`.env.example`** créé avec les variables Stripe documentées
+- **`aria-labels`** ajoutés sur 7 boutons icônes (sidebar toggle, zoom, copier, supprimer événement…)
+- **Tests unitaires** (`src/__tests__/planLogic.test.js`) : 26 tests couvrant toute la logique trial/pro/canceled_pending/canceled
+- **Templates email allemand** (`supabase/templates/`) : `confirm-signup.html` + `recovery.html` avec logo Arvis, couleurs brand, entités HTML pour caractères spéciaux — implantés dans Supabase Dashboard
+- **Sentry intégré** : `@sentry/react` installé, init dans `src/index.js`, `ErrorBoundary` capture les erreurs React, helper `src/utils/logger.js` → activer en prod via `REACT_APP_SENTRY_DSN` dans Vercel
+
+---
+
 ## Ce qui reste à faire / améliorations possibles
-- Personnalisation des emails Supabase en allemand
-- Tests automatisés
-- Page d'erreur 404 personnalisée
-- Analytics (combien d'utilisateurs, conversions trial→pro)
+- Déployer en production (`git push` → Vercel auto-deploy) + ajouter `REACT_APP_SENTRY_DSN` dans Vercel
+- `email-change.html` template à créer (changement d'adresse email)
+- Warnings ESLint pré-existants à nettoyer (Bausteine, Dateien, Scan : `useCallback` unused, `qrToken`, escapes inutiles)
+- Tests automatisés d'intégration (Cypress/Playwright pour flows complets)
+- Analytics avancées (feature usage, coûts OpenAI)

@@ -16,6 +16,8 @@ import ResetPasswordPage  from './pages/ResetPasswordPage'
 import Impressum   from './pages/Impressum'
 import Datenschutz from './pages/Datenschutz'
 import AGB         from './pages/AGB'
+import AdminStats  from './pages/AdminStats'
+import NotFound    from './pages/NotFound'
 import './App.css'
 
 function PrivateRoute({ children }) {
@@ -56,7 +58,8 @@ function AppRoutes() {
       <Route path="/impressum"   element={<Impressum />} />
       <Route path="/datenschutz" element={<Datenschutz />} />
       <Route path="/agb"         element={<AGB />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/admin/stats" element={<PrivateRoute><AdminStats /></PrivateRoute>} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   )
 }

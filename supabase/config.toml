@@ -1,0 +1,7 @@
+[auth.email.template.confirmation]
+subject = "Bitte bestätige deine E-Mail-Adresse – Arvis"
+content_path = "./supabase/templates/confirm-signup.html"
+
+[auth.email.template.recovery]
+subject = "Passwort zurücksetzen – Arvis"
+content_path = "./supabase/templates/recovery.html"

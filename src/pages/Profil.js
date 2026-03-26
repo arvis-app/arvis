@@ -38,7 +38,7 @@ const CardIcon = ({ brand }) => {
 }
 
 export default function Profil() {
-  const { user, profile, updateProfile, getInitials, getPlanInfo, logout, refreshProfile } = useAuth()
+  const { user, profile, updateProfile, getInitials, getPlanInfo, refreshProfile } = useAuth()
   const [toast, setToast] = useState(null)
   const [errors, setErrors] = useState({})
   const photoInputRef = useRef(null)
@@ -113,7 +113,12 @@ export default function Profil() {
       const interval = setInterval(async () => {
         attempts++
         await refreshProfile()
-        if (planInfo.plan === 'pro' || attempts >= 10) clearInterval(interval)
+        if (planInfo.plan === 'pro' || attempts >= 5) {
+          clearInterval(interval)
+          if (attempts >= 5 && planInfo.plan !== 'pro') {
+            showToast('Synchronisation läuft noch… Bitte Seite neu laden.', false)
+          }
+        }
       }, 2000)
       return () => clearInterval(interval)
     }
@@ -198,7 +203,6 @@ export default function Profil() {
   }
 
   const initials = getInitials()
-  const displayName = [titel, vorname ? vorname[0] + '.' : '', nachname].filter(Boolean).join(' ') || 'Arvis'
 
   return (
     <div className="page active">

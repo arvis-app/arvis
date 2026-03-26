@@ -2,13 +2,21 @@ import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import { downloadAsWord } from '../utils/downloadWord'
 
+function sanitizeHtml(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript:/gi, '')
+}
+
 function escHtml(s) {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 function renderPlaceholders(text) {
   let h = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')
-  h = h.replace(/\[([^\]\[]{0,80})\]/g, (match) => `<span class="ph-chip" data-encoded="${encodeURIComponent(match)}" contenteditable="false">${match}</span>`)
+  h = h.replace(/\[([^\][]{0,80})\]/g, (match) => `<span class="ph-chip" data-encoded="${encodeURIComponent(match)}" contenteditable="false">${match}</span>`)
   return h
 }
 
@@ -60,8 +68,6 @@ export default function BriefSchreiber() {
   const [interimText, setInterimText] = useState('')
 
   const inputRef = useRef(null)
-  const mediaRef = useRef(null)
-  const chunksRef = useRef([])
   const wsRef = useRef(null)
   const audioCtxRef = useRef(null)
   const processorRef = useRef(null)
@@ -86,7 +92,7 @@ export default function BriefSchreiber() {
     if (saved && inputRef.current) {
       const existing = inputRef.current.innerHTML.trim()
       const newContent = renderPlaceholders(saved)
-      inputRef.current.innerHTML = existing ? existing + '<br><br>' + newContent : newContent
+      inputRef.current.innerHTML = sanitizeHtml(existing ? existing + '<br><br>' + newContent : newContent)
       setChars(getBriefText(inputRef.current).length)
       localStorage.removeItem('arvis_brief_input')
     }
@@ -389,7 +395,7 @@ export default function BriefSchreiber() {
             <span className="brief-panel-label">Ihr Text</span>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <span className="brief-char-count">{chars} Zeichen</span>
-              <button className="result-action-btn" onClick={clearInput} title="Leeren">
+              <button className="result-action-btn" aria-label="Eingabe leeren" onClick={clearInput} title="Leeren">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /></svg>
               </button>
             </div>
@@ -445,7 +451,7 @@ export default function BriefSchreiber() {
             <span className="brief-panel-label">KI-Ergebnis</span>
             {state === 'result' && (
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <button className="result-action-btn" onClick={copyResult} title="Kopieren" style={copied ? { color: 'var(--orange)' } : {}}>
+                <button className="result-action-btn" aria-label="Ergebnis kopieren" onClick={copyResult} title="Kopieren" style={copied ? { color: 'var(--orange)' } : {}}>
                   {copied
                     ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                     : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>

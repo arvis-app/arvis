@@ -195,7 +195,7 @@ export default function LoginPage() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </span>
                 </div>
-                <div className="form-forgot"><a href="#" onClick={e => { e.preventDefault(); setTab('forgot'); clearMessages() }}>Passwort vergessen?</a></div>
+                <div className="form-forgot"><button type="button" onClick={() => { setTab('forgot'); clearMessages() }} style={{background:'none',border:'none',padding:0,cursor:'pointer',color:'var(--orange)',fontSize:'inherit',fontFamily:'inherit'}}>Passwort vergessen?</button></div>
               </div>
 
               <button className="btn-submit" onClick={handleLogin} disabled={loading}>
@@ -215,7 +215,7 @@ export default function LoginPage() {
               </button>
 
               <div className="form-footer">
-                Noch kein Konto? <a href="#" onClick={e => { e.preventDefault(); setTab('register'); clearMessages() }}>Jetzt registrieren</a>
+                Noch kein Konto? <button type="button" onClick={() => { setTab('register'); clearMessages() }} style={{background:'none',border:'none',padding:0,cursor:'pointer',color:'var(--orange)',fontSize:'inherit',fontFamily:'inherit',fontWeight:600}}>Jetzt registrieren</button>
               </div>
             </div>
           )}
@@ -287,7 +287,7 @@ export default function LoginPage() {
               </button>
 
               <div className="form-footer">
-                <a href="#" onClick={e => { e.preventDefault(); setTab('login'); clearMessages() }}>← Zurück zur Anmeldung</a>
+                <button type="button" onClick={() => { setTab('login'); clearMessages() }} style={{background:'none',border:'none',padding:0,cursor:'pointer',color:'var(--orange)',fontSize:'inherit',fontFamily:'inherit'}}>← Zurück zur Anmeldung</button>
               </div>
             </div>
           )}
@@ -341,7 +341,7 @@ export default function LoginPage() {
               </div>
 
               <div className="form-footer">
-                Bereits ein Konto? <a href="#" onClick={e => { e.preventDefault(); setTab('login'); clearMessages() }}>Anmelden</a>
+                Bereits ein Konto? <button type="button" onClick={() => { setTab('login'); clearMessages() }} style={{background:'none',border:'none',padding:0,cursor:'pointer',color:'var(--orange)',fontSize:'inherit',fontFamily:'inherit',fontWeight:600}}>Anmelden</button>
               </div>
             </div>
           )}

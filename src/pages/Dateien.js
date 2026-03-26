@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { downloadAsWord } from '../utils/downloadWord'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 
-function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2,7) }
+
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
 // Sanitise le HTML stocké en base avant injection dans innerHTML.
@@ -55,7 +55,7 @@ async function migrateDateienLocalStorage(userId) {
       })))
     }
     localStorage.setItem('arvis_dateien_migrated_v1', '1')
-  } catch (e) { console.error('Dateien migration error:', e) }
+  } catch (e) { console.error('[Dateien] Dateien migration error:', e) }
 }
 
 const ICO = {
@@ -114,7 +114,7 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
       editorRef.current.innerHTML = sanitizeHtml(note.content)
     }
     editorRef.current?.focus()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentionally runs once on mount to set initial editor content
 
   function autoSave(newTitle, newContent) {
     clearTimeout(timerRef.current)
@@ -270,11 +270,12 @@ export default function Dateien() {
 
   // ── Breadcrumb ─────────────────────────────────────────────────────────────
   const path = []
-  let id = currentFolder
-  while (id) {
-    const f = data.folders.find(x=>x.id===id)
+  let pathId = currentFolder
+  while (pathId) {
+    const currentPathId = pathId
+    const f = data.folders.find(x => x.id === currentPathId)
     if (!f) break
-    path.unshift(f); id = f.parentId||null
+    path.unshift(f); pathId = f.parentId||null
   }
 
   // ── Folder ops ─────────────────────────────────────────────────────────────

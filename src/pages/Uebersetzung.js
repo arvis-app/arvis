@@ -29,9 +29,9 @@ export default function Uebersetzung() {
   const [cat, setCat]             = useState('all')
   const [visibleLangs, setVisible] = useState({ en:true, es:true, fr:true, ru:true, uk:true })
   const [selected, setSelected]   = useState(null)
-  const [toast, setToast]         = useState('')
   const [copiedKey, setCopiedKey] = useState(null)
   const [visibleCount, setVisibleCount] = useState(200)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     function tryLoad() {
@@ -40,7 +40,8 @@ export default function Uebersetzung() {
     }
     if (!tryLoad()) {
       const iv = setInterval(() => { if (tryLoad()) clearInterval(iv) }, 100)
-      return () => clearInterval(iv)
+      const timeout = setTimeout(() => { clearInterval(iv); setLoadError(true) }, 8000)
+      return () => { clearInterval(iv); clearTimeout(timeout) }
     }
   }, [])
 
@@ -67,20 +68,10 @@ export default function Uebersetzung() {
     return items
   }, [data, search, cat])
 
-  function showToast(msg) { setToast(msg); setTimeout(()=>setToast(''),2000) }
-
   function copyVal(val, key) {
     navigator.clipboard.writeText(val)
     setCopiedKey(key)
     setTimeout(()=>setCopiedKey(null), 1800)
-  }
-
-  function copyAll() {
-    if (!selected) return
-    const lines = [`Fachbegriff: ${selected.de}`]
-    if (selected.de_allg) lines.push(`Allgemeinbegriff: ${selected.de_allg}`)
-    UEB_LANGS.forEach(l => { if (selected[l.key]) lines.push(`${l.label}: ${selected[l.key]}`) })
-    navigator.clipboard.writeText(lines.join('\n'))
   }
 
   function toggleLang(key) {
@@ -145,7 +136,10 @@ export default function Uebersetzung() {
 
           {/* List */}
           <div className="ueb-list-container" onScroll={handleListScroll}>
-            {data.length === 0 && (
+            {data.length === 0 && loadError && (
+              <div className="ueb-empty" style={{color:'var(--red,#c0392b)'}}>Terminologie konnte nicht geladen werden. Bitte Seite neu laden.</div>
+            )}
+            {data.length === 0 && !loadError && (
               <div className="ueb-empty">Daten werden geladen…</div>
             )}
             {data.length > 0 && filtered.length === 0 && (
@@ -220,7 +214,6 @@ export default function Uebersetzung() {
         </div>
       </div>
 
-      {toast && <div className="app-toast">{toast}</div>}
     </div>
   )
 }

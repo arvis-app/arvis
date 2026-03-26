@@ -848,10 +848,10 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 
   /* Topbar */
   .topbar, .app-layout.sidebar-collapsed .topbar { position: sticky; top: 0; z-index: 100; padding: 0 16px; gap: 10px; }
-  .topbar-logo-wrap, .app-layout.sidebar-collapsed .topbar-logo-wrap { width: auto; transition: none; }
-  .topbar-logo, .app-layout.sidebar-collapsed .topbar-logo { width: auto; min-width: 0; border-right: none; padding: 0 8px; }
+  .topbar-logo-wrap, .app-layout.sidebar-collapsed .topbar-logo-wrap { display: none; }
   .mobile-menu-btn { display: flex; }
   .topbar-btn { display: none; }
+  .topbar-center-icon { opacity: 1 !important; max-width: 57px !important; }
 
   /* Sidebar → overlay slide-in */
   .sidebar {

@@ -1,17 +1,15 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 
 const SPECIAL_FIRST = ['Notaufnahme','Aufnahme','Befunde','OP-Berichte','Verlauf','Entlassung','Sozialmedizin/Gutachten','Diverses']
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-}
+
 
 function formatBausteinText(s) {
   if (!s) return ''
-  s = s.replace(/\[X[X,\.×\-–\/+0-9]*\]/g, '_')
+  s = s.replace(/\[X[X,.×\-–/+0-9]*\]/g, '_')
   s = s.replace(/\[([^\]]+)\]/g, '($1)')
   return s
 }
@@ -30,7 +28,7 @@ async function migrateBausteineLocalStorage(userId) {
       })))
     }
     localStorage.setItem('arvis_bausteine_migrated_v1', '1')
-  } catch (e) { console.error('Bausteine migration error:', e) }
+  } catch (e) { console.error('[Bausteine] Bausteine migration error:', e) }
 }
 
 // ── Confirm Modal ──────────────────────────────────────────────────────────────
@@ -74,7 +72,7 @@ function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }
       setTitel(''); setCategory(categories[0]||''); setText(''); setKeywords('')
     }
     setError('')
-  }, [open, editingBaustein])
+  }, [open, editingBaustein, categories])
 
   function handleSave() {
     if (!titel.trim() || !text.trim()) { setError('Bitte Titel und Text ausfüllen.'); return }
@@ -152,7 +150,7 @@ export default function Bausteine() {
   const [copied, setCopied]             = useState(false)
   const [toast, setToast]               = useState('')
   const [suggestion, setSuggestion]     = useState('')
-  const [dataReady, setDataReady]       = useState(!!window.BAUSTEINE_DATA)
+  const [baudataVersion, setBaudataVersion] = useState(0)
   const rightRef                        = useRef(null)
   const [rightH, setRightH]             = useState(0)
 
@@ -173,9 +171,9 @@ export default function Bausteine() {
 
   // Attendre que bausteine_data.js soit chargé
   useEffect(() => {
-    if (window.BAUSTEINE_DATA) { setDataReady(true); return }
+    if (window.BAUSTEINE_DATA) return
     const interval = setInterval(() => {
-      if (window.BAUSTEINE_DATA) { setDataReady(true); clearInterval(interval) }
+      if (window.BAUSTEINE_DATA) { setBaudataVersion(v => v + 1); clearInterval(interval) }
     }, 100)
     return () => clearInterval(interval)
   }, [])
@@ -185,7 +183,7 @@ export default function Bausteine() {
     const forkedIds = custom.filter(b=>b.forked_from).map(b=>b.forked_from)
     const base = window.BAUSTEINE_DATA.filter(b=>!forkedIds.includes(b.id))
     return [...base, ...custom]
-  }, [custom, dataReady])
+  }, [custom, baudataVersion]) // eslint-disable-line react-hooks/exhaustive-deps -- baudataVersion triggers recompute when window.BAUSTEINE_DATA loads
 
   const categories = useMemo(() => {
     const allCats = [...new Set(allData.map(b=>b.category))]
@@ -204,7 +202,7 @@ export default function Bausteine() {
       const mq = !q || b.title.toLowerCase().includes(q) || (q.length>=4 && b.keywords && b.keywords.toLowerCase().includes(q))
       return mc && mq
     }).slice(0, 80)
-  }, [allData, activeCat, search, favs, custom])
+  }, [allData, activeCat, search, favs])
 
   function showToast(msg, light=true) { setToast({msg,light}); setTimeout(()=>setToast(null),2200) }
 

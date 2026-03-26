@@ -8,20 +8,12 @@ const MONTHS_S = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep'
 const DAYS_S = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 const DAYS_LONG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
 
-const DEFAULT_PATIENTS = [
-  { room: 'Zi. 214', name: 'Müller, Hans', note: 'Post-op Kontrolle morgen früh' },
-  { room: 'Zi. 108', name: 'Schmidt, Anna', note: 'Labor ausstehend — HbA1c' },
-  { room: 'Zi. 301', name: 'Weber, Klaus', note: 'Entlassung Freitag geplant' },
-  { room: 'Zi. 115', name: 'Fischer, Maria', note: 'Neue Aufnahme heute' },
-  { room: 'Zi. 220', name: 'Wagner, Peter', note: 'EKG Kontrolle 14:00 Uhr' },
-]
-
 // ── Supabase helpers ─────────────────────────────────────────────────────────
 async function fetchEvents(userId) {
   const { data, error } = await supabase
     .from('events').select('*').eq('user_id', userId)
     .abortSignal(AbortSignal.timeout(8000))
-  if (error) { console.error('fetchEvents:', error); return {} }
+  if (error) { console.error('[Dashboard] fetchEvents:', error); return {} }
   const map = {}
   data?.forEach(e => {
     if (!map[e.date]) map[e.date] = []
@@ -34,7 +26,7 @@ async function fetchPatients(userId) {
   const { data, error } = await supabase
     .from('patients').select('*').eq('user_id', userId).order('created_at')
     .abortSignal(AbortSignal.timeout(8000))
-  if (error) { console.error('fetchPatients:', error); return [] }
+  if (error) { console.error('[Dashboard] fetchPatients:', error); return [] }
   return data || []
 }
 
@@ -55,7 +47,7 @@ async function migrateLocalStorage(userId) {
       await supabase.from('patients').insert(realPatients.map(p => ({ user_id: userId, room: p.room || '—', name: p.name, note: p.note || '' })))
     }
     localStorage.setItem('arvis_migrated_v1', '1')
-  } catch (e) { console.error('Migration error:', e) }
+  } catch (e) { console.error('[Dashboard] Migration error:', e) }
 }
 
 function Toast({ msg }) {
@@ -79,11 +71,11 @@ function Calendar({ currentDate, setCurrentDate, selectedDay, setSelectedDay, ev
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, padding: '0 8px' }}>
-        <button className="cal-nav-btn" onClick={() => { const d = new Date(currentDate); d.setMonth(d.getMonth() - 1); setCurrentDate(d); setSelectedDay(1) }}>
+        <button aria-label="Vorheriger Monat" className="cal-nav-btn" onClick={() => { const d = new Date(currentDate); d.setMonth(d.getMonth() - 1); setCurrentDate(d); setSelectedDay(1) }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
         </button>
         <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{MONTHS[month]} {year}</span>
-        <button className="cal-nav-btn" onClick={() => { const d = new Date(currentDate); d.setMonth(d.getMonth() + 1); setCurrentDate(d); setSelectedDay(1) }}>
+        <button aria-label="Nächster Monat" className="cal-nav-btn" onClick={() => { const d = new Date(currentDate); d.setMonth(d.getMonth() + 1); setCurrentDate(d); setSelectedDay(1) }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
         </button>
       </div>
@@ -99,7 +91,6 @@ function Calendar({ currentDate, setCurrentDate, selectedDay, setSelectedDay, ev
               if (c.other) return
               setSelectedDay(c.day)
               const dd = String(c.day).padStart(2, '0') + '.' + String(month + 1).padStart(2, '0') + '.' + year
-              window._calClickedDate = dd
               if (onDayClick) onDayClick(dd)
             }}>
               {c.day}
@@ -126,7 +117,7 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
   }, [calClickedDate]) // eslint-disable-line
 
   function openAddForm() {
-    if (window._calClickedDate) setDate(window._calClickedDate)
+    if (calClickedDate) setDate(calClickedDate)
     setAddOpen(v => !v)
   }
   const now = new Date()
@@ -191,7 +182,7 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
           <div key={i} className="event-item" style={{ opacity: isPast(e, e.date) ? 0.45 : 1 }}>
             <div className="event-time" style={{ minWidth: 50, fontSize: 15, cursor: 'pointer' }} onClick={() => startEdit(e, e.date)}>{e.time}</div>
             <div className="event-content" style={{ flex: 1, cursor: 'pointer' }} onClick={() => startEdit(e, e.date)}><div className="event-title" style={{ fontSize: 16 }}>{e.title}</div></div>
-            <button onClick={() => handleDel(e, e.date)} style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+            <button aria-label="Termin löschen" onClick={() => handleDel(e, e.date)} style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
           </div>
         ))}
       </div>
@@ -335,7 +326,7 @@ export default function Dashboard() {
         fetchPatients(user.id).then(setPatients)
       ]))
       .catch(e => {
-        console.error('Dashboard load error:', e)
+        console.error('[Dashboard] Dashboard load error:', e)
         setFetchError('Daten konnten nicht geladen werden. Bitte Seite neu laden.')
       })
       .finally(() => setLoading(false))
