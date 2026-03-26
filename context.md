@@ -1,6 +1,6 @@
 # context.md — État du projet Arvis
 
-Dernière mise à jour : 25 mars 2026 (session 5)
+Dernière mise à jour : 26 mars 2026
 
 ## Profil du créateur
 - **Amine est médecin**, pas développeur. Il a construit Arvis sans formation en coding.
@@ -20,192 +20,92 @@ URL de production : **https://arvis-app.de**
 - Inscription / Connexion email+password
 - Connexion Google OAuth
 - Reset password par email (flux PKCE : `/reset-password` → formulaire nouveau mot de passe → redirect `/login`)
-- Emails Supabase (confirmation, reset)
+- Changement de mot de passe depuis le profil (vérifie l'ancien MDP au préalable)
+- Changement d'adresse e-mail depuis le profil (envoi d'emails de confirmation sur ancienne + nouvelle adresse via Supabase Auth)
+- Templates d'emails personnalisés (Confirmation, Reset Password, Changement d'E-mail) injectés dans Supabase.
 
 ### App
-- **Dashboard** — Vue d'ensemble
-- **Brief Schreiber** — Rédaction de courriers médicaux via IA (GPT)
-- **Scan & Analyse** — Scan de documents, OCR, analyse IA avec priorités 🔴🟡🟢
-- **Bausteine** — Blocs de texte réutilisables personnalisés
-- **Übersetzung** — Traduction médicale multilingue
-- **Dateien** — Gestion de fichiers (upload, visualisation)
-- **Profil** — Informations personnelles, changement de mot de passe, gestion abonnement
+- **Dashboard** — Vue d'ensemble, météo/date, compteurs rapides, widget agenda, widget patients
+- **Brief Schreiber** — Rédaction de courriers médicaux via IA (GPT), dictée vocale (Whisper)
+- **Scan & Analyse** — Scan de documents (Mobile/Local), outils de caviardage (Schwärzen), OCR pur ou analyse IA structurée 🔴🟡🟢
+- **Bausteine** — Blocs de texte médicaux réutilisables (1550+), avec personnalisation, favoris et recherche éclair
+- **Übersetzung** — Traduction médicale multilingue (Fachbegriffe vs Allgemeinsprache) en 6 langues (FR, EN, ES, RU, UK)
+- **Dateien** — Gestion de fichiers (upload PDFs, images), arborescence avec dossiers, filtres récents/favoris, preview direct
+- **Profil** — Informations personnelles, photo (avatar), changement de mot de passe, changement d'e-mail, gestion abonnement Stripe
 
 ### Paiement Stripe (complet)
 - Stripe Checkout pour nouveaux abonnés (mensuel 19€ / annuel 249€)
 - Stripe Billing Portal pour abonnés existants (changer carte, annuler)
 - Webhook Stripe → mise à jour automatique DB (`plan`, `card_brand`, `card_last4`, `subscription_end_date`)
 - Détection client Stripe supprimé → recréation automatique
-- **Coupons auto-appliqués** : récupère dynamiquement le 1er coupon actif Stripe, filtrable par `metadata.price_id` pour cibler un prix précis
-- Refresh profil automatique au retour de Stripe (`?success=true`, polling 2s/20s)
-- Badge "Gekündigt · Noch X Tage verbleibend" si annulation en cours (`canceled_pending`)
+- **Coupons auto-appliqués** : récupère dynamiquement le 1er coupon actif Stripe, filtrable par `metadata.price_id`
+- Refresh profil automatique au retour de Stripe (`?success=true`, polling 2s/10s)
+- Badges d'alerte pour les forfaits : Trial, Actif, Annulé en attente (`canceled_pending`), Expiré
 
 ### Landing page
-- `public/landing_page.html` — page statique servie à `/` via `vercel.json`
-- Script JS inline : si utilisateur connecté → redirect auto vers `/dashboard`
-- Utilisateurs non connectés voient la landing, puis `/login` pour accéder à l'app
+- `public/landing_page.html` — page de présentation (design Premium Vercel-like) servie à `/` via configuration par défaut.
+- Routing : boutons d'actions redirigent proprement vers le routeur React (`/login`).
+- Composants Visuels : mockups animés, fausse UI téléphone pour le scanner, tab-bars, sections Prix / DSGVO / How-it-works.
 
 ### Paywall
 - `src/components/Paywall.js` — bloque l'accès aux pages premium si pas Pro
-- Affiche bouton upgrade → Stripe Checkout ou Billing Portal selon le cas
+- Affiche bouton upgrade → Stripe Checkout ou Billing Portal
 
 ---
 
 ## Architecture technique
 
 ### Frontend
-```
-src/
-├── App.js                    # Routes + PrivateRoute + PublicRoute
-├── supabaseClient.js         # Client Supabase + invokeEdgeFunction()
-├── context/
-│   └── AuthContext.js        # user, profile, isPro, getPlanInfo(), refreshProfile()
-├── components/
-│   ├── AppLayout.js          # Sidebar + Topbar
-│   ├── Paywall.js            # Garde d'accès premium
-│   └── ErrorBoundary.js
-├── pages/
-│   ├── LoginPage.js
-│   ├── ResetPasswordPage.js
-│   ├── Dashboard.js
-│   ├── Scan.js
-│   ├── BriefSchreiber.js
-│   ├── Bausteine.js
-│   ├── Uebersetzung.js
-│   ├── Dateien.js
-│   ├── Profil.js
-│   └── MobileScan.js
-public/
-└── landing_page.html         # Landing page statique
-vercel.json                   # Route / → landing_page.html
-```
+- **Framework** : React 19 + React Router 7 + Vite 6
+- **Styles** : CSS custom (variables `--bg`, `--orange`, etc.) sans framework externe pour un design distinct
+- **Build** : Vite (remplace CRA, 0 vulnérabilités, build < 10s) = cible de sortie configurée sur `build/` (pour compatibilité avec les paramètres de projet Vercel existants)
+- **Monitoring** : Sentry activé en prod (via VITE_SENTRY_DSN)
 
-### Edge Functions Supabase
+### Edge Functions Supabase (Backend/IA)
 | Fonction | JWT | Rôle |
 |----------|-----|------|
 | `create-checkout-session` | no-verify | Crée session Stripe Checkout |
 | `create-portal-session` | no-verify | Ouvre Billing Portal |
 | `stripe-webhook` | no-verify | Événements Stripe → DB |
-| `ai-chat` | verify | Chat IA (OpenAI) |
-| `ai-whisper` | verify | Transcription audio |
-| `realtime-token` | verify | Token Supabase Realtime |
+| `ai-chat` | verify | Chat IA (OpenAI) pour l'analyse des scans et la rédaction |
+| `ai-whisper` | verify | Transcription audio asynchrone |
+| `realtime-token` | verify | Token Supabase Realtime (WebSocket pour l'IA en streaming) |
 
-### Base de données (table `users`)
-Colonnes clés : `id`, `email`, `first_name`, `last_name`, `title`, `clinic`, `plan`, `trial_started_at`, `stripe_customer_id`, `subscription_end_date`, `card_brand`, `card_last4`, `avatar_url`
-
----
-
-## État des plans
-
-| `plan` | `isPro` | Affichage Profil |
-|--------|---------|-----------------|
-| `trial` (daysLeft > 0) | ✅ | Badge vert "Trial · Noch X Tage" |
-| `trial` (daysLeft = 0) | ❌ | Badge rouge "Abgelaufen" → Paywall |
-| `pro` | ✅ | Badge vert "Aktiv" |
-| `canceled_pending` | ✅ | Badge ambre "Gekündigt · Noch X Tage" |
-| `canceled` | ❌ | Badge rouge → Paywall |
+### Base de données (RLS activé sur toutes les tables)
+Colonnes clés `users` : `id`, `email`, `first_name`, `last_name`, `title`, `plan`, `trial_started_at`, `stripe_customer_id`, `subscription_end_date`, `card_brand`, `card_last4`, `avatar_url`.
+Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `bausteine`, `folders`, `notes`, `events`, `patients`, `scan_sessions`.
 
 ---
 
-## Fait en session 2 (22 mars 2026) ✅
-- **Sidebar logout** : le footer sidebar ne déconnecte plus accidentellement — avatar/nom → `/profil`, icône seule → logout
-- **Profil mobile** : panels empilés portrait (Infos → Billing → Password) via `.profil-layout` class
-- **CSS cleanup** : règles mortes `body.menu-open` supprimées, box-shadow corrigé sur `.app-layout.menu-open`
-- **Bausteine mobile** : sélecteurs fragiles `#page-bausteine > div > div` remplacés par `.bausteine-left` / `.bausteine-right`
-- **MobileScan multi-photos** : prise de plusieurs pages une par une, upload immédiat, bouton "Weitere Seite" + "Fertig", assemblage PDF côté PC via `pdf-lib`
-- **Normalisation EXIF** : toutes les photos mobiles passent par canvas avant PDF → orientation portrait garantie
-- **Scan.js multi-photos mobile direct** : bouton "Foto aufnehmen" sur téléphone accumule les pages dans un overlay avant d'envoyer
-- **Redirect post-login** : après login, redirection vers l'URL d'origine (fix QR code → login → retour MobileScan)
+## Mises à jour récentes (Sessions 6 & 7 - Mars 2026) ✅
 
-## Fait en session 3 (23 mars 2026) ✅
-- **Audit complet** du projet : sécurité, UX, qualité du code
-- **Fix XSS** dans `Dateien.js` : ajout de `sanitizeHtml()` avant injection dans `innerHTML`
-- **Fix `canceled_pending`** : les 3 edge functions IA (`ai-chat`, `ai-whisper`, `realtime-token`) reconnaissent maintenant ce plan comme Pro jusqu'à `subscription_end_date`
-- **Fix HTTP status** dans `create-portal-session` : erreur retourne maintenant 400 au lieu de 200
-- **Fix CORS** : toutes les edge functions remplacent `*` par une whitelist `arvis-app.de` + `localhost:3000`
-- **Commentaire WebSocket** dans `BriefSchreiber.js` : documente pourquoi le token éphémère est dans le subprotocol (contrainte OpenAI)
+### 1. Tolérance Zéro sur les warnings (ESLint & Audits)
+- Nettoyage rigoureux de tout le code : 0 erreurs, 0 avertissements.
+- Hooks `useEffect` et `useMemo` stabilisés par des triggers logiques (ex: compteur `baudataVersion`) plutôt que des états asynchrones instables.
+- Remplacement des balises `<a>` mortes par des `<button>` sémantiques.
+- `npm audit fix` exécuté ; vulnérabilités bloquantes de *Create React App* éliminées via la migration Vite.
 
-## Compte de test
-- **Email** : amine.mabtoul@outlook.fr
-- **Mot de passe** : test1144
-- URL : https://arvis-app.de/login
+### 2. Migration vers Vite 6 🚀
+- Suppression de l'ancien `react-scripts`.
+- Configuration de `vite.config.js` (+ esbuild pour compatibilité JSX dans `.js`).
+- Temps de build drastiquement réduit (de ~45s à ~6s).
+- Variables d'environnement renommées de `REACT_APP_` vers `VITE_` sur le code local ET sur Vercel.
 
----
+### 3. Fonctions Avancées et Sécurité 🔒
+- **RLS Systématique** : Toutes les règles Supabase RLS (Row Level Security) ont été vérifiées, supprimées puis réécrites pour forcer l'usage exclusif de `user_id = auth.uid()`.
+- **Scan Sessions** : RLS spécifique implémenté pour les codes QR, autorisant la lecture soit par les tokens applicatifs (l'application mobile est non authentifiée initialement).
+- **HTTP Headers Vercel** (Anti-Clickjacking) : Implémentation de `X-Frame-Options: DENY`, `Permissions-Policy`, etc., dans `vercel.json`.
+- **Changement d'Email** : Suppression de l'ancien champ mort "Klinik" dans la vue Profil, remplacé par une vraie gestion du changement d'adresse E-mail (avec appel direct à `supabase.auth.updateUser` et UI avertissant des envois d'emails de validation).
+- Template `email-change.html` codé en HTML inline-styles injecté manuellement.
+- Boutons "Anmelden" sur la landing page corrigés pour pointer vers `/login` et ainsi invoquer la vérification de session automatique du Routeur React.
 
-## Fait en session 4-5 (25 mars 2026) ✅
-
-### Typographie
-- **+2px sur toutes les font-sizes** de l'app (App.css + tous les .js inline styles)
-- Patterns couverts : `font-size: Xpx` (CSS), `fontSize: X` et `fontSize:X` (JS inline styles sans espace)
-
-### AppLayout / Topbar
-- **Centrage "Arvis"** dans la topbar quand sidebar ouverte : `.topbar-center-icon` fixé avec `max-width:0; overflow:hidden` pour ne pas occuper d'espace invisible
-
-### Bausteine
-- Ratio des colonnes ajusté à **40/60** (liste de blocs / éditeur)
-
-### Landing page — Mockups
-- Agrandissement des cards mockup PC (features + section scan + section brief schreiber)
-- Card Translate : labels `Fachbegriff` / `Українська` ne se chevauchent plus (`width:85px;flex-shrink:0`)
-- Card Brief Schreiber : boutons Kopieren + Word à largeur égale
-- Section Brief Schreiber : boutons Kopieren (orange) + Word (bleu) ajoutés dans le mockup
-- Curseur clignotant supprimé de la card Brief Schreiber
-
-### Landing page — Autres
-- Nav header : couleur des liens = couleur "Arvis" (`var(--text)`)
-- Bouton "Kopieren · An Brief Schreiber" : orange plein sans `opacity:0.6`
-- Card Scan : saut de ligne entre `—` et `KI-Analyse`
-- Dashboard mockup topbar : logo maison SVG → `arvis-icon.svg`
-- Bouton copy scan : fond orange plein + texte blanc (plus de ghost button)
-
----
-
-## Fait en session 6 (26 mars 2026) ✅
-
-### Audit & corrections de bugs
-- **Audit complet** du projet : sécurité, performance, UX, code qualité
-- **Fix XSS** dans `BriefSchreiber.js` : `sanitizeHtml()` ajouté avant injection `innerHTML` (contenu localStorage)
-- **Fix polling Stripe** dans `Profil.js` : réduit de 20s → 10s (5 tentatives), message `showToast` si timeout
-- **Fix `window._calClickedDate`** dans `Dashboard.js` : supprimé, remplacé par le state React déjà en place
-- **Fix fallback `window._begriffe`** dans `Uebersetzung.js` : message d'erreur rouge après 8s si données non chargées
-- **Fix topbar mobile** (`App.css`) : logo sorti de la sidebar masqué (`display:none`), `topbar-center-icon` forcé visible → logo + "Arvis" centrés comme desktop sidebar fermée
-
-### Nettoyage code
-- **Variables inutilisées supprimées** : `mediaRef`, `chunksRef` (BriefSchreiber), `DEFAULT_PATIENTS` (Dashboard), `logout`, `displayName` (Profil), `showToast`, `copyAll`, `toast`/`setToast` (Uebersetzung)
-- **Regex `\[` inutile** corrigée dans `renderPlaceholders` (BriefSchreiber)
-- **`window._calClickedDate`** et 2 références `window.xxx` supprimées de Dashboard.js
-- **`console.error` contextualisé** : préfixe `[NomFichier]` ajouté dans AuthContext, Bausteine, Dateien, Dashboard, AppLayout, BriefSchreiber, Scan
-
-### Nouvelles fonctionnalités
-- **Page 404** (`src/pages/NotFound.js`) : "Seite nicht gefunden", bouton retour dashboard, route catch-all `*`
-- **Page stats admin** (`src/pages/AdminStats.js`) : accessible à `/admin/stats` (protégée par email admin), affiche total utilisateurs, nouveaux cette semaine, taux de conversion, répartition par plan
-- **`.env.example`** créé avec les variables Stripe documentées
-- **`aria-labels`** ajoutés sur 7 boutons icônes (sidebar toggle, zoom, copier, supprimer événement…)
-- **Tests unitaires** (`src/__tests__/planLogic.test.js`) : 26 tests couvrant toute la logique trial/pro/canceled_pending/canceled
-- **Templates email allemand** (`supabase/templates/`) : `confirm-signup.html` + `recovery.html` avec logo Arvis, couleurs brand, entités HTML pour caractères spéciaux — implantés dans Supabase Dashboard
-- **Sentry intégré** : `@sentry/react` installé, init dans `src/index.js`, `ErrorBoundary` capture les erreurs React, helper `src/utils/logger.js` → activer en prod via `REACT_APP_SENTRY_DSN` dans Vercel
-
----
-
-## Fait en session 7 (26 mars 2026) ✅
-
-### ESLint — nettoyage complet (0 warnings en build)
-- **Bausteine.js** : supprimé `useCallback` inutilisé, supprimé `escHtml` inutilisée, corrigé 2 escapes inutiles (`\.` `\/`), ajouté `categories` dans deps useEffect, remplacé `dataReady` par `baudataVersion` (trigger correct pour `window.BAUSTEINE_DATA`), nettoyé deps `useMemo`
-- **Dateien.js** : supprimé `useCallback` et `genId` inutilisés, commentaire `eslint-disable` sur useEffect intentionnellement vide, fix `no-loop-func` dans breadcrumb via `const currentPathId`
-- **Scan.js** : supprimé `useCallback` inutilisé, supprimé état `qrToken` (jamais lu), corrigé 4 `\/` inutiles dans les regex de `cleanOcrText`
-- **LoginPage.js** : remplacé 4 `<a href="#">` par `<button type="button">` stylés (fix accessibilité `jsx-a11y/anchor-is-valid`)
-
-### Autres
-- **Tab title** : landing page `<title>` simplifié à `Arvis` (supprimé le sous-titre)
-- **Sentry** : DSN ajouté sur Vercel (`REACT_APP_SENTRY_DSN`), alertes email testées et confirmées ✅
-
-### Sécurité & Build (Vite)
-- **Supabase RLS** : policies ajoutées et activées sur `scan_sessions` et `users` (toutes les tables sont désormais protégées).
-- **Security Headers** : ajout de `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, et `Permissions-Policy` dans `vercel.json`.
-- **Migration Vite 6** : remplacement complet de Create React App (`react-scripts`) par Vite. Build 10x plus rapide et **0 vulnérabilités**. Variables d'environnement migrées de `REACT_APP_` vers `VITE_`.
+### 4. Admin & Sentry 📊
+- Implémentation globale d'`@sentry/react` et capture intelligente des erreurs.
+- Page d'administration `AdminStats.js` conçue pour le suivi des KPI d'Arvis (Conversion, utilisateurs actifs), protégée par une condition simple sur l'email administrateur.
 
 ---
 
 ## Ce qui reste à faire / améliorations possibles
-- Tests automatisés d'intégration (Cypress/Playwright pour flows complets)
-- Analytics avancées (feature usage, coûts OpenAI)
+- Tests automatisés d'intégration (Cypress/Playwright pour flows complets critiques : Scanner → IA → Brief).
+- Affinage des prompts système IA (si les médecins font des retours sur la qualité de rédaction).
+- Tableaux de bord de Business Analytics plus granulaires centralisant l'utilisation des tokens OpenAI contre les revenus Stripe.
