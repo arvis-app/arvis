@@ -532,6 +532,25 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 }
 .btn-secondary:hover { background: var(--bg-3); }
 
+/* Désactiver les styles :hover sur appareils tactiles (évite le fond gris résiduel après tap) */
+@media (hover: none) {
+  button:hover,
+  .btn-secondary:hover,
+  .btn-action:hover,
+  .btn-action-secondary:hover,
+  .btn-danger:hover {
+    background: initial !important;
+    background-color: initial !important;
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .btn-secondary:hover { background: var(--bg-2) !important; }
+  .btn-action:hover { background: var(--orange) !important; }
+  .btn-action-secondary:hover { background: transparent !important; }
+  .btn-danger:hover { background: transparent !important; }
+}
+
 /* ═══════ DASHBOARD ═══════ */
 .dashboard-grid {
   display: grid;
