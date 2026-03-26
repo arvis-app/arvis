@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 
 const ADMIN_EMAIL = 'amine.mabtoul@outlook.fr'
+const MONTHLY_TOKEN_LIMIT = 1_000_000
 
 function StatCard({ label, value, sub, highlight }) {
   return (
@@ -91,6 +92,7 @@ export default function AdminStats() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [aiStats, setAiStats] = useState(null)
 
   // Protection admin
   useEffect(() => {
@@ -132,6 +134,21 @@ export default function AdminStats() {
         const newThisWeek = data.filter(u => new Date(u.created_at) > oneWeekAgo).length
 
         setStats({ total, byPlan, conversionRate, newThisWeek, converted })
+
+        // KI-Kosten
+        const startOfMonth = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString()
+        const { data: aiData, error: aiError } = await supabase
+          .from('users')
+          .select('email, ai_tokens_used, ai_tokens_reset_at')
+          .gte('ai_tokens_reset_at', startOfMonth)
+          .order('ai_tokens_used', { ascending: false })
+          .limit(10)
+
+        if (!aiError && aiData) {
+          const totalTokens = aiData.reduce((sum, u) => sum + (u.ai_tokens_used || 0), 0)
+          const totalCost = totalTokens * 0.000002
+          setAiStats({ rows: aiData, totalTokens, totalCost })
+        }
       } catch (e) {
         console.error('AdminStats error:', e)
         setError('Impossible de charger les statistiques.')
@@ -252,6 +269,42 @@ export default function AdminStats() {
             />
           ))}
         </div>
+
+        {/* KI-Kosten */}
+        {aiStats && (
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px 24px', marginTop: 24 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>KI-Kosten (geschätzt)</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Top 10 Nutzer · aktueller Monat · GPT-4o-mini</div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                  <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--text-muted)', fontWeight: 500 }}>E-Mail</th>
+                  <th style={{ textAlign: 'right', padding: '8px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Tokens</th>
+                  <th style={{ textAlign: 'right', padding: '8px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Kosten (€)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {aiStats.rows.map((u, i) => {
+                  const isHighUsage = u.ai_tokens_used > MONTHLY_TOKEN_LIMIT * 0.8
+                  return (
+                    <tr key={i} style={{ borderBottom: '1px solid var(--border)', background: isHighUsage ? 'rgba(217, 75, 10, 0.06)' : 'transparent' }}>
+                      <td style={{ padding: '10px 0', color: isHighUsage ? '#D94B0A' : 'var(--text)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</td>
+                      <td style={{ padding: '10px 0', textAlign: 'right', color: isHighUsage ? '#D94B0A' : 'var(--text)', fontWeight: isHighUsage ? 600 : 400 }}>{(u.ai_tokens_used || 0).toLocaleString('de-DE')}</td>
+                      <td style={{ padding: '10px 0', textAlign: 'right', color: isHighUsage ? '#D94B0A' : 'var(--text)' }}>{((u.ai_tokens_used || 0) * 0.000002).toFixed(4)} €</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: '2px solid var(--border)' }}>
+                  <td style={{ padding: '12px 0', fontWeight: 700, color: 'var(--text)' }}>Total</td>
+                  <td style={{ padding: '12px 0', textAlign: 'right', fontWeight: 700, color: 'var(--text)' }}>{aiStats.totalTokens.toLocaleString('de-DE')}</td>
+                  <td style={{ padding: '12px 0', textAlign: 'right', fontWeight: 700, color: 'var(--text)' }}>{aiStats.totalCost.toFixed(4)} €</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
 
         {/* Footer info */}
         <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: 'var(--text-muted)' }}>

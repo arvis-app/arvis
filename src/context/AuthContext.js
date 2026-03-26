@@ -32,6 +32,23 @@ export function AuthProvider({ children }) {
 
       setIsPro(data.plan === 'pro' || data.plan === 'active' || canceledPendingValid || trialValid)
     } else {
+      // Pas de profil — créer automatiquement (Google OAuth ou inscription incomplète)
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (authUser) {
+        const meta = authUser.user_metadata || {}
+        const firstName = meta.given_name || meta.full_name?.split(' ')[0] || ''
+        const lastName  = meta.family_name || meta.full_name?.split(' ').slice(1).join(' ') || ''
+        await supabase.from('users').upsert({
+          id: userId,
+          email: authUser.email,
+          first_name: firstName,
+          last_name: lastName,
+          plan: 'trial',
+          trial_started_at: new Date().toISOString(),
+          onboarding_completed: false,
+        })
+        return loadProfile(userId)
+      }
       setIsPro(false)
     }
 

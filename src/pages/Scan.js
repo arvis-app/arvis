@@ -150,6 +150,7 @@ export default function Scan() {
   const [blackouts, setBlackouts] = useState([])
   const [selectedBk, setSelectedBk] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [limitReached, setLimitReached] = useState(false)
 
   // Mobile multi-photo state
   const [mobilePhotos, setMobilePhotos] = useState([]) // { file, preview }[]
@@ -523,6 +524,9 @@ export default function Scan() {
         ]
       }
     })
+    if (data?.error === 'limit_reached') {
+      throw new Error('__limit_reached__')
+    }
     if (error || data?.error) {
       let msg = data?.error
       if (!msg && error?.context) {
@@ -587,9 +591,16 @@ export default function Scan() {
       }
       goStep(4)
     } catch (err) {
-      setErrorMsg(err.message)
-      setResult('error')
-      goStep(2)
+      if (err.message === '__limit_reached__') {
+        setLimitReached(true)
+        setResult('error')
+        setErrorMsg('Ihr monatliches KI-Kontingent wurde erreicht.')
+        goStep(2)
+      } else {
+        setErrorMsg(err.message)
+        setResult('error')
+        goStep(2)
+      }
     }
   }
 
@@ -602,7 +613,7 @@ export default function Scan() {
     setPdfPage(1); setPdfTotal(1)
     setBlackouts([]); setSelectedBk(null)
     setPanel('upload'); setResult('empty')
-    setZoom(1); setPanX(0); setPanY(0); setIsDragging(false); setViewerHeight(0); setErrorMsg('')
+    setZoom(1); setPanX(0); setPanY(0); setIsDragging(false); setViewerHeight(0); setErrorMsg(''); setLimitReached(false)
     goStep(1)
   }
 
@@ -671,6 +682,14 @@ export default function Scan() {
           </button>
         </div>
       </div>
+
+      {limitReached && (
+        <div style={{ background: 'rgba(217, 75, 10, 0.08)', border: '1px solid #D94B0A', borderRadius: 8, padding: '14px 20px', marginBottom: 16 }}>
+          <span style={{ color: '#D94B0A', fontSize: 15, fontWeight: 500 }}>
+            Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert.
+          </span>
+        </div>
+      )}
 
       {/* Steps */}
       <div className="scan-steps">

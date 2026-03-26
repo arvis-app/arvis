@@ -53,6 +53,7 @@ export default function Profil() {
   const [vorname, setVorname] = useState('')
   const [nachname, setNachname] = useState('')
   const [email, setEmail] = useState('')
+  const [clinic, setClinic] = useState('')
   const [strasse, setStrasse] = useState('')
   const [hausnummer, setHausnummer] = useState('')
   const [plz, setPlz] = useState('')
@@ -129,6 +130,7 @@ export default function Profil() {
     setVorname(profile.first_name || '')
     setNachname(profile.last_name || '')
     setEmail(profile.email || '')
+    setClinic(profile.clinic || '')
     setStrasse(profile.strasse || '')
     setHausnummer(profile.hausnummer || '')
     setPlz(profile.plz || '')
@@ -175,7 +177,7 @@ export default function Profil() {
       first_name: vorname.trim(),
       last_name: nachname.trim(),
       email: email.trim(),
-      clinic: null, // Removed Klinik
+      clinic: clinic.trim() || null,
       strasse: strasse.trim(),
       hausnummer: hausnummer.trim(),
       plz: plz.trim(),
@@ -304,6 +306,12 @@ export default function Profil() {
               )}
             </div>
 
+            {/* Krankenhaus */}
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">Krankenhaus</label>
+              <input type="text" className="form-input" value={clinic} onChange={e => setClinic(e.target.value)} placeholder="Universitätsklinikum Musterstadt" />
+            </div>
+
             <div style={{ height: 1, background: 'var(--border)' }} />
             <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)' }}>Rechnungsadresse</div>
 
@@ -368,7 +376,7 @@ export default function Profil() {
                     </div>
                   )}
                 </div>
-                <span style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? '#e53e3e' : '#16a34a', color: 'white', fontSize: 13, fontWeight: 700 }}>
+                <span data-testid="plan-badge" style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? '#e53e3e' : '#16a34a', color: 'white', fontSize: 13, fontWeight: 700 }}>
                   {planInfo.canceledPending ? 'Gekündigt' : planInfo.plan === 'pro' ? 'Aktiv' : planInfo.expired ? 'Abgelaufen' : 'Trial'}
                 </span>
               </div>

@@ -6,6 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const MONTHLY_TOKEN_LIMIT = 1_000_000
+
 serve(async (req) => {
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -25,7 +27,7 @@ serve(async (req) => {
 
     const { data: profile } = await supabaseAdmin
       .from('users')
-      .select('plan, trial_started_at, subscription_end_date')
+      .select('plan, trial_started_at, subscription_end_date, ai_tokens_used, ai_tokens_reset_at')
       .eq('id', user.id)
       .single()
 
@@ -52,6 +54,28 @@ serve(async (req) => {
     }
     // ────────────────────────────────────────────────────────
 
+    // Budget cap : vérifier/reset les tokens mensuels
+    let tokensUsed = profile?.ai_tokens_used ?? 0
+    const resetAt = profile?.ai_tokens_reset_at ? new Date(profile.ai_tokens_reset_at) : new Date()
+    const now_utc = new Date()
+    const firstOfMonth = new Date(Date.UTC(now_utc.getUTCFullYear(), now_utc.getUTCMonth(), 1))
+
+    if (resetAt < firstOfMonth) {
+      // Reset mensuel
+      tokensUsed = 0
+      await supabaseAdmin
+        .from('users')
+        .update({ ai_tokens_used: 0, ai_tokens_reset_at: now_utc.toISOString() })
+        .eq('id', user.id)
+    }
+
+    if (tokensUsed >= MONTHLY_TOKEN_LIMIT) {
+      return new Response(
+        JSON.stringify({ error: 'limit_reached', message: 'Ihr monatliches KI-Kontingent wurde erreicht.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const { model = 'gpt-4o', max_tokens: requestedTokens = 4000, messages } = await req.json()
     const max_tokens = Math.min(requestedTokens, 4000) // plafond serveur : jamais plus de 4000
 
@@ -74,6 +98,16 @@ serve(async (req) => {
     )
 
     const content = data.choices?.[0]?.message?.content ?? null
+
+    // Incrémenter les tokens utilisés
+    const tokensConsumed = data.usage?.total_tokens ?? 0
+    if (tokensConsumed > 0) {
+      await supabaseAdmin
+        .from('users')
+        .update({ ai_tokens_used: tokensUsed + tokensConsumed })
+        .eq('id', user.id)
+    }
+
     return new Response(
       JSON.stringify({ content }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

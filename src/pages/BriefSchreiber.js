@@ -66,6 +66,7 @@ export default function BriefSchreiber() {
   const [toast, setToast] = useState('')
   const [recording, setRecording] = useState(false)
   const [interimText, setInterimText] = useState('')
+  const [limitReached, setLimitReached] = useState(false)
 
   const inputRef = useRef(null)
   const wsRef = useRef(null)
@@ -101,7 +102,7 @@ export default function BriefSchreiber() {
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 2200) }
   function updateCount() { setChars(getBriefText(inputRef.current).length) }
   function clearInput() { if (inputRef.current) inputRef.current.innerHTML = ''; setChars(0) }
-  function clearAll() { clearInput(); setState('empty'); setResult(''); setOrig('') }
+  function clearAll() { clearInput(); setState('empty'); setResult(''); setOrig(''); setLimitReached(false) }
 
   function replaceChipWithCursor(chip) {
     const textNode = document.createTextNode('')
@@ -332,6 +333,11 @@ export default function BriefSchreiber() {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: { model: 'gpt-4o', max_tokens: 3000, messages: [{ role: 'system', content: SYS }, { role: 'user', content: buildPrompt(mode, style, length, input) }] }
       })
+      if (data?.error === 'limit_reached') {
+        setState('empty')
+        setLimitReached(true)
+        return
+      }
       if (error || data?.error) throw new Error(error?.message || data?.error || 'API Fehler')
       const content = data?.content
       if (!content) throw new Error('Leere Antwort.')
@@ -377,6 +383,14 @@ export default function BriefSchreiber() {
           <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
         </button>
       </div>
+
+      {limitReached && (
+        <div style={{ background: 'rgba(217, 75, 10, 0.08)', border: '1px solid #D94B0A', borderRadius: 8, padding: '14px 20px', marginBottom: 16 }}>
+          <span style={{ color: '#D94B0A', fontSize: 15, fontWeight: 500 }}>
+            Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert.
+          </span>
+        </div>
+      )}
 
       <div className="brief-modes">
         {modes.map(m => (

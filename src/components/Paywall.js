@@ -39,7 +39,7 @@ export default function Paywall({ children }) {
   }
 
   return (
-    <div className="layout-content" style={{ padding: '40px' }}>
+    <div data-testid="paywall" className="layout-content" style={{ padding: '40px' }}>
       <div className="section-header" style={{ marginBottom: 40, textAlign: 'center' }}>
         <h1 className="section-title">Abonnement Erforderlich ✨</h1>
         <p className="section-subtitle">Schalten Sie alle Funktionen von Arvis frei</p>
@@ -79,6 +79,7 @@ export default function Paywall({ children }) {
         </p>
 
         <button
+          data-testid="paywall-upgrade-btn"
           onClick={handleUpgrade}
           disabled={loading}
           style={{
