@@ -1,6 +1,6 @@
 # context.md — État du projet Arvis
 
-Dernière mise à jour : 26 mars 2026
+Dernière mise à jour : 27 mars 2026
 
 ## Profil du créateur
 - **Amine est médecin**, pas développeur. Il a construit Arvis sans formation en coding.
@@ -72,7 +72,7 @@ URL de production : **https://arvis-app.de**
 | `realtime-token` | verify | Token Supabase Realtime (WebSocket pour l'IA en streaming) |
 
 ### Base de données (RLS activé sur toutes les tables)
-Colonnes clés `users` : `id`, `email`, `first_name`, `last_name`, `title`, `plan`, `trial_started_at`, `stripe_customer_id`, `subscription_end_date`, `card_brand`, `card_last4`, `avatar_url`.
+Colonnes clés `users` : `id`, `email`, `first_name`, `last_name`, `title`, `plan`, `trial_started_at`, `stripe_customer_id`, `subscription_end_date`, `card_brand`, `card_last4`, `avatar_url`, `clinic`, `ai_tokens_used`, `ai_tokens_reset_at`.
 Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `bausteine`, `folders`, `notes`, `events`, `patients`, `scan_sessions`.
 
 ---
@@ -105,7 +105,46 @@ Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `b
 
 ---
 
+## Mises à jour récentes (Session 8 — 27 mars 2026) ✅
+
+### 1. Budget cap OpenAI par utilisateur
+- Colonne `ai_tokens_used` (integer, default 0) et `ai_tokens_reset_at` (timestamptz) ajoutées à la table `users`.
+- `ai-chat` Edge Function : limite à **1 000 000 tokens/mois** par utilisateur (~400 actions/mois, coût ~$5 à Arvis).
+- Reset automatique au 1er du mois (UTC). Si quota dépassé : HTTP 429 avec `{ error: "limit_reached" }`.
+- Après chaque appel OpenAI réussi : `ai_tokens_used` incrémenté de `response.usage.total_tokens`.
+
+### 2. Affichage des coûts IA dans AdminStats
+- Nouvelle section **"KI-Kosten (geschätzt)"** dans `/admin/stats`.
+- Top 10 utilisateurs par tokens consommés ce mois, coût estimé (0.000002 €/token), total.
+- Ligne en orange si utilisation > 80% du quota.
+
+### 3. Gestion du quota côté frontend
+- `BriefSchreiber.js` et `Scan.js` : si réponse 429 `limit_reached`, affiche un bandeau informatif :
+  *"Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert."*
+- Pas de bouton Upgrade ni d'appel à `create-portal-session` depuis ces composants.
+
+### 4. Google OAuth — création automatique du profil
+- `AuthContext.loadProfile` : si aucun profil trouvé pour l'user (cas Google OAuth), crée automatiquement l'entrée dans `users` depuis les métadonnées Google (`email`, `given_name`, `family_name`).
+- Plan `trial` assigné automatiquement, `trial_started_at` initialisé.
+
+### 5. Champ Krankenhaus dans Profil
+- Champ **"Krankenhaus"** ajouté dans `Profil.js` sous le champ email.
+- Sauvegardé dans `users.clinic`. La sidebar affichait déjà `profile?.clinic` — connexion automatique.
+
+### 6. Tests Playwright (infrastructure prête)
+- `@playwright/test` installé, `playwright.config.ts` créé (port 3000, headless, 0 retries).
+- `tests/critical-flow.spec.ts` : 3 tests (inscription trial, Paywall /briefschreiber, accessibilité /bausteine + /uebersetzung).
+- `data-testid="paywall"` et `data-testid="paywall-upgrade-btn"` ajoutés à `Paywall.js`.
+- `data-testid="plan-badge"` ajouté dans `Profil.js`.
+- Script `"test:e2e": "playwright test"` dans `package.json`.
+
+### 7. Onboarding post-inscription (désactivé pour l'instant)
+- `src/pages/Onboarding.js` créé (stepper 3 étapes, en allemand, sans mockups).
+- Route `/onboarding` et redirect depuis `PrivateRoute` **commentées** — prêtes à réactiver.
+
+---
+
 ## Ce qui reste à faire / améliorations possibles
-- Tests automatisés d'intégration (Cypress/Playwright pour flows complets critiques : Scanner → IA → Brief).
+- Activer l'onboarding quand les visuels seront prêts (réactiver import + route + redirect dans App.js).
+- Lancer les tests Playwright en CI (ajouter `TEST_TRIAL_EMAIL` / `TEST_TRIAL_PASSWORD` dans les secrets).
 - Affinage des prompts système IA (si les médecins font des retours sur la qualité de rédaction).
-- Tableaux de bord de Business Analytics plus granulaires centralisant l'utilisation des tokens OpenAI contre les revenus Stripe.
