@@ -4,8 +4,8 @@ import * as Sentry from '@sentry/react'
 import App from './App';
 
 Sentry.init({
-  dsn: process.env.REACT_APP_SENTRY_DSN,
-  enabled: !!process.env.REACT_APP_SENTRY_DSN,
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  enabled: !!import.meta.env.VITE_SENTRY_DSN,
   environment: process.env.NODE_ENV,
   integrations: [Sentry.browserTracingIntegration()],
   tracesSampleRate: 0.2,

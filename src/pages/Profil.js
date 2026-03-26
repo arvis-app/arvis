@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase, invokeEdgeFunction } from '../supabaseClient'
 
-const STRIPE_PRICE_MONTHLY = process.env.REACT_APP_STRIPE_PRICE_MONTHLY
-const STRIPE_PRICE_YEARLY  = process.env.REACT_APP_STRIPE_PRICE_YEARLY
+const STRIPE_PRICE_MONTHLY = import.meta.env.VITE_STRIPE_PRICE_MONTHLY
+const STRIPE_PRICE_YEARLY  = import.meta.env.VITE_STRIPE_PRICE_YEARLY
 
 function EyeIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
