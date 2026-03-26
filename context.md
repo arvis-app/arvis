@@ -187,9 +187,21 @@ Colonnes clés : `id`, `email`, `first_name`, `last_name`, `title`, `clinic`, `p
 
 ---
 
+## Fait en session 7 (26 mars 2026) ✅
+
+### ESLint — nettoyage complet (0 warnings en build)
+- **Bausteine.js** : supprimé `useCallback` inutilisé, supprimé `escHtml` inutilisée, corrigé 2 escapes inutiles (`\.` `\/`), ajouté `categories` dans deps useEffect, remplacé `dataReady` par `baudataVersion` (trigger correct pour `window.BAUSTEINE_DATA`), nettoyé deps `useMemo`
+- **Dateien.js** : supprimé `useCallback` et `genId` inutilisés, commentaire `eslint-disable` sur useEffect intentionnellement vide, fix `no-loop-func` dans breadcrumb via `const currentPathId`
+- **Scan.js** : supprimé `useCallback` inutilisé, supprimé état `qrToken` (jamais lu), corrigé 4 `\/` inutiles dans les regex de `cleanOcrText`
+- **LoginPage.js** : remplacé 4 `<a href="#">` par `<button type="button">` stylés (fix accessibilité `jsx-a11y/anchor-is-valid`)
+
+### Autres
+- **Tab title** : landing page `<title>` simplifié à `Arvis` (supprimé le sous-titre)
+- **Sentry** : DSN ajouté sur Vercel (`REACT_APP_SENTRY_DSN`), alertes email testées et confirmées ✅
+
+---
+
 ## Ce qui reste à faire / améliorations possibles
-- Déployer en production (`git push` → Vercel auto-deploy) + ajouter `REACT_APP_SENTRY_DSN` dans Vercel
 - `email-change.html` template à créer (changement d'adresse email)
-- Warnings ESLint pré-existants à nettoyer (Bausteine, Dateien, Scan : `useCallback` unused, `qrToken`, escapes inutiles)
 - Tests automatisés d'intégration (Cypress/Playwright pour flows complets)
 - Analytics avancées (feature usage, coûts OpenAI)
