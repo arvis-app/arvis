@@ -13,5 +13,8 @@ export default defineConfig({
     loader: 'jsx',
     include: /src\/.*\.js$/,
     exclude: [],
-  }
+  },
+  build: {
+    outDir: 'build',
+  },
 })
