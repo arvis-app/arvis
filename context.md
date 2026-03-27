@@ -181,7 +181,7 @@ Tables protégées par RLS (`auth.uid() = user_id` ou `auth.uid() = id`) : `user
 
 ### 🔴 CRITIQUE
 
-1. **`supabaseClient.js`** — Clé Supabase anon hardcodée dans le code source (visible sur GitHub). À déplacer en variable d'environnement Vercel (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
+1. ✅ **`supabaseClient.js`** — ~~Clé Supabase anon hardcodée dans le code source.~~ **Réglé** : clé déjà configurée comme variable d'environnement dans Vercel. (Note : la clé `anon` Supabase est publique par nature — elle est conçue pour être utilisée côté client et ne donne accès qu'aux données autorisées par le RLS.)
 
 2. ✅ **`AdminStats.js`** — ~~Protection admin côté client uniquement.~~ **Réglé le 27/03/2026** : Edge Function `admin-stats` créée. Vérification email admin côté serveur via JWT + service role. Un non-admin reçoit 403 depuis le serveur. `AdminStats.js` n'interroge plus Supabase directement.
 
@@ -216,5 +216,5 @@ Tables protégées par RLS (`auth.uid() = user_id` ou `auth.uid() = id`) : `user
 - `Permissions-Policy` dans `vercel.json` pourrait bloquer le micro de la dictée vocale — à tester
 
 ### Priorités recommandées (état au 27/03/2026)
-**Immédiat** : ~~RLS sur `users`~~ ✅ · Clé Supabase en env var · Closure stale polling Stripe (point 6) · Supprimer le fallback email hardcodé dans `admin-stats/index.ts` (point 10)
+**Immédiat** : ~~RLS sur `users`~~ ✅ · ~~Clé Supabase en env var~~ ✅ · Closure stale polling Stripe (point 6) · Supprimer le fallback email hardcodé dans `admin-stats/index.ts` (point 10)
 **Court terme** : ~~Protection admin serveur~~ ✅ · DOMPurify (point 5) · OAuth URL fixe (point 7) · Token QR invalidation (point 8)
