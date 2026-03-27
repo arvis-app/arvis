@@ -1,6 +1,6 @@
 # context.md — État du projet Arvis
 
-Dernière mise à jour : 27 mars 2026 (sessions 9 & 10)
+Dernière mise à jour : 27 mars 2026
 
 ## Profil du créateur
 - **Amine est médecin**, pas développeur. Il a construit Arvis sans formation en coding.
@@ -146,7 +146,7 @@ Tables protégées par RLS (`auth.uid() = user_id` ou `auth.uid() = id`) : `user
 
 ---
 
-## Mises à jour récentes (Session 10 — 27 mars 2026) ✅
+## Mises à jour récentes (Session 5 — 25 mars 2026) ✅
 
 ### Schwärzen intégré dans le flux mobile QR (`MobileScan.js`)
 
