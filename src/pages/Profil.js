@@ -109,13 +109,16 @@ export default function Profil() {
     if (params.get('success') === 'true') {
       window.history.replaceState({}, '', window.location.pathname)
       // Polling : vérifier toutes les 2s pendant 20s max si le plan est devenu pro
+      // Utilise le profil retourné par refreshProfile (pas la closure stale de planInfo)
       let attempts = 0
       const interval = setInterval(async () => {
         attempts++
-        await refreshProfile()
-        if (planInfo.plan === 'pro' || attempts >= 5) {
+        const freshProfile = await refreshProfile()
+        const isPro = freshProfile?.plan === 'pro' || freshProfile?.plan === 'active' ||
+          (freshProfile?.plan === 'canceled_pending' && freshProfile?.subscription_end_date && new Date(freshProfile.subscription_end_date) > new Date())
+        if (isPro || attempts >= 10) {
           clearInterval(interval)
-          if (attempts >= 5 && planInfo.plan !== 'pro') {
+          if (attempts >= 10 && !isPro) {
             showToast('Synchronisation läuft noch… Bitte Seite neu laden.', false)
           }
         }

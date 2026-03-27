@@ -1,14 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
+import DOMPurify from 'dompurify'
 import { supabase } from '../supabaseClient'
 import { downloadAsWord } from '../utils/downloadWord'
-
-function sanitizeHtml(html) {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/javascript:/gi, '')
-}
 
 function escHtml(s) {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -93,7 +86,7 @@ export default function BriefSchreiber() {
     if (saved && inputRef.current) {
       const existing = inputRef.current.innerHTML.trim()
       const newContent = renderPlaceholders(saved)
-      inputRef.current.innerHTML = sanitizeHtml(existing ? existing + '<br><br>' + newContent : newContent)
+      inputRef.current.innerHTML = DOMPurify.sanitize(existing ? existing + '<br><br>' + newContent : newContent)
       setChars(getBriefText(inputRef.current).length)
       localStorage.removeItem('arvis_brief_input')
     }

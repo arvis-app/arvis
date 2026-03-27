@@ -165,17 +165,17 @@ Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `b
 
 ### 🟡 IMPORTANT
 
-5. **`BriefSchreiber.js`** — `sanitizeHtml()` maison ne bloque pas `<svg onload>`, `<img onerror>` → XSS partielle possible. Remplacer par DOMPurify.
+5. ~~**`BriefSchreiber.js`** — `sanitizeHtml()` maison ne bloque pas `<svg onload>`, `<img onerror>` → XSS partielle possible.~~ **✅ CORRIGÉ (27 mars 2026)** — Remplacé par `DOMPurify.sanitize()` (package `dompurify` installé).
 
-6. **`Profil.js:107`** — Polling Stripe post-paiement avec **closure stale** sur `planInfo` → s'arrête après 10s même si Pro pas encore détecté. Augmenter à 20 tentatives et corriger la closure.
+6. ~~**`Profil.js:107`** — Polling Stripe post-paiement avec **closure stale** sur `planInfo` → s'arrête après 10s même si Pro pas encore détecté.~~ **✅ CORRIGÉ (27 mars 2026)** — `refreshProfile()` retourne maintenant le profil frais ; le polling vérifie `freshProfile.plan` directement (plus de closure stale). Durée max portée à 20s (10 tentatives).
 
-7. **`AuthContext.js:139`** — Google OAuth redirige vers `window.location.origin` (dynamique) au lieu de `https://arvis-app.de` (fixe). Risque de session hijacking si domaine compromis.
+7. ~~**`AuthContext.js:139`** — Google OAuth redirige vers `window.location.origin` (dynamique) au lieu de `https://arvis-app.de` (fixe).~~ **✅ CORRIGÉ (27 mars 2026)** — URL hardcodée à `'https://arvis-app.de'`.
 
-8. **`Scan.js`** — Token QR code non invalidé après usage → réutilisable jusqu'à expiration. Ajouter `status: 'used'` après le premier upload et rejeter si `status !== 'waiting'`.
+8. ~~**`Scan.js`** — Token QR code non invalidé après usage → réutilisable jusqu'à expiration.~~ **✅ CORRIGÉ (27 mars 2026)** — `MobileScan.js` vérifie `status === 'waiting'` au chargement ET avant l'envoi. Messages d'erreur affichés si token déjà utilisé / expiré / invalide.
 
-9. **`BriefSchreiber.js`** — Token OpenAI Realtime transmis dans le subprotocol WebSocket (interceptable sur réseau public). Risque limité car TTL ~60s.
+9. **`BriefSchreiber.js`** — Token OpenAI Realtime transmis dans le subprotocol WebSocket (interceptable sur réseau public). **Risque résiduel documenté** : c'est le seul mécanisme supporté par l'API OpenAI depuis un navigateur (pas de header `Authorization` possible sur WebSocket). Mitigations en place : TTL ~60s (token éphémère), edge function `realtime-token` vérifie l'auth JWT + plan Pro avant d'émettre le token, CORS restreint à `arvis-app.de`. Un proxy WebSocket Deno serait nécessaire pour éliminer ce risque complètement (complexité élevée, non implémenté).
 
-10. **`AdminStats.js:6`** — Email admin hardcodé et visible sur GitHub (`amine.mabtoul@outlook.fr`).
+10. **`AdminStats.js:6`** — Email admin hardcodé et visible sur GitHub (`amine.mabtoul@outlook.fr`). *(Non modifié : instruction explicite de ne pas toucher à cet email.)*
 
 11. **Table `users`** — **Pas de RLS sur la table `users`** → tout utilisateur authentifié peut lire les emails, `stripe_customer_id`, tokens IA de tous les autres. Fix :
     ```sql
@@ -195,5 +195,5 @@ Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `b
 - `Permissions-Policy` dans `vercel.json` pourrait bloquer le micro de la dictée vocale — à tester
 
 ### Priorités recommandées
-**Immédiat** : RLS sur `users` (2 lignes SQL) · Clé Supabase en env var · Closure stale polling Stripe
-**Court terme** : Protection admin serveur · DOMPurify · OAuth URL fixe · Token QR invalidation
+**Immédiat** : RLS sur `users` (2 lignes SQL) · Clé Supabase en env var
+**Court terme** : Protection admin serveur

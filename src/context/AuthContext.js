@@ -136,7 +136,7 @@ export function AuthProvider({ children }) {
   async function loginWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin }
+      options: { redirectTo: 'https://arvis-app.de' }
     })
     if (error) throw error
   }
@@ -159,10 +159,10 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
-  // Rafraîchir le profil (ex: après un paiement Stripe réussi)
+  // Rafraîchir le profil (ex: après un paiement Stripe réussi) — retourne le profil frais
   async function refreshProfile() {
-    if (!user) return
-    await loadProfile(user.id)
+    if (!user) return null
+    return loadProfile(user.id)
   }
 
   // Calcul du plan / trial

@@ -29,9 +29,25 @@ function renderWithBlackouts(src, bkOuts, containerWidth) {
 
 export default function MobileScan() {
   const { token } = useParams()
-  const [status, setStatus] = useState('ready')
+  const [status, setStatus] = useState('loading') // start with loading to validate token
   const [photos, setPhotos] = useState([])
   const [addingPhoto, setAddingPhoto] = useState(false)
+
+  // Validate token on mount — reject if already used or expired
+  useEffect(() => {
+    if (!token) { setStatus('invalid'); return }
+    supabase
+      .from('scan_sessions')
+      .select('status, expires_at')
+      .eq('token', token)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error || !data) { setStatus('invalid'); return }
+        if (data.status !== 'waiting') { setStatus('used'); return }
+        if (new Date(data.expires_at) < new Date()) { setStatus('expired'); return }
+        setStatus('ready')
+      })
+  }, [token])
 
   // Schwarzen state
   const [sIdx, setSIdx] = useState(0)
@@ -213,6 +229,17 @@ export default function MobileScan() {
 
   // ── Send ──────────────────────────────────────────────────────────────────
   async function handleSend() {
+    // Re-verify token is still unused before uploading
+    const { data: session } = await supabase
+      .from('scan_sessions')
+      .select('status')
+      .eq('token', token)
+      .maybeSingle()
+    if (!session || session.status !== 'waiting') {
+      setStatus('used')
+      return
+    }
+
     blackoutsByPhotoRef.current[sIdx] = blackouts.map(b => ({ ...b }))
     const containerWidth = viewerRef.current?.offsetWidth || 400
     setStatus('uploading')
@@ -391,6 +418,14 @@ export default function MobileScan() {
         <div style={{ fontSize: 20, fontWeight: 700, color: '#1C1C1E' }}>{photos.length} Seite{photos.length > 1 ? 'n' : ''} übertragen!</div>
         <div style={{ fontSize: 16, color: '#8E8E93' }}>Sie können zu Ihrem Computer zurückkehren</div>
       </>)}
+
+      {status === 'loading' && <div style={{ textAlign: 'center', color: '#8E8E93', fontSize: 16 }}>Wird geprüft…</div>}
+
+      {status === 'used' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600, textAlign: 'center' }}>Dieser QR-Code wurde bereits verwendet. Bitte einen neuen QR-Code auf dem Computer generieren.</div>}
+
+      {status === 'expired' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600, textAlign: 'center' }}>Dieser QR-Code ist abgelaufen. Bitte einen neuen QR-Code auf dem Computer generieren.</div>}
+
+      {status === 'invalid' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600, textAlign: 'center' }}>Ungültiger QR-Code.</div>}
 
       {status === 'error' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600 }}>Fehler beim Übertragen. Bitte erneut versuchen.</div>}
     </div>
