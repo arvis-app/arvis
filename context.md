@@ -432,6 +432,27 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 
 ---
 
+## Mises à jour récentes (Session 11 — 28 mars 2026) ✅
+
+### Passage Stripe sandbox → Live
+
+#### 1. Nouvelles clés Stripe Live
+- `VITE_STRIPE_PUBLISHABLE_KEY` → `pk_live_...` (mis à jour dans `.env` local + Vercel)
+- `VITE_STRIPE_PRICE_MONTHLY` → `price_1TFjM6FPxR7QFABJwnMbND3B` (live)
+- `VITE_STRIPE_PRICE_YEARLY` → `price_1TFjM7FPxR7QFABJk5I1uBaC` (live)
+- `STRIPE_SECRET_KEY` → `sk_live_...` (mis à jour dans secrets Supabase)
+- `STRIPE_WEBHOOK_SECRET` → `whsec_live_...` (mis à jour dans secrets Supabase)
+
+#### 2. Nouveau webhook Stripe Live créé
+- URL : `https://jmanxlmzvfnhpgcxsqly.supabase.co/functions/v1/stripe-webhook`
+- 6 events configurés : `customer.subscription.updated`, `customer.subscription.created`, `customer.subscription.deleted`, `payment_method.attached`, `setup_intent.succeeded`, `customer.updated`
+
+#### 3. Correction sécurité — email admin hardcodé
+- `admin-stats/index.ts` : supprimé le fallback `|| 'amine.mabtoul@outlook.fr'`
+- Secret `ADMIN_EMAIL=admin@arvis-app.de` défini dans Supabase via `npx supabase secrets set`
+
+---
+
 ## Ce qui reste à faire / améliorations possibles
 - Activer l'onboarding quand les visuels seront prêts (réactiver import + route + redirect dans App.js).
 - Lancer les tests Playwright en CI (ajouter `TEST_TRIAL_EMAIL` / `TEST_TRIAL_PASSWORD` dans les secrets).
@@ -463,7 +484,7 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 
 9. ⚠️ **`BriefSchreiber.js`** — Token OpenAI Realtime dans le subprotocol WebSocket. **Risque résiduel documenté** : proxy Edge Function impossible sans latence inacceptable pour la dictée temps réel. Mitigations en place : token éphémère TTL ~60s, généré uniquement pour Pro authentifiés, session mono-usage.
 
-10. ⚠️ **`AdminStats.js:6`** — Email admin partiellement atténué : `admin-stats/index.ts` utilise `Deno.env.get('ADMIN_EMAIL') || 'amine.mabtoul@outlook.fr'` — le fallback hardcodé reste visible sur GitHub. **Fix restant** : supprimer le fallback et s'assurer que le secret `ADMIN_EMAIL` est défini dans Supabase (`npx supabase secrets set ADMIN_EMAIL=...`).
+10. ✅ **`AdminStats.js:6`** — ~~Email admin hardcodé visible sur GitHub.~~ **Réglé le 28/03/2026** : fallback supprimé, secret `ADMIN_EMAIL=admin@arvis-app.de` défini dans Supabase.
 
 11. ✅ **Table `users`** — ~~Pas de RLS sur `users`.~~ **Réglé le 27/03/2026** : migration `20260327010000_rls_users.sql` appliquée. RLS activé + policies SELECT/INSERT/UPDATE (`auth.uid() = id`). Pas de DELETE policy (suppression de compte non exposée côté client).
 
