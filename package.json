@@ -24,23 +24,6 @@
     "preview": "vite preview",
     "test:e2e": "playwright test"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@vitejs/plugin-react": "^4.7.0",
