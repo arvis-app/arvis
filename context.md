@@ -1,11 +1,13 @@
 # CONTEXTE PROJET — Arvis
-_À coller au début d'une nouvelle conversation Claude_
+_Dernière mise à jour : 27 mars 2026_
 
 ---
 
 ## Le projet
 
 **Arvis** — SaaS pour médecins hospitaliers allemands (anciennement MedAssist).
+
+- **GitHub** : `https://github.com/arvis-app/arvis` (ancien : `amiinem7/arvis`)
 Assistant IA personnel pour la documentation médicale. Outil strictement personnel — pas de partage entre collègues. Pas de stockage direct de données patients identifiants. Chaque médecin accède uniquement à son propre contenu.
 
 - **URL production** : `arvis-app.de`
@@ -206,8 +208,8 @@ Toujours utiliser `invokeEdgeFunction()` depuis `src/supabaseClient.js`.
 
 ## Comment démarrer une nouvelle conversation
 
-1. Ouvrir `/Users/Amine/arvis` dans Claude Code (projet React en production)
-2. Ce fichier `CONTEXTE_Arvis.md` + `CLAUDE.md` sont déjà dans le projet
+1. Ouvrir `/Users/Amine/arvis` dans l'agent IA
+2. Ce fichier `context.md` + `CLAUDE.md` sont déjà dans le projet
 3. Décrire la modification souhaitée
 
 > ⚠️ `/Users/Amine/Documents/Arvis/` = backup uniquement (ancien prototype HTML, ne pas modifier)
@@ -406,6 +408,27 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 - Migration `20260327010000_rls_users.sql` : RLS activé sur `public.users`.
 - Policies : SELECT/INSERT/UPDATE restreints à `auth.uid() = id`. Pas de DELETE.
 - Tout utilisateur authentifié ne peut plus lire les données (email, `stripe_customer_id`, tokens IA) des autres utilisateurs.
+
+---
+
+## Mises à jour récentes (Session 10 — 27 mars 2026) ✅
+
+### Migration repo GitHub & nettoyage général
+
+#### 1. Nouveau repository GitHub
+- Ancien : `https://github.com/amiinem7/arvis`
+- Nouveau : `https://github.com/arvis-app/arvis`
+- Remote Git local mis à jour : `git remote set-url origin https://github.com/arvis-app/arvis.git`
+- Vercel reconnecté au nouveau repo (Settings → Git) → auto-deploy fonctionnel.
+
+#### 2. Nettoyage des résidus Create React App (CRA)
+- `CONTEXTE_Arvis.md` fusionné dans `context.md` puis supprimé.
+- `README.md` entièrement réécrit (supprimé le contenu CRA, remplacé par doc Arvis/Vite).
+- `package.json` : supprimé `eslintConfig: { extends: ["react-app"] }` et `browserslist` (inutiles avec Vite).
+- `dompurify` réinstallé (`npm install dompurify`) — était dans `package.json` mais absent de `node_modules`.
+
+#### 3. Build de validation
+- `npm run build` → ✅ 573 modules, 8.5s, 0 erreurs, 0 vulnérabilités.
 
 ---
 
