@@ -52,6 +52,22 @@ export default function MobileScan() {
   const zoomRef = useRef(1)
   useEffect(() => { zoomRef.current = zoom }, [zoom])
 
+  // ── Validation du token QR au montage ─────────────────────────────────────
+  // Rejette les tokens déjà utilisés (status !== 'waiting') ou expirés.
+  useEffect(() => {
+    if (!token) { setStatus('error'); return }
+    supabase
+      .from('scan_sessions')
+      .select('status, expires_at')
+      .eq('token', token)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error || !data) { setStatus('error'); return }
+        if (data.status !== 'waiting') { setStatus('already_used'); return }
+        if (new Date(data.expires_at) < new Date()) { setStatus('expired'); return }
+      })
+  }, [token])
+
   // ── Pinch-to-zoom — non-passive, refs to avoid stale closures ─────────────
   useEffect(() => {
     if (status !== 'schwarzen') return
@@ -217,6 +233,16 @@ export default function MobileScan() {
     const containerWidth = viewerRef.current?.offsetWidth || 400
     setStatus('uploading')
     try {
+      // Re-vérification serveur : protège contre la réutilisation concurrente du token
+      const { data: session } = await supabase
+        .from('scan_sessions')
+        .select('status, expires_at')
+        .eq('token', token)
+        .maybeSingle()
+      if (!session || session.status !== 'waiting' || new Date(session.expires_at) < new Date()) {
+        setStatus('already_used')
+        return
+      }
       const filenames = []
       for (let i = 0; i < photos.length; i++) {
         const bkOuts = blackoutsByPhotoRef.current[i] || []
@@ -393,6 +419,8 @@ export default function MobileScan() {
       </>)}
 
       {status === 'error' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600 }}>Fehler beim Übertragen. Bitte erneut versuchen.</div>}
+      {status === 'already_used' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600 }}>Dieser QR-Code wurde bereits verwendet. Bitte einen neuen QR-Code scannen.</div>}
+      {status === 'expired' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600 }}>Dieser QR-Code ist abgelaufen. Bitte einen neuen QR-Code scannen.</div>}
     </div>
   )
 }

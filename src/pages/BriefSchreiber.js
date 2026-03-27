@@ -1,14 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
+import DOMPurify from 'dompurify'
 import { supabase } from '../supabaseClient'
 import { downloadAsWord } from '../utils/downloadWord'
-
-function sanitizeHtml(html) {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/javascript:/gi, '')
-}
 
 function escHtml(s) {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -93,7 +86,7 @@ export default function BriefSchreiber() {
     if (saved && inputRef.current) {
       const existing = inputRef.current.innerHTML.trim()
       const newContent = renderPlaceholders(saved)
-      inputRef.current.innerHTML = sanitizeHtml(existing ? existing + '<br><br>' + newContent : newContent)
+      inputRef.current.innerHTML = DOMPurify.sanitize(existing ? existing + '<br><br>' + newContent : newContent)
       setChars(getBriefText(inputRef.current).length)
       localStorage.removeItem('arvis_brief_input')
     }
@@ -175,11 +168,15 @@ export default function BriefSchreiber() {
   }, [popup.visible])
 
   function connectWs(token) {
-    // Le token est passé dans le subprotocol WebSocket : c'est le seul mécanisme
-    // supporté par l'API Realtime d'OpenAI depuis un navigateur (pas de header
-    // Authorization possible sur WebSocket). La protection réelle est assurée par
-    // le fait que ce token est ÉPHÉMÈRE (TTL ~60s) et généré côté serveur
-    // (edge function realtime-token) uniquement pour les utilisateurs authentifiés Pro.
+    // RISQUE RÉSIDUEL DOCUMENTÉ : le token est visible dans les headers WebSocket
+    // (subprotocol) interceptables sur un réseau non sécurisé. Un proxy Edge Function
+    // qui relaierait la connexion WebSocket côté serveur éliminerait ce risque, mais
+    // l'API OpenAI Realtime ne supporte pas de connexion serveur-à-serveur sans latence
+    // inacceptable pour la dictée en temps réel.
+    // Mitigations en place :
+    //   1. Token ÉPHÉMÈRE généré par l'edge function realtime-token (TTL ~60s côté OpenAI)
+    //   2. Token généré uniquement pour les utilisateurs Pro authentifiés (JWT vérifié côté serveur)
+    //   3. Le token ne donne accès qu'à une session Realtime mono-usage, pas à l'API key principale
     const ws = new WebSocket(
       'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
       ['realtime', `openai-insecure-api-key.${token}`, 'openai-beta.realtime-v1']

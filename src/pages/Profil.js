@@ -38,7 +38,10 @@ const CardIcon = ({ brand }) => {
 }
 
 export default function Profil() {
-  const { user, profile, updateProfile, getInitials, getPlanInfo, refreshProfile } = useAuth()
+  const { user, profile, isPro, updateProfile, getInitials, getPlanInfo, refreshProfile } = useAuth()
+  // Ref toujours à jour pour éviter la closure stale dans le polling setInterval
+  const isProRef = useRef(isPro)
+  useEffect(() => { isProRef.current = isPro }, [isPro])
   const [toast, setToast] = useState(null)
   const [errors, setErrors] = useState({})
   const photoInputRef = useRef(null)
@@ -108,14 +111,16 @@ export default function Profil() {
     const params = new URLSearchParams(window.location.search)
     if (params.get('success') === 'true') {
       window.history.replaceState({}, '', window.location.pathname)
-      // Polling : vérifier toutes les 2s pendant 20s max si le plan est devenu pro
+      // Polling : vérifier toutes les 2s pendant 20s max si le plan est devenu pro.
+      // isProRef.current évite la closure stale — il reflète toujours la valeur
+      // actuelle de isPro après chaque refreshProfile() + re-render.
       let attempts = 0
       const interval = setInterval(async () => {
         attempts++
         await refreshProfile()
-        if (planInfo.plan === 'pro' || attempts >= 5) {
+        if (isProRef.current || attempts >= 10) {
           clearInterval(interval)
-          if (attempts >= 5 && planInfo.plan !== 'pro') {
+          if (!isProRef.current) {
             showToast('Synchronisation läuft noch… Bitte Seite neu laden.', false)
           }
         }
