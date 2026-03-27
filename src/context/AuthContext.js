@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '../supabaseClient'
+import { supabase, invokeEdgeFunction } from '../supabaseClient'
 
 const AuthContext = createContext(null)
 
@@ -20,17 +20,23 @@ export function AuthProvider({ children }) {
     if (!error && data) {
       setProfile(data)
 
-      // Trial : sans date de début connue → pas d'accès (sécurité)
-      const trialValid = data.plan === 'trial' &&
-        !!data.trial_started_at &&
-        Math.floor((Date.now() - new Date(data.trial_started_at).getTime()) / 86400000) < 14
-
-      // Canceled pending : accès uniquement si la date de fin n'est pas dépassée
-      const canceledPendingValid = data.plan === 'canceled_pending' &&
-        !!data.subscription_end_date &&
-        new Date(data.subscription_end_date) > new Date()
-
-      setIsPro(data.plan === 'pro' || data.plan === 'active' || canceledPendingValid || trialValid)
+      // isPro vient du serveur (edge function get-plan-status) — non manipulable côté client.
+      // En cas d'échec de l'edge function, on tombe back sur un calcul local conservateur.
+      try {
+        const planStatus = await invokeEdgeFunction('get-plan-status', {})
+        setIsPro(planStatus.is_pro === true)
+      } catch (edgeErr) {
+        console.warn('get-plan-status fallback (edge function unavailable):', edgeErr)
+        // Fallback local — moins sécurisé mais évite de bloquer les utilisateurs pro
+        // si l'edge function est temporairement indisponible.
+        const trialValid = data.plan === 'trial' &&
+          !!data.trial_started_at &&
+          Math.floor((Date.now() - new Date(data.trial_started_at).getTime()) / 86400000) < 14
+        const canceledPendingValid = data.plan === 'canceled_pending' &&
+          !!data.subscription_end_date &&
+          new Date(data.subscription_end_date) > new Date()
+        setIsPro(data.plan === 'pro' || data.plan === 'active' || canceledPendingValid || trialValid)
+      }
     } else {
       // Pas de profil — créer automatiquement (Google OAuth ou inscription incomplète)
       const { data: { user: authUser } } = await supabase.auth.getUser()

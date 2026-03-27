@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { supabase } from '../supabaseClient'
+import { invokeEdgeFunction } from '../supabaseClient'
 
-const ADMIN_EMAIL = 'amine.mabtoul@outlook.fr'
 const MONTHLY_TOKEN_LIMIT = 1_000_000
 
 function StatCard({ label, value, sub, highlight }) {
@@ -94,87 +93,33 @@ export default function AdminStats() {
   const [error, setError] = useState('')
   const [aiStats, setAiStats] = useState(null)
 
-  // Protection admin
   useEffect(() => {
     if (!user) return
-    if (user.email !== ADMIN_EMAIL) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [user, navigate])
-
-  useEffect(() => {
-    if (!user || user.email !== ADMIN_EMAIL) return
 
     async function loadStats() {
       setLoading(true)
       setError('')
       try {
-        const { data, error: fetchError } = await supabase
-          .from('users')
-          .select('plan, created_at')
-
-        if (fetchError) throw fetchError
-
-        const total = data.length
-
-        // Par plan
-        const byPlan = { trial: 0, pro: 0, canceled_pending: 0, canceled: 0 }
-        data.forEach(u => {
-          const p = u.plan || 'trial'
-          if (byPlan.hasOwnProperty(p)) byPlan[p]++
-          else byPlan[p] = (byPlan[p] || 0) + 1
-        })
-
-        // Taux de conversion : (pro + canceled_pending + canceled) / total
-        const converted = (byPlan.pro || 0) + (byPlan.canceled_pending || 0) + (byPlan.canceled || 0)
-        const conversionRate = total > 0 ? ((converted / total) * 100).toFixed(1) : '0.0'
-
-        // Nouveaux cette semaine
-        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        const newThisWeek = data.filter(u => new Date(u.created_at) > oneWeekAgo).length
-
-        setStats({ total, byPlan, conversionRate, newThisWeek, converted })
-
-        // KI-Kosten
-        const startOfMonth = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString()
-        const { data: aiData, error: aiError } = await supabase
-          .from('users')
-          .select('email, ai_tokens_used, ai_tokens_reset_at')
-          .gte('ai_tokens_reset_at', startOfMonth)
-          .order('ai_tokens_used', { ascending: false })
-          .limit(10)
-
-        if (!aiError && aiData) {
-          const totalTokens = aiData.reduce((sum, u) => sum + (u.ai_tokens_used || 0), 0)
-          const totalCost = totalTokens * 0.000002
-          setAiStats({ rows: aiData, totalTokens, totalCost })
-        }
+        // Admin check happens server-side inside the edge function.
+        // If the user is not admin, the function returns 403 and invokeEdgeFunction throws.
+        const result = await invokeEdgeFunction('admin-stats', {})
+        setStats(result.stats)
+        setAiStats(result.aiStats)
       } catch (e) {
-        console.error('AdminStats error:', e)
-        setError('Impossible de charger les statistiques.')
+        if (e?.message?.includes('403') || e?.message?.toLowerCase().includes('forbidden')) {
+          // Not admin — redirect instead of showing error
+          navigate('/dashboard', { replace: true })
+        } else {
+          console.error('AdminStats error:', e)
+          setError('Impossible de charger les statistiques.')
+        }
       } finally {
         setLoading(false)
       }
     }
 
     loadStats()
-  }, [user])
-
-  // Accès refusé
-  if (user && user.email !== ADMIN_EMAIL) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        fontSize: 20,
-        color: 'var(--text-muted)',
-      }}>
-        Accès refusé
-      </div>
-    )
-  }
+  }, [user, navigate])
 
   if (loading) {
     return (
@@ -191,6 +136,8 @@ export default function AdminStats() {
       </div>
     )
   }
+
+  if (!stats) return null
 
   const planOrder = ['trial', 'pro', 'canceled_pending', 'canceled']
 
