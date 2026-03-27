@@ -1,7 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'amine.mabtoul@outlook.fr'
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL')
+if (!ADMIN_EMAIL) throw new Error('ADMIN_EMAIL secret is not set')
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
