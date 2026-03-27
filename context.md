@@ -27,7 +27,7 @@ URL de production : **https://arvis-app.de**
 ### App
 - **Dashboard** — Vue d'ensemble, météo/date, compteurs rapides, widget agenda, widget patients
 - **Brief Schreiber** — Rédaction de courriers médicaux via IA (GPT), dictée vocale (Whisper)
-- **Scan & Analyse** — Scan de documents (Mobile/Local), outils de caviardage (Schwärzen), OCR pur ou analyse IA structurée 🔴🟡🟢
+- **Scan & Analyse** — Scan de documents (Mobile/Local), outils de caviardage (Schwärzen) intégrés dans le flux mobile QR (pinch-to-zoom, pan, crop manuel), OCR pur ou analyse IA structurée 🔴🟡🟢
 - **Bausteine** — Blocs de texte médicaux réutilisables (1550+), avec personnalisation, favoris et recherche éclair
 - **Übersetzung** — Traduction médicale multilingue (Fachbegriffe vs Allgemeinsprache) en 6 langues (FR, EN, ES, RU, UK)
 - **Dateien** — Gestion de fichiers (upload PDFs, images), arborescence avec dossiers, filtres récents/favoris, preview direct
@@ -66,14 +66,16 @@ URL de production : **https://arvis-app.de**
 |----------|-----|------|
 | `create-checkout-session` | no-verify | Crée session Stripe Checkout |
 | `create-portal-session` | no-verify | Ouvre Billing Portal |
-| `stripe-webhook` | no-verify | Événements Stripe → DB |
+| `stripe-webhook` | no-verify | Événements Stripe → DB (erreurs DB loggées dans `stripe_events_failed`) |
 | `ai-chat` | verify | Chat IA (OpenAI) pour l'analyse des scans et la rédaction |
 | `ai-whisper` | verify | Transcription audio asynchrone |
 | `realtime-token` | verify | Token Supabase Realtime (WebSocket pour l'IA en streaming) |
+| `admin-stats` | no-verify | Stats admin (vérification email admin **côté serveur**) |
+| `get-plan-status` | no-verify | Retourne `is_pro` calculé **côté serveur** (non manipulable client) |
 
 ### Base de données (RLS activé sur toutes les tables)
 Colonnes clés `users` : `id`, `email`, `first_name`, `last_name`, `title`, `plan`, `trial_started_at`, `stripe_customer_id`, `subscription_end_date`, `card_brand`, `card_last4`, `avatar_url`, `clinic`, `ai_tokens_used`, `ai_tokens_reset_at`.
-Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `bausteine`, `folders`, `notes`, `events`, `patients`, `scan_sessions`.
+Tables protégées par RLS (`auth.uid() = user_id` ou `auth.uid() = id`) : `users`, `bausteine`, `folders`, `notes`, `events`, `patients`, `scan_sessions`, `stripe_events_failed`.
 
 ---
 
@@ -144,6 +146,54 @@ Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `b
 
 ---
 
+## Mises à jour récentes (Session 5 — 25 mars 2026) ✅
+
+### Schwärzen intégré dans le flux mobile QR (`MobileScan.js`)
+
+Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`Scan.js`). Il est maintenant entièrement intégré dans le flux mobile (scan via QR code sur téléphone).
+
+**Fonctionnement du flux complet :**
+1. L'utilisateur scanne le QR code depuis son téléphone
+2. Le téléphone prend la photo et l'envoie via `MobileScan.js`
+3. L'image s'affiche dans un canvas interactif avec les outils de caviardage
+4. L'utilisateur peut caviarder les zones sensibles **avant** d'envoyer l'image à l'IA
+5. L'image caviardée est envoyée pour OCR ou analyse
+
+**Améliorations UI apportées :**
+- **Pinch-to-zoom** : zoom tactile sur l'image avec 2 doigts (touch events natifs)
+- **Pan limité** : déplacement de l'image dans le canvas sans sortir des bords
+- **Fond card** : l'image s'affiche dans un conteneur avec fond distinct, shadow, border-radius — visuellement séparé du reste de l'interface
+- **Bannière** : bandeau explicatif en haut de l'outil ("Caviardez les zones sensibles avant analyse")
+- **Boutons** : actions Schwärzen / Annuler / Envoyer regroupés, styles cohérents avec le reste de l'app
+- **Scroll** : le canvas est scrollable verticalement si l'image est haute
+- **Hover mobile** : états hover adaptés au touch (`:active` au lieu de `:hover`) pour feedback tactile immédiat
+
+---
+
+## Mises à jour récentes (Session 9 — 27 mars 2026) ✅
+
+### Corrections de sécurité critiques
+
+#### 1. Protection admin côté serveur
+- Nouvelle Edge Function `admin-stats` : vérifie le JWT, compare l'email admin **côté serveur** (service role). Un non-admin reçoit 403 depuis Supabase, indépendamment de tout JS client.
+- `AdminStats.js` reécrit : n'interroge plus Supabase directement, appelle uniquement `invokeEdgeFunction('admin-stats', {})`.
+
+#### 2. `isPro` calculé côté serveur
+- Nouvelle Edge Function `get-plan-status` : lit `plan`, `trial_started_at`, `subscription_end_date` avec service role, retourne `{ is_pro: boolean }` calculé par le serveur.
+- `AuthContext.js` : après chargement du profil, appelle `get-plan-status` et utilise le résultat serveur. Fallback local conservateur si l'edge function est indisponible (évite de bloquer les utilisateurs Pro).
+
+#### 3. Stripe webhook résilient
+- Chaque mise à jour DB dans son propre `try/catch`. Stripe reçoit toujours 200 après vérification de signature.
+- Sur erreur DB : événement stocké dans `stripe_events_failed` pour traitement manuel.
+- Nouvelle table `stripe_events_failed` (`event_id`, `event_type`, `customer_id`, `error_message`, `event_data`, `created_at`) — RLS activé, accessible uniquement via service role.
+
+#### 4. RLS sur la table `users`
+- Migration `20260327010000_rls_users.sql` : RLS activé sur `public.users`.
+- Policies : SELECT/INSERT/UPDATE restreints à `auth.uid() = id`. Pas de DELETE.
+- Tout utilisateur authentifié ne peut plus lire les données (email, `stripe_customer_id`, tokens IA) des autres utilisateurs.
+
+---
+
 ## Ce qui reste à faire / améliorations possibles
 - Activer l'onboarding quand les visuels seront prêts (réactiver import + route + redirect dans App.js).
 - Lancer les tests Playwright en CI (ajouter `TEST_TRIAL_EMAIL` / `TEST_TRIAL_PASSWORD` dans les secrets).
@@ -155,34 +205,29 @@ Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `b
 
 ### 🔴 CRITIQUE
 
-1. **`supabaseClient.js`** — Clé Supabase anon hardcodée dans le code source (visible sur GitHub). À déplacer en variable d'environnement Vercel (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
+1. ✅ **`supabaseClient.js`** — ~~Clé Supabase anon hardcodée dans le code source.~~ **Réglé** : clé déjà configurée comme variable d'environnement dans Vercel. (Note : la clé `anon` Supabase est publique par nature — elle est conçue pour être utilisée côté client et ne donne accès qu'aux données autorisées par le RLS.)
 
-2. **`AdminStats.js:6`** — Protection admin côté client uniquement (`user.email !== ADMIN_EMAIL`). Contournable via DevTools. Nécessite une vérification côté serveur (Edge Function ou RLS).
+2. ✅ **`AdminStats.js`** — ~~Protection admin côté client uniquement.~~ **Réglé le 27/03/2026** : Edge Function `admin-stats` créée. Vérification email admin côté serveur via JWT + service role. Un non-admin reçoit 403 depuis le serveur. `AdminStats.js` n'interroge plus Supabase directement.
 
-3. **`AuthContext.js` + `Paywall.js`** — `isPro` calculé côté client. Un user peut manipuler `profile.plan` dans DevTools pour débloquer les pages premium. Les Edge Functions (ai-chat, etc.) protègent l'IA côté serveur, mais pas les autres pages.
+3. ✅ **`AuthContext.js` + `Paywall.js`** — ~~`isPro` calculé côté client.~~ **Réglé le 27/03/2026** : Edge Function `get-plan-status` créée. `isPro` est désormais retourné par le serveur (JWT vérifié + lecture DB service role). Fallback local conservateur si l'edge function est indisponible.
 
-4. **`stripe-webhook`** — Si la DB Supabase échoue pendant le traitement d'un événement, Stripe reçoit un 400 et peut ne pas renoncer. Risque de désynchronisation (user paye → reste Trial, ou annule → reste Pro).
+4. ✅ **`stripe-webhook`** — ~~Stripe reçoit un 400 sur erreur DB.~~ **Réglé le 27/03/2026** : chaque mise à jour DB dans un `try/catch` individuel. Sur erreur DB : événement inséré dans `stripe_events_failed` (nouvelle table) + Stripe reçoit toujours 200.
 
 ### 🟡 IMPORTANT
 
-5. **`BriefSchreiber.js`** — `sanitizeHtml()` maison ne bloque pas `<svg onload>`, `<img onerror>` → XSS partielle possible. Remplacer par DOMPurify.
+5. ✅ **`BriefSchreiber.js`** — ~~`sanitizeHtml()` maison ne bloque pas XSS.~~ **Réglé le 27/03/2026** : remplacé par `DOMPurify.sanitize()` (package `dompurify` installé). Bloque `<svg onload>`, `<img onerror>` et toutes les formes XSS connues.
 
-6. **`Profil.js:107`** — Polling Stripe post-paiement avec **closure stale** sur `planInfo` → s'arrête après 10s même si Pro pas encore détecté. Augmenter à 20 tentatives et corriger la closure.
+6. ✅ **`Profil.js:107`** — ~~Closure stale sur `planInfo`.~~ **Réglé le 27/03/2026** : `isProRef` (useRef) toujours à jour via `useEffect([isPro])`. Le polling lit `isProRef.current` (valeur serveur actuelle). Max tentatives : 5→10 (20s total).
 
-7. **`AuthContext.js:139`** — Google OAuth redirige vers `window.location.origin` (dynamique) au lieu de `https://arvis-app.de` (fixe). Risque de session hijacking si domaine compromis.
+7. ✅ **`AuthContext.js`** — ~~OAuth vers `window.location.origin` dynamique.~~ **Réglé le 27/03/2026** : `redirectTo` fixé à `'https://arvis-app.de'`.
 
-8. **`Scan.js`** — Token QR code non invalidé après usage → réutilisable jusqu'à expiration. Ajouter `status: 'used'` après le premier upload et rejeter si `status !== 'waiting'`.
+8. ✅ **`MobileScan.js`** — ~~Token QR réutilisable.~~ **Réglé le 27/03/2026** : validation en deux temps — au montage (status=waiting + non expiré) et dans `handleSend()` avant upload (race condition). États `already_used` et `expired` avec messages en allemand.
 
-9. **`BriefSchreiber.js`** — Token OpenAI Realtime transmis dans le subprotocol WebSocket (interceptable sur réseau public). Risque limité car TTL ~60s.
+9. ⚠️ **`BriefSchreiber.js`** — Token OpenAI Realtime dans le subprotocol WebSocket. **Risque résiduel documenté** : proxy Edge Function impossible sans latence inacceptable pour la dictée temps réel. Mitigations en place : token éphémère TTL ~60s, généré uniquement pour Pro authentifiés, session mono-usage.
 
-10. **`AdminStats.js:6`** — Email admin hardcodé et visible sur GitHub (`amine.mabtoul@outlook.fr`).
+10. ⚠️ **`AdminStats.js:6`** — Email admin partiellement atténué : `admin-stats/index.ts` utilise `Deno.env.get('ADMIN_EMAIL') || 'amine.mabtoul@outlook.fr'` — le fallback hardcodé reste visible sur GitHub. **Fix restant** : supprimer le fallback et s'assurer que le secret `ADMIN_EMAIL` est défini dans Supabase (`npx supabase secrets set ADMIN_EMAIL=...`).
 
-11. **Table `users`** — **Pas de RLS sur la table `users`** → tout utilisateur authentifié peut lire les emails, `stripe_customer_id`, tokens IA de tous les autres. Fix :
-    ```sql
-    ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-    CREATE POLICY "users_select_own" ON public.users FOR SELECT USING (auth.uid() = id);
-    CREATE POLICY "users_update_own" ON public.users FOR UPDATE USING (auth.uid() = id);
-    ```
+11. ✅ **Table `users`** — ~~Pas de RLS sur `users`.~~ **Réglé le 27/03/2026** : migration `20260327010000_rls_users.sql` appliquée. RLS activé + policies SELECT/INSERT/UPDATE (`auth.uid() = id`). Pas de DELETE policy (suppression de compte non exposée côté client).
 
 ### 🟢 MINEUR
 
@@ -194,6 +239,7 @@ Autres tables (protégées en Lecture/Écriture par `auth.uid() = user_id`) : `b
 - Pas de ESLint / Prettier configuré
 - `Permissions-Policy` dans `vercel.json` pourrait bloquer le micro de la dictée vocale — à tester
 
-### Priorités recommandées
-**Immédiat** : RLS sur `users` (2 lignes SQL) · Clé Supabase en env var · Closure stale polling Stripe
-**Court terme** : Protection admin serveur · DOMPurify · OAuth URL fixe · Token QR invalidation
+### Priorités recommandées (état au 27/03/2026)
+**Immédiat** : ~~RLS sur `users`~~ ✅ · ~~Clé Supabase en env var~~ ✅ · ~~Closure stale polling Stripe~~ ✅ · Supprimer le fallback email hardcodé dans `admin-stats/index.ts` (point 10)
+**Court terme** : ~~Protection admin serveur~~ ✅ · ~~DOMPurify~~ ✅ · ~~OAuth URL fixe~~ ✅ · ~~Token QR invalidation~~ ✅
+**Risque résiduel accepté** : Token WebSocket OpenAI Realtime (point 9) — documenté, proxy non faisable sans impact UX
