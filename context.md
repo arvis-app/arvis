@@ -1,6 +1,6 @@
 # context.md — État du projet Arvis
 
-Dernière mise à jour : 27 mars 2026 (session 9)
+Dernière mise à jour : 27 mars 2026 (sessions 9 & 10)
 
 ## Profil du créateur
 - **Amine est médecin**, pas développeur. Il a construit Arvis sans formation en coding.
@@ -27,7 +27,7 @@ URL de production : **https://arvis-app.de**
 ### App
 - **Dashboard** — Vue d'ensemble, météo/date, compteurs rapides, widget agenda, widget patients
 - **Brief Schreiber** — Rédaction de courriers médicaux via IA (GPT), dictée vocale (Whisper)
-- **Scan & Analyse** — Scan de documents (Mobile/Local), outils de caviardage (Schwärzen), OCR pur ou analyse IA structurée 🔴🟡🟢
+- **Scan & Analyse** — Scan de documents (Mobile/Local), outils de caviardage (Schwärzen) intégrés dans le flux mobile QR (pinch-to-zoom, pan, crop manuel), OCR pur ou analyse IA structurée 🔴🟡🟢
 - **Bausteine** — Blocs de texte médicaux réutilisables (1550+), avec personnalisation, favoris et recherche éclair
 - **Übersetzung** — Traduction médicale multilingue (Fachbegriffe vs Allgemeinsprache) en 6 langues (FR, EN, ES, RU, UK)
 - **Dateien** — Gestion de fichiers (upload PDFs, images), arborescence avec dossiers, filtres récents/favoris, preview direct
@@ -143,6 +143,30 @@ Tables protégées par RLS (`auth.uid() = user_id` ou `auth.uid() = id`) : `user
 ### 7. Onboarding post-inscription (désactivé pour l'instant)
 - `src/pages/Onboarding.js` créé (stepper 3 étapes, en allemand, sans mockups).
 - Route `/onboarding` et redirect depuis `PrivateRoute` **commentées** — prêtes à réactiver.
+
+---
+
+## Mises à jour récentes (Session 10 — 27 mars 2026) ✅
+
+### Schwärzen intégré dans le flux mobile QR (`MobileScan.js`)
+
+Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`Scan.js`). Il est maintenant entièrement intégré dans le flux mobile (scan via QR code sur téléphone).
+
+**Fonctionnement du flux complet :**
+1. L'utilisateur scanne le QR code depuis son téléphone
+2. Le téléphone prend la photo et l'envoie via `MobileScan.js`
+3. L'image s'affiche dans un canvas interactif avec les outils de caviardage
+4. L'utilisateur peut caviarder les zones sensibles **avant** d'envoyer l'image à l'IA
+5. L'image caviardée est envoyée pour OCR ou analyse
+
+**Améliorations UI apportées :**
+- **Pinch-to-zoom** : zoom tactile sur l'image avec 2 doigts (touch events natifs)
+- **Pan limité** : déplacement de l'image dans le canvas sans sortir des bords
+- **Fond card** : l'image s'affiche dans un conteneur avec fond distinct, shadow, border-radius — visuellement séparé du reste de l'interface
+- **Bannière** : bandeau explicatif en haut de l'outil ("Caviardez les zones sensibles avant analyse")
+- **Boutons** : actions Schwärzen / Annuler / Envoyer regroupés, styles cohérents avec le reste de l'app
+- **Scroll** : le canvas est scrollable verticalement si l'image est haute
+- **Hover mobile** : états hover adaptés au touch (`:active` au lieu de `:hover`) pour feedback tactile immédiat
 
 ---
 
