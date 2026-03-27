@@ -87,6 +87,18 @@ export function AuthProvider({ children }) {
         setLoading(false)
         return
       }
+      if (event === 'SIGNED_IN') {
+        // Retour OAuth Google : l'URL contient ?code= (PKCE) ou #access_token (implicit)
+        const isOAuthCallback = window.location.search.includes('code=') || window.location.hash.includes('access_token')
+        if (isOAuthCallback) {
+          const savedRedirect = sessionStorage.getItem('redirectAfterLogin')
+          if (savedRedirect) {
+            sessionStorage.removeItem('redirectAfterLogin')
+            window.location.replace(savedRedirect)
+            return
+          }
+        }
+      }
       if (session) {
         setUser(session.user)
         // Ne pas charger le profil ni réinitialiser isResettingPassword sur la page reset

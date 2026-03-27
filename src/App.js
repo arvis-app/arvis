@@ -25,7 +25,11 @@ function PrivateRoute({ children }) {
   const location = useLocation()
   if (loading) return <div className="app-loader"><div className="spinner" /></div>
   if (isResettingPassword) return <Navigate to="/reset-password" replace />
-  return user ? children : <Navigate to="/login" state={{ from: location }} replace />
+  if (!user) {
+    sessionStorage.setItem('redirectAfterLogin', location.pathname + location.search)
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+  return children
 }
 
 function PublicRoute({ children }) {
