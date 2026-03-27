@@ -215,15 +215,15 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 
 ### 🟡 IMPORTANT
 
-5. **`BriefSchreiber.js`** — `sanitizeHtml()` maison ne bloque pas `<svg onload>`, `<img onerror>` → XSS partielle possible. Remplacer par DOMPurify.
+5. ✅ **`BriefSchreiber.js`** — ~~`sanitizeHtml()` maison ne bloque pas XSS.~~ **Réglé le 27/03/2026** : remplacé par `DOMPurify.sanitize()` (package `dompurify` installé). Bloque `<svg onload>`, `<img onerror>` et toutes les formes XSS connues.
 
-6. **`Profil.js:107`** — Polling Stripe post-paiement avec **closure stale** sur `planInfo` → s'arrête après 10s même si Pro pas encore détecté. Augmenter à 20 tentatives et corriger la closure.
+6. ✅ **`Profil.js:107`** — ~~Closure stale sur `planInfo`.~~ **Réglé le 27/03/2026** : `isProRef` (useRef) toujours à jour via `useEffect([isPro])`. Le polling lit `isProRef.current` (valeur serveur actuelle). Max tentatives : 5→10 (20s total).
 
-7. **`AuthContext.js:139`** — Google OAuth redirige vers `window.location.origin` (dynamique) au lieu de `https://arvis-app.de` (fixe). Risque de session hijacking si domaine compromis.
+7. ✅ **`AuthContext.js`** — ~~OAuth vers `window.location.origin` dynamique.~~ **Réglé le 27/03/2026** : `redirectTo` fixé à `'https://arvis-app.de'`.
 
-8. **`Scan.js`** — Token QR code non invalidé après usage → réutilisable jusqu'à expiration. Ajouter `status: 'used'` après le premier upload et rejeter si `status !== 'waiting'`.
+8. ✅ **`MobileScan.js`** — ~~Token QR réutilisable.~~ **Réglé le 27/03/2026** : validation en deux temps — au montage (status=waiting + non expiré) et dans `handleSend()` avant upload (race condition). États `already_used` et `expired` avec messages en allemand.
 
-9. **`BriefSchreiber.js`** — Token OpenAI Realtime transmis dans le subprotocol WebSocket (interceptable sur réseau public). Risque limité car TTL ~60s.
+9. ⚠️ **`BriefSchreiber.js`** — Token OpenAI Realtime dans le subprotocol WebSocket. **Risque résiduel documenté** : proxy Edge Function impossible sans latence inacceptable pour la dictée temps réel. Mitigations en place : token éphémère TTL ~60s, généré uniquement pour Pro authentifiés, session mono-usage.
 
 10. ⚠️ **`AdminStats.js:6`** — Email admin partiellement atténué : `admin-stats/index.ts` utilise `Deno.env.get('ADMIN_EMAIL') || 'amine.mabtoul@outlook.fr'` — le fallback hardcodé reste visible sur GitHub. **Fix restant** : supprimer le fallback et s'assurer que le secret `ADMIN_EMAIL` est défini dans Supabase (`npx supabase secrets set ADMIN_EMAIL=...`).
 
@@ -240,5 +240,6 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 - `Permissions-Policy` dans `vercel.json` pourrait bloquer le micro de la dictée vocale — à tester
 
 ### Priorités recommandées (état au 27/03/2026)
-**Immédiat** : ~~RLS sur `users`~~ ✅ · ~~Clé Supabase en env var~~ ✅ · Closure stale polling Stripe (point 6) · Supprimer le fallback email hardcodé dans `admin-stats/index.ts` (point 10)
-**Court terme** : ~~Protection admin serveur~~ ✅ · DOMPurify (point 5) · OAuth URL fixe (point 7) · Token QR invalidation (point 8)
+**Immédiat** : ~~RLS sur `users`~~ ✅ · ~~Clé Supabase en env var~~ ✅ · ~~Closure stale polling Stripe~~ ✅ · Supprimer le fallback email hardcodé dans `admin-stats/index.ts` (point 10)
+**Court terme** : ~~Protection admin serveur~~ ✅ · ~~DOMPurify~~ ✅ · ~~OAuth URL fixe~~ ✅ · ~~Token QR invalidation~~ ✅
+**Risque résiduel accepté** : Token WebSocket OpenAI Realtime (point 9) — documenté, proxy non faisable sans impact UX
