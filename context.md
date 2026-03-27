@@ -499,6 +499,6 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 - `Permissions-Policy` dans `vercel.json` pourrait bloquer le micro de la dictée vocale — à tester
 
 ### Priorités recommandées (état au 27/03/2026)
-**Immédiat** : ~~RLS sur `users`~~ ✅ · ~~Clé Supabase en env var~~ ✅ · ~~Closure stale polling Stripe~~ ✅ · Supprimer le fallback email hardcodé dans `admin-stats/index.ts` (point 10)
+**Immédiat** : ~~RLS sur `users`~~ ✅ · ~~Clé Supabase en env var~~ ✅ · ~~Closure stale polling Stripe~~ ✅ · ~~Supprimer le fallback email hardcodé (point 10)~~ ✅
 **Court terme** : ~~Protection admin serveur~~ ✅ · ~~DOMPurify~~ ✅ · ~~OAuth URL fixe~~ ✅ · ~~Token QR invalidation~~ ✅
 **Risque résiduel accepté** : Token WebSocket OpenAI Realtime (point 9) — documenté, proxy non faisable sans impact UX
