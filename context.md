@@ -1,5 +1,5 @@
 # CONTEXTE PROJET — Arvis
-_Dernière mise à jour : 27 mars 2026_
+_Dernière mise à jour : 29 mars 2026_
 
 ---
 
@@ -460,6 +460,42 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 
 ---
 
+## Mises à jour récentes (Session 12 — 29 mars 2026) ✅
+
+### Audit de sécurité complet — toutes les vulnérabilités corrigées
+
+#### Frontend
+- **H1** `vercel.json` : permission microphone `microphone=()` → `microphone=(self)` (dictée cassée en prod)
+- **H2** `AuthContext.js` : `isPro` fail-closed si `get-plan-status` indisponible (plus de calcul local)
+- **H4** `Profil.js` : avatar uploadé dans Supabase Storage (`avatars/{userId}/avatar.ext`) au lieu de base64 en DB
+- **C4** `Scan.js` : DOMPurify.sanitize() sur le HTML retourné par l'IA
+- **C5** `Scan.js` : supprimé `window._lastOcrText` (données patient sur objet global)
+- **C6** `AuthContext.js` : validation same-origin sur le redirect OAuth (open redirect corrigé)
+- **M1** `Scan.js`, `BriefSchreiber.js`, `Bausteine.js` : localStorage → sessionStorage pour les données médicales temporaires
+- **M2** `Profil.js` : mot de passe minimum 6 → 12 caractères
+- **M4** `Dateien.js` : SVG exclu des types d'images acceptés, DOMPurify sur les icônes SVG
+- **H5** `vercel.json` : Content-Security-Policy ajouté (script/style/connect/frame/img/media/worker-src)
+
+#### Edge Functions
+- **H3** : CORS `*` → `https://arvis-app.de` sur toutes les fonctions (admin-stats, get-plan-status, ai-chat, etc.)
+- **H7** : parsing Bearer sécurisé sur toutes les fonctions (`startsWith('Bearer ')` + `slice(7)`)
+- **H8** `ai-chat` : allowlist modèles OpenAI côté serveur (`gpt-4o`, `gpt-4o-mini`)
+- **C1** `create-checkout-session`, `create-portal-session` : origin et return_url hardcodés
+- **C2** `ai-chat` : incrément tokens atomique via RPC PostgreSQL `increment_ai_tokens()` (race condition éliminée)
+- **C3** `create-checkout-session` : price ID validé contre allowlist env vars
+- **H7c** `ai-whisper` : validation fichier (instanceof File, 25MB max, MIME allowlist)
+- **M5** : `canceled_pending` fail-closed sur ai-chat, ai-whisper, realtime-token
+
+#### Base de données (migrations appliquées)
+- `20260329000001` : fonction SQL `increment_ai_tokens(p_user_id, p_tokens)` — SECURITY DEFINER, atomique
+- `20260329000002` : bucket `avatars` (public, 2MB, JPEG/PNG/WebP) + RLS par owner
+- `20260329000003` : RLS `scan-images` — INSERT validé contre scan_sessions (token + status waiting + non expiré)
+
+#### Risque résiduel documenté (accepté)
+- Token WebSocket OpenAI Realtime dans subprotocol WebSocket — proxy Edge Function non faisable sans latence inacceptable. Mitigations : token éphémère TTL ~60s, généré uniquement pour Pro authentifiés.
+
+---
+
 ## Audit de sécurité & qualité (27 mars 2026)
 
 ### 🔴 CRITIQUE
@@ -496,9 +532,8 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 - `Scan.js` monolithique (1054 lignes) — refactoriser en composants à terme
 - localStorage sans namespace par `user_id` → collision possible en dev multi-users
 - Pas de ESLint / Prettier configuré
-- `Permissions-Policy` dans `vercel.json` pourrait bloquer le micro de la dictée vocale — à tester
+- ~~`Permissions-Policy` dans `vercel.json` pourrait bloquer le micro~~ ✅ corrigé (Session 12)
+- ~~Pas de CSP~~ ✅ ajouté (Session 12)
 
-### Priorités recommandées (état au 27/03/2026)
-**Immédiat** : ~~RLS sur `users`~~ ✅ · ~~Clé Supabase en env var~~ ✅ · ~~Closure stale polling Stripe~~ ✅ · ~~Supprimer le fallback email hardcodé (point 10)~~ ✅
-**Court terme** : ~~Protection admin serveur~~ ✅ · ~~DOMPurify~~ ✅ · ~~OAuth URL fixe~~ ✅ · ~~Token QR invalidation~~ ✅
-**Risque résiduel accepté** : Token WebSocket OpenAI Realtime (point 9) — documenté, proxy non faisable sans impact UX
+### Priorités recommandées (état au 29/03/2026)
+**Tout réglé.** Risque résiduel accepté : Token WebSocket OpenAI Realtime (point 9) — documenté, proxy non faisable sans impact UX.
