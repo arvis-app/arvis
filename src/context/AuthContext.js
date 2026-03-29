@@ -10,6 +10,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading]             = useState(true)
   const [isResettingPassword, setIsResettingPassword] = useState(false)
 
+  function computeLocalIsPro(profile) {
+    if (!profile) return false
+    if (profile.plan === 'pro' || profile.plan === 'active') return true
+    if (profile.plan === 'canceled_pending') {
+      return !!profile.subscription_end_date && new Date(profile.subscription_end_date) > new Date()
+    }
+    if (profile.plan === 'trial' && profile.trial_started_at) {
+      const daysUsed = Math.floor((Date.now() - new Date(profile.trial_started_at).getTime()) / 86400000)
+      return daysUsed < 14
+    }
+    return false
+  }
+
   // Charger le profil depuis Supabase
   async function loadProfile(userId) {
     const { data, error } = await supabase
@@ -21,13 +34,14 @@ export function AuthProvider({ children }) {
       setProfile(data)
 
       // isPro vient du serveur (edge function get-plan-status) — non manipulable côté client.
-      // En cas d'échec de l'edge function, on tombe back sur un calcul local conservateur.
+      // En cas d'échec de l'edge function, calcul local depuis les données DB déjà chargées
+      // (la sécurité réelle est dans les edge functions IA elles-mêmes, pas dans ce flag UI).
       try {
         const planStatus = await invokeEdgeFunction('get-plan-status', {})
         setIsPro(planStatus.is_pro === true)
       } catch (edgeErr) {
-        console.warn('get-plan-status indisponible — accès refusé par sécurité:', edgeErr)
-        setIsPro(false)
+        console.warn('get-plan-status indisponible — calcul local depuis DB:', edgeErr)
+        setIsPro(computeLocalIsPro(data))
       }
     } else {
       // Pas de profil — créer automatiquement (Google OAuth ou inscription incomplète)
