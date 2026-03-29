@@ -324,13 +324,13 @@ export default function Bausteine() {
   function sendBasketToBrief() {
     if (!basket.length) return
     const text = basket.map(b=>b.text).join('\n\n')
-    localStorage.setItem('arvis_brief_input', text)
+    sessionStorage.setItem('arvis_brief_input', text)
     navigate('/briefschreiber')
   }
 
   function sendDirectToBrief() {
     if (!selected) return
-    localStorage.setItem('arvis_brief_input', selected.text)
+    sessionStorage.setItem('arvis_brief_input', selected.text)
     navigate('/briefschreiber')
   }
 

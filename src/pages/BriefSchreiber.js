@@ -82,13 +82,13 @@ export default function BriefSchreiber() {
   }, [])
 
   useEffect(() => {
-    const saved = localStorage.getItem('arvis_brief_input')
+    const saved = sessionStorage.getItem('arvis_brief_input')
     if (saved && inputRef.current) {
       const existing = inputRef.current.innerHTML.trim()
       const newContent = renderPlaceholders(saved)
       inputRef.current.innerHTML = DOMPurify.sanitize(existing ? existing + '<br><br>' + newContent : newContent)
       setChars(getBriefText(inputRef.current).length)
-      localStorage.removeItem('arvis_brief_input')
+      sessionStorage.removeItem('arvis_brief_input')
     }
   }, [])
 

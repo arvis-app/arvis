@@ -2,26 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { downloadAsWord } from '../utils/downloadWord'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
+import DOMPurify from 'dompurify'
 
 
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
-// Sanitise le HTML stocké en base avant injection dans innerHTML.
-// Supprime <script>, <iframe>, <object>, <embed>, et tous les attributs
-// event-handler (onclick, onerror, onload…) ainsi que les href javascript:.
-function sanitizeHtml(html) {
-  const tmp = document.createElement('div')
-  tmp.innerHTML = html
-  tmp.querySelectorAll('script,style,iframe,object,embed,link,base').forEach(el => el.remove())
-  tmp.querySelectorAll('*').forEach(el => {
-    for (const attr of [...el.attributes]) {
-      if (attr.name.startsWith('on')) { el.removeAttribute(attr.name); continue }
-      if (attr.name === 'href' && /^\s*javascript:/i.test(attr.value)) el.removeAttribute(attr.name)
-      if (attr.name === 'src'  && /^\s*javascript:/i.test(attr.value)) el.removeAttribute(attr.name)
-    }
-  })
-  return tmp.innerHTML
-}
 
 // ── Supabase helpers ──────────────────────────────────────────────────────────
 async function fetchData(userId) {
@@ -86,7 +71,7 @@ function ConfirmModal({ opts, onOk, onCancel }) {
     <div style={{position:'fixed',inset:0,zIndex:1100,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{background:'var(--card)',borderRadius: 8,padding:24,width:'100%',maxWidth:360,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:16}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <div style={{width:36,height:36,borderRadius: 6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'#D63B3B'}} dangerouslySetInnerHTML={{__html:opts.icon||''}}/>
+          <div style={{width:36,height:36,borderRadius: 6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:'#D63B3B'}} dangerouslySetInnerHTML={{__html:DOMPurify.sanitize(opts.icon||'',{USE_PROFILES:{svg:true}})}}/>
           <div>
             <div style={{fontSize:17,fontWeight:700,color:'var(--text)'}}>{opts.title}</div>
             <div style={{fontSize:15,color:'var(--text-2)',marginTop:3}}>{opts.msg}</div>
@@ -111,7 +96,7 @@ function NoteEditor({ note, folderId, onSave, onClose }) {
 
   useEffect(() => {
     if (editorRef.current && note?.content) {
-      editorRef.current.innerHTML = sanitizeHtml(note.content)
+      editorRef.current.innerHTML = DOMPurify.sanitize(note.content)
     }
     editorRef.current?.focus()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentionally runs once on mount to set initial editor content
@@ -324,7 +309,7 @@ export default function Dateien() {
     let done = 0; const total = files.length
     Array.from(files).forEach(async file => {
       const ext = (file.name.match(/\.([^.]+)$/)||['',''])[1].toLowerCase()
-      const isImage = /^(jpg|jpeg|png|gif|webp|bmp|svg)$/.test(ext)||file.type.startsWith('image/')
+      const isImage = /^(jpg|jpeg|png|gif|webp|bmp)$/.test(ext)||(file.type.startsWith('image/')&&file.type!=='image/svg+xml')
       const isPDF   = ext==='pdf'||file.type==='application/pdf'
       const isText  = /^(txt|md|csv|json|xml|html|htm|js|css|py)$/.test(ext)||(!isImage&&!isPDF&&file.type.startsWith('text/'))
 

@@ -16,7 +16,10 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('No authorization header')
 
-    const token = authHeader.replace('Bearer ', '')
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const token = authHeader.slice(7)
 
     // Admin client pour valider le JWT (même pattern que ai-chat, realtime-token)
     const supabaseAdmin = createClient(
@@ -40,14 +43,11 @@ serve(async (req) => {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeKey) throw new Error('STRIPE_SECRET_KEY nicht konfiguriert')
 
-    const origin = req.headers.get('origin') || 'https://arvis-app.de'
-
-    let body = {}
-    try { body = await req.json() } catch { /* no body is ok */ }
+    const return_url = 'https://arvis-app.de/profil'
 
     const params = new URLSearchParams()
     params.append('customer', profile.stripe_customer_id)
-    params.append('return_url', (body as any)?.returnUrl || `${origin}/profil`)
+    params.append('return_url', return_url)
 
     const stripeRes = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
       method: 'POST',

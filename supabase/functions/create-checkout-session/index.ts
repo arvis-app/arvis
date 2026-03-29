@@ -16,7 +16,10 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('No authorization header')
 
-    const token = authHeader.replace('Bearer ', '')
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const token = authHeader.slice(7)
 
     // Admin client pour valider le JWT (même pattern que ai-chat, realtime-token)
     const supabaseAdmin = createClient(
@@ -39,7 +42,16 @@ serve(async (req) => {
     const { priceId } = await req.json()
     if (!priceId) throw new Error('priceId fehlt')
 
-    const origin = req.headers.get('origin') || 'https://arvis-app.de'
+    const ALLOWED_PRICE_IDS = new Set([
+      Deno.env.get('STRIPE_PRICE_MONTHLY'),
+      Deno.env.get('STRIPE_PRICE_YEARLY'),
+    ].filter(Boolean) as string[])
+
+    if (!ALLOWED_PRICE_IDS.has(priceId)) {
+      return new Response(JSON.stringify({ error: 'Ungültige Preis-ID' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    const ALLOWED_ORIGIN = 'https://arvis-app.de'
 
     let customerId = profile?.stripe_customer_id
 
@@ -96,8 +108,8 @@ serve(async (req) => {
     sessionParams.append('mode', 'subscription')
     sessionParams.append('line_items[0][price]', priceId)
     sessionParams.append('line_items[0][quantity]', '1')
-    sessionParams.append('success_url', `${origin}/profil?success=true`)
-    sessionParams.append('cancel_url', `${origin}/profil?canceled=true`)
+    sessionParams.append('success_url', `${ALLOWED_ORIGIN}/profil?success=true`)
+    sessionParams.append('cancel_url', `${ALLOWED_ORIGIN}/profil?canceled=true`)
     sessionParams.append('billing_address_collection', 'auto')
     sessionParams.append('subscription_data[metadata][user_id]', user.id)
 
@@ -155,7 +167,7 @@ serve(async (req) => {
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
+      status: 500,
     })
   }
 })

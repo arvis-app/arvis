@@ -26,16 +26,8 @@ export function AuthProvider({ children }) {
         const planStatus = await invokeEdgeFunction('get-plan-status', {})
         setIsPro(planStatus.is_pro === true)
       } catch (edgeErr) {
-        console.warn('get-plan-status fallback (edge function unavailable):', edgeErr)
-        // Fallback local — moins sécurisé mais évite de bloquer les utilisateurs pro
-        // si l'edge function est temporairement indisponible.
-        const trialValid = data.plan === 'trial' &&
-          !!data.trial_started_at &&
-          Math.floor((Date.now() - new Date(data.trial_started_at).getTime()) / 86400000) < 14
-        const canceledPendingValid = data.plan === 'canceled_pending' &&
-          !!data.subscription_end_date &&
-          new Date(data.subscription_end_date) > new Date()
-        setIsPro(data.plan === 'pro' || data.plan === 'active' || canceledPendingValid || trialValid)
+        console.warn('get-plan-status indisponible — accès refusé par sécurité:', edgeErr)
+        setIsPro(false)
       }
     } else {
       // Pas de profil — créer automatiquement (Google OAuth ou inscription incomplète)
@@ -100,7 +92,16 @@ export function AuthProvider({ children }) {
           const savedRedirect = sessionStorage.getItem('redirectAfterLogin')
           if (savedRedirect) {
             sessionStorage.removeItem('redirectAfterLogin')
-            window.location.replace(savedRedirect)
+            try {
+              const url = new URL(savedRedirect, window.location.origin)
+              if (url.origin === window.location.origin) {
+                window.location.replace(url.pathname + url.search)
+              } else {
+                window.location.replace('/dashboard')
+              }
+            } catch {
+              window.location.replace('/dashboard')
+            }
             return
           }
         }

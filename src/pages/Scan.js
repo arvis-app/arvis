@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 import { supabase } from '../supabaseClient'
 import { downloadAsWord } from '../utils/downloadWord'
 import { QRCodeSVG } from 'qrcode.react'
@@ -586,7 +587,6 @@ export default function Scan() {
         if (!fullOcrText || fullOcrText.length < 10) throw new Error('Kein Text erkannt')
         const analysis = await runAIAnalysis(fullOcrText)
         setAiHtml(markdownToHtml(analysis))
-        window._lastOcrText = fullOcrText
         setResult('ai')
       }
       goStep(4)
@@ -629,7 +629,7 @@ export default function Scan() {
   }
   function sendToBrief() {
     const text = mode === 'ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
-    if (text) { localStorage.setItem('arvis_brief_input', text); navigate('/briefschreiber') }
+    if (text) { sessionStorage.setItem('arvis_brief_input', text); navigate('/briefschreiber') }
   }
 
   // ── Reset pan when zoom returns to 1 ─────────────────────────────────────
@@ -908,7 +908,7 @@ export default function Scan() {
                     </div>
                   </div>
                   <div className="result-section" style={{ marginBottom: 0 }}>
-                    <div className="result-text" id="aiSummaryDiv" dangerouslySetInnerHTML={{ __html: aiHtml }} />
+                    <div className="result-text" id="aiSummaryDiv" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(aiHtml) }} />
                   </div>
                 </div>
                 <button className="btn-send-briefschreiber" onClick={sendToBrief} style={{ marginTop: 16, flexShrink: 0 }}>

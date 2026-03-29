@@ -21,7 +21,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const token = authHeader.replace('Bearer ', '')
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const token = authHeader.slice(7)
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) throw new Error('Not authenticated')
 
@@ -37,8 +40,8 @@ serve(async (req) => {
       if (profile.plan === 'pro' || profile.plan === 'active') {
         isPro = true
       } else if (profile.plan === 'canceled_pending') {
-        // Accès maintenu jusqu'à la fin de la période payée
-        isPro = !profile.subscription_end_date || new Date(profile.subscription_end_date) > now
+        // Accès maintenu jusqu'à la fin de la période payée — la date DOIT être présente (fail-closed)
+        isPro = !!profile.subscription_end_date && new Date(profile.subscription_end_date) > now
       } else if (profile.plan === 'trial' && profile.trial_started_at) {
         const start = new Date(profile.trial_started_at)
         const daysUsed = Math.floor((now.getTime() - start.getTime()) / 86400000)
@@ -76,7 +79,9 @@ serve(async (req) => {
       )
     }
 
-    const { model = 'gpt-4o', max_tokens: requestedTokens = 4000, messages } = await req.json()
+    const ALLOWED_MODELS = new Set(['gpt-4o', 'gpt-4o-mini'])
+    const { model: requestedModel = 'gpt-4o', max_tokens: requestedTokens = 4000, messages } = await req.json()
+    const model = ALLOWED_MODELS.has(requestedModel) ? requestedModel : 'gpt-4o'
     const max_tokens = Math.min(requestedTokens, 4000) // plafond serveur : jamais plus de 4000
 
     const apiKey = Deno.env.get('OPENAI_API_KEY')
@@ -103,9 +108,7 @@ serve(async (req) => {
     const tokensConsumed = data.usage?.total_tokens ?? 0
     if (tokensConsumed > 0) {
       await supabaseAdmin
-        .from('users')
-        .update({ ai_tokens_used: tokensUsed + tokensConsumed })
-        .eq('id', user.id)
+        .rpc('increment_ai_tokens', { p_user_id: user.id, p_tokens: tokensConsumed })
     }
 
     return new Response(

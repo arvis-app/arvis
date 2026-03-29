@@ -19,7 +19,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const token = authHeader.replace('Bearer ', '')
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const token = authHeader.slice(7)
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) throw new Error('Not authenticated')
 
@@ -35,7 +38,8 @@ serve(async (req) => {
       if (profile.plan === 'pro' || profile.plan === 'active') {
         isPro = true
       } else if (profile.plan === 'canceled_pending') {
-        isPro = !profile.subscription_end_date || new Date(profile.subscription_end_date) > now
+        // Accès maintenu jusqu'à la fin de la période payée — la date DOIT être présente (fail-closed)
+        isPro = !!profile.subscription_end_date && new Date(profile.subscription_end_date) > now
       } else if (profile.plan === 'trial' && profile.trial_started_at) {
         const start = new Date(profile.trial_started_at)
         const daysUsed = Math.floor((now.getTime() - start.getTime()) / 86400000)
@@ -59,6 +63,23 @@ serve(async (req) => {
 
     const formData = await req.formData()
     const audioFile = formData.get('file')
+    if (!audioFile || !(audioFile instanceof File)) {
+      return new Response(JSON.stringify({ error: 'Audiodatei fehlt' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    const MAX_BYTES = 25 * 1024 * 1024
+    if (audioFile.size > MAX_BYTES) {
+      return new Response(JSON.stringify({ error: 'Datei zu groß (max. 25 MB)' }), {
+        status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    const ALLOWED_AUDIO = new Set(['audio/mpeg','audio/mp4','audio/wav','audio/webm','audio/ogg','audio/flac','video/mp4','video/webm'])
+    if (!ALLOWED_AUDIO.has(audioFile.type)) {
+      return new Response(JSON.stringify({ error: 'Ungültiges Dateiformat' }), {
+        status: 415, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
     const prompt = formData.get('prompt') ?? ''
 
     const fd = new FormData()

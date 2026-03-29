@@ -62,6 +62,7 @@ export default function Profil() {
   const [plz, setPlz] = useState('')
   const [stadt, setStadt] = useState('')
   const [photo, setPhoto] = useState(null)
+  const [photoFile, setPhotoFile] = useState(null)
 
   // Password fields
   const [pwOld, setPwOld] = useState('')
@@ -153,9 +154,9 @@ export default function Profil() {
       e.target.value = ''
       return
     }
-    const reader = new FileReader()
-    reader.onload = ev => { setPhoto(ev.target.result) }
-    reader.readAsDataURL(file)
+    // Store the raw File for upload, use a local object URL as preview
+    setPhotoFile(file)
+    setPhoto(URL.createObjectURL(file))
   }
 
   // ── Save profile ───────────────────────────────────────────────────────────
@@ -177,6 +178,24 @@ export default function Profil() {
       emailChanged = true
     }
 
+    // Upload new avatar to Supabase Storage if a new file was selected
+    let avatarUrl = photo  // default: keep existing URL (or null if deleted)
+    if (photoFile) {
+      const ext = photoFile.name.split('.').pop()
+      const path = `${user.id}/avatar.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, photoFile, { upsert: true, contentType: photoFile.type })
+      if (uploadError) {
+        showToast('Foto-Upload fehlgeschlagen: ' + uploadError.message, false)
+        return
+      }
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
+      // Append cache-busting timestamp so the browser loads the new image
+      avatarUrl = urlData.publicUrl + '?t=' + Date.now()
+      setPhotoFile(null)
+    }
+
     const { error } = await updateProfile({
       title: titel,
       first_name: vorname.trim(),
@@ -187,7 +206,7 @@ export default function Profil() {
       hausnummer: hausnummer.trim(),
       plz: plz.trim(),
       stadt: stadt.trim(),
-      avatar_url: photo || null,
+      avatar_url: avatarUrl,
     })
     
     if (error) { 
@@ -207,7 +226,7 @@ export default function Profil() {
     if (!pwOld.trim()) { showToast('Bitte aktuelles Passwort eingeben'); return }
     if (!pwNew.trim()) { showToast('Bitte neues Passwort eingeben'); return }
     if (pwNew !== pwConfirm) { showToast('Passwörter stimmen nicht überein'); return }
-    if (pwNew.length < 6) { showToast('Mindestens 6 Zeichen'); return }
+    if (pwNew.length < 12) { showToast('Mindestens 12 Zeichen'); return }
 
     // Überprüfe das alte Passwort durch einen erneuten Login-Versuch
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -261,7 +280,7 @@ export default function Profil() {
                   <button 
                     className="btn-secondary" 
                     style={{ fontSize: 14, color: '#e53e3e', borderColor: '#e53e3e', transition: 'background 0.2s' }} 
-                    onClick={() => setPhoto(null)}
+                    onClick={() => { setPhoto(null); setPhotoFile(null) }}
                     onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
                     onMouseOut={e=>e.target.style.background=''}
                   >

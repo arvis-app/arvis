@@ -2,7 +2,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import Stripe from 'npm:stripe@^14.19.0'
 
-const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') || ''
+const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
+if (!stripeKey) throw new Error('STRIPE_SECRET_KEY not configured')
 const stripe = new Stripe(stripeKey, {
   apiVersion: '2023-10-16',
 })

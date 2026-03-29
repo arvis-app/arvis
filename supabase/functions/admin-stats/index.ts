@@ -5,7 +5,7 @@ const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL')
 if (!ADMIN_EMAIL) throw new Error('ADMIN_EMAIL secret is not set')
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://arvis-app.de',
   'Access-Control-Allow-Headers': 'authorization, content-type',
 }
 
@@ -28,7 +28,12 @@ serve(async (req) => {
     )
 
     // Verify JWT and get authenticated user identity
-    const token = authHeader.replace('Bearer ', '')
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...CORS, 'Content-Type': 'application/json' }
+      })
+    }
+    const token = authHeader.slice(7)
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
 
     if (userError || !user) {
