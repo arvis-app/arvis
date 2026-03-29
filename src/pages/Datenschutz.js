@@ -239,11 +239,20 @@ export default function Datenschutz() {
               <td style={S.td}>Hosting und Bereitstellung der Website</td>
               <td style={S.td}>USA — <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" style={S.a}>Datenschutzerklärung</a></td>
             </tr>
+            <tr>
+              <td style={S.td}><strong>Cloudflare, Inc.</strong></td>
+              <td style={S.td}>DNS-Verwaltung und Netzwerkschutz</td>
+              <td style={S.td}>USA — <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" style={S.a}>Datenschutzerklärung</a></td>
+            </tr>
           </tbody>
         </table>
         <p style={S.p}>
           Mit allen oben genannten Dienstleistern wurden Verträge über Auftragsverarbeitung (AVV) gemäß
-          Art. 28 DSGVO geschlossen.
+          Art. 28 DSGVO geschlossen. Cloudflare ist dem EU-US Data Privacy Framework beigetreten
+          (Art. 45 DSGVO). Bei DNS-Anfragen können technische Daten (IP-Adresse) kurzzeitig verarbeitet
+          werden; es findet keine dauerhafte Speicherung personenbezogener Daten statt.
+          Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Sicherheit und
+          Verfügbarkeit).
         </p>
 
         {/* ── 9. SPEICHERDAUER ── */}

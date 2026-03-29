@@ -11,7 +11,7 @@ _Dernière mise à jour : 27 mars 2026_
 Assistant IA personnel pour la documentation médicale. Outil strictement personnel — pas de partage entre collègues. Pas de stockage direct de données patients identifiants. Chaque médecin accède uniquement à son propre contenu.
 
 - **URL production** : `arvis-app.de`
-- **Stack** : React 19 + React Router v7 (Vite 6), Supabase (Auth + Postgres + Edge Functions Deno + Storage), Stripe (paiements), Vercel (deploy)
+- **Stack** : React 19 + React Router v7 (Vite 6), Supabase (Auth + Postgres + Edge Functions Deno + Storage), Stripe (paiements), Vercel (deploy), Cloudflare (DNS + protection réseau)
 - **Couleur principale** : Orange `#e87722` — Font : Inter + Bricolage Grotesque (titres)
 - **Utilisateur** : médecin non-technique, parle français à Claude
 
