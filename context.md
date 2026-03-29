@@ -466,7 +466,7 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 
 #### Frontend
 - **H1** `vercel.json` : permission microphone `microphone=()` → `microphone=(self)` (dictée cassée en prod)
-- **H2** `AuthContext.js` : `isPro` fail-closed si `get-plan-status` indisponible (plus de calcul local)
+- **H2** `AuthContext.js` : `isPro` calculé côté serveur via `get-plan-status` ; fallback local depuis données DB si edge function indisponible (la sécurité réelle est dans les edge functions IA)
 - **H4** `Profil.js` : avatar uploadé dans Supabase Storage (`avatars/{userId}/avatar.ext`) au lieu de base64 en DB
 - **C4** `Scan.js` : DOMPurify.sanitize() sur le HTML retourné par l'IA
 - **C5** `Scan.js` : supprimé `window._lastOcrText` (données patient sur objet global)
@@ -490,6 +490,10 @@ Le caviardage (Schwärzen) était uniquement disponible dans le flux desktop (`S
 - `20260329000001` : fonction SQL `increment_ai_tokens(p_user_id, p_tokens)` — SECURITY DEFINER, atomique
 - `20260329000002` : bucket `avatars` (public, 2MB, JPEG/PNG/WebP) + RLS par owner
 - `20260329000003` : RLS `scan-images` — INSERT validé contre scan_sessions (token + status waiting + non expiré)
+
+#### Bug post-lancement corrigés (30 mars 2026)
+- **Déconnexion automatique** : `invokeEdgeFunction` appelait `refreshSession()` qui déclenchait un `SIGNED_OUT` en cas d'échec → remplacé par `getSession()` (lecture session en mémoire, sans réseau)
+- **Paywall sur trial actif** : CORS incomplet dans `get-plan-status` (manquait `x-client-info`, `apikey`) + catch trop agressif (`setIsPro(false)`) → CORS corrigé + fallback local `computeLocalIsPro()` depuis données DB déjà chargées
 
 #### Risque résiduel documenté (accepté)
 - Token WebSocket OpenAI Realtime dans subprotocol WebSocket — proxy Edge Function non faisable sans latence inacceptable. Mitigations : token éphémère TTL ~60s, généré uniquement pour Pro authentifiés.
