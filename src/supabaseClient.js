@@ -10,8 +10,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
  * Même pattern que BriefSchreiber.js et Scan.js (qui fonctionnent).
  */
 export async function invokeEdgeFunction(fnName, body = {}) {
-  const { data: refreshData } = await supabase.auth.refreshSession()
-  const session = refreshData?.session
+  const { data: { session } } = await supabase.auth.getSession()
   if (!session) throw new Error('Sitzung abgelaufen – bitte neu anmelden.')
 
   const { data, error } = await supabase.functions.invoke(fnName, {
