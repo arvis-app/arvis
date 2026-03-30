@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
-const ALLOWED_ORIGINS = ['https://arvis-app.de', 'http://localhost:3000', 'http://localhost:5173']
+const ALLOWED_ORIGINS = ['https://arvis-app.de', 'https://www.arvis-app.de', 'http://localhost:3000', 'http://localhost:5173']
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get('Origin') ?? ''

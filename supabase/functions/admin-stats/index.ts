@@ -4,12 +4,14 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL')
 if (!ADMIN_EMAIL) throw new Error('ADMIN_EMAIL secret is not set')
 
-const CORS = {
-  'Access-Control-Allow-Origin': 'https://arvis-app.de',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
-}
+const ALLOWED_ORIGINS = ['https://arvis-app.de', 'https://www.arvis-app.de', 'http://localhost:3000', 'http://localhost:5173']
 
 serve(async (req) => {
+  const origin = req.headers.get('Origin') ?? ''
+  const CORS = {
+    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : 'https://arvis-app.de',
+    'Access-Control-Allow-Headers': 'authorization, content-type',
+  }
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: CORS })
   }
