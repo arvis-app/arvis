@@ -103,7 +103,7 @@ function Calendar({ currentDate, setCurrentDate, selectedDay, setSelectedDay, ev
   )
 }
 
-function EventsList({ currentDate, selectedDay, events, setEvents, showToast, calClickedDate }) {
+function EventsList({ currentDate, selectedDay, events, setEvents, showToast, calClickedDate, userId }) {
   const [addOpen, setAddOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [date, setDate] = useState('')
@@ -147,7 +147,7 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
     }
 
     const { data: inserted } = await supabase.from('events').insert({
-      user_id: (await supabase.auth.getUser()).data.user?.id,
+      user_id: userId,
       date: k, time: `${hour}:${minute}`, title: title.trim(), type: 'task'
     }).select().single()
 
@@ -206,7 +206,7 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
   )
 }
 
-function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen }) {
+function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, userId }) {
   const [selected, setSelected] = useState(null)
   const [newRoom, setNewRoom] = useState('')
   const [newName, setNewName] = useState('')
@@ -218,7 +218,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen })
   async function handleAdd() {
     if (!newName.trim()) return
     const { data: inserted } = await supabase.from('patients').insert({
-      user_id: (await supabase.auth.getUser()).data.user?.id,
+      user_id: userId,
       room: newRoom || '—', name: newName.trim(), note: newNote
     }).select().single()
     if (inserted) setPatients(prev => [...prev, inserted])
@@ -363,7 +363,7 @@ export default function Dashboard() {
             </div>
             <div className="card-body" style={{ padding: 12 }}>
               <Calendar currentDate={currentDate} setCurrentDate={setCurrentDate} selectedDay={selectedDay} setSelectedDay={setSelectedDay} events={events} onDayClick={dd => setCalClickedDate(dd)} />
-              <EventsList currentDate={currentDate} selectedDay={selectedDay} events={events} setEvents={setEvents} showToast={showToast} calClickedDate={calClickedDate} />
+              <EventsList currentDate={currentDate} selectedDay={selectedDay} events={events} setEvents={setEvents} showToast={showToast} calClickedDate={calClickedDate} userId={user?.id} />
             </div>
           </div>
         </div>
@@ -379,7 +379,7 @@ export default function Dashboard() {
               <button className="btn-action" onClick={() => setPatientAddOpen(v => !v)} style={{ width: 28, height: 28, padding: 0, fontSize: 20, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
             </div>
             <div className="card-body" style={{ padding: 14 }}>
-              <PatientsList patients={patients} setPatients={setPatients} showToast={showToast} addOpen={patientAddOpen} setAddOpen={setPatientAddOpen} />
+              <PatientsList patients={patients} setPatients={setPatients} showToast={showToast} addOpen={patientAddOpen} setAddOpen={setPatientAddOpen} userId={user?.id} />
             </div>
           </div>
         </div>

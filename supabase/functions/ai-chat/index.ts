@@ -90,6 +90,14 @@ serve(async (req) => {
     const model = ALLOWED_MODELS.has(requestedModel) ? requestedModel : 'gpt-4o'
     const max_tokens = Math.min(requestedTokens, 4000) // plafond serveur : jamais plus de 4000
 
+    if (!Array.isArray(messages) || messages.length > 20) {
+      return new Response(JSON.stringify({ error: 'Invalid messages' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const totalLength = messages.reduce((s: number, m: any) => s + (typeof m?.content === 'string' ? m.content.length : 0), 0)
+    if (totalLength > 60000) {
+      return new Response(JSON.stringify({ error: 'Input zu groß' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     const apiKey = Deno.env.get('OPENAI_API_KEY')
     if (!apiKey) return new Response(
       JSON.stringify({ error: 'OPENAI_API_KEY not configured' }),

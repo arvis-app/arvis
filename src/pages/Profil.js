@@ -181,7 +181,7 @@ export default function Profil() {
     // Upload new avatar to Supabase Storage if a new file was selected
     let avatarUrl = photo  // default: keep existing URL (or null if deleted)
     if (photoFile) {
-      const ext = photoFile.name.split('.').pop()
+      const ext = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' })[photoFile.type] ?? 'jpg'
       const path = `${user.id}/avatar.${ext}`
       const { error: uploadError } = await supabase.storage
         .from('avatars')

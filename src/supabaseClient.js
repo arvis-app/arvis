@@ -24,7 +24,11 @@ export async function invokeEdgeFunction(fnName, body = {}) {
     body: JSON.stringify(body),
   })
 
-  const data = await response.json().catch(() => ({}))
+  const data = await response.json().catch(async () => {
+    const text = await response.text().catch(() => '')
+    if (text) console.warn('[invokeEdgeFunction] Non-JSON response from', fnName, ':', text.slice(0, 200))
+    return {}
+  })
   if (!response.ok) throw new Error(data?.error || data?.message || `HTTP ${response.status}`)
   if (data?.error) throw new Error(data.error)
   return data

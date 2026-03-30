@@ -240,10 +240,11 @@ export default function Scan() {
   async function startMobileScan() {
     const scanToken = crypto.randomUUID()
     const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user?.id) { alert('Sitzung abgelaufen – bitte neu anmelden.'); return }
 
     await supabase.from('scan_sessions').insert({
       token: scanToken,
-      user_id: session?.user?.id || null,
+      user_id: session.user.id,
       status: 'waiting',
       expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
     })

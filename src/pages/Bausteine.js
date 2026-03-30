@@ -247,7 +247,7 @@ export default function Bausteine() {
   async function toggleFav(b) {
     const isFav = favs.includes(b.id)
     if (!isFav) {
-      await supabase.from('bausteine').update({ is_fav: true }).eq('id', b.id)
+      await supabase.from('bausteine').update({ is_fav: true }).eq('id', b.id).eq('user_id', user.id)
       const newFavs = [...favs, b.id]
       setFavs(newFavs)
     } else {
@@ -258,7 +258,7 @@ export default function Bausteine() {
         iconBg:'var(--orange-ghost)',
         btnLabel:'Entfernen',
         onOk: async () => {
-          await supabase.from('bausteine').update({ is_fav: false }).eq('id', b.id)
+          await supabase.from('bausteine').update({ is_fav: false }).eq('id', b.id).eq('user_id', user.id)
           const newFavs = favs.filter(id=>id!==b.id)
           setFavs(newFavs); setConfirm(null)
         }
@@ -272,7 +272,7 @@ export default function Bausteine() {
       const existingIdx = custom.findIndex(b=>b.id===editingB.id)
       if (existingIdx !== -1) {
         const updates = { title: titel, category, text, keywords }
-        await supabase.from('bausteine').update(updates).eq('id', editingB.id)
+        await supabase.from('bausteine').update(updates).eq('id', editingB.id).eq('user_id', user.id)
         const updated = [...custom]
         updated[existingIdx] = { ...updated[existingIdx], ...updates }
         setCustom(updated); setSelected(updated[existingIdx])
@@ -310,7 +310,7 @@ export default function Bausteine() {
       btnLabel:'Löschen',
       btnStyle:'danger',
       onOk: async () => {
-        await supabase.from('bausteine').delete().eq('id', b.id)
+        await supabase.from('bausteine').delete().eq('id', b.id).eq('user_id', user.id)
         setCustom(prev => prev.filter(c => c.id !== b.id))
         setFavs(prev => prev.filter(id => id !== b.id))
         setSelected(null); setConfirm(null)
