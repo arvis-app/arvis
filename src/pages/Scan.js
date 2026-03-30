@@ -471,26 +471,35 @@ export default function Scan() {
   function cleanOcrText(text) {
     let t = text;
     // Supprime les pipes et antislashs (bruit typique des bordures de page physiques)
-    t = t.replace(/[|\\]/g, ' ');
+    t = t.replace(/[|\\]/g, ‘ ‘);
 
-    // Supprime les symboles purs en début de ligne suivis d'un espace (ex: "} ", "! ", "“ ", "%* ")
-    // On exclut le tiret "-" car c'est une puce de liste valide.
-    t = t.replace(/^[ \t]*[\]{}!_~^"“”‘’`%*#|<>/]+[ \t]+/gm, '');
+    // Supprime les symboles purs en début de ligne suivis d’un espace (ex: “} “, “! “, “” “, “%* “)
+    // On exclut le tiret “-” car c’est une puce de liste valide.
+    t = t.replace(/^[ \t]*[\]{}!_~^”””’’`%*#|<>/]+[ \t]+/gm, ‘’);
 
-    // Supprime les combinaisons symbole+chiffre/lettre en début de ligne (ex: "{8 ", "1] ", "!] ")
-    t = t.replace(/^[ \t]*([a-zA-Z0-9][\]{}!_~^"“”‘’`%*#|<>/]+|[\]{}!_~^"“”‘’`%*#|<>/]+[a-zA-Z0-9])[ \t]+/gm, '');
+    // Supprime les combinaisons symbole+chiffre/lettre en début de ligne (ex: “{8 “, “1] “, “!] “)
+    t = t.replace(/^[ \t]*([a-zA-Z0-9][\]{}!_~^”””’’`%*#|<>/]+|[\]{}!_~^”””’’`%*#|<>/]+[a-zA-Z0-9])[ \t]+/gm, ‘’);
 
-    // Supprime les lettres "fantômes" isolées créées par l'ombre (ex: "f ", "l ", "I ")
-    t = t.replace(/^[ \t]*(f|l|I|i)[ \t]+/gm, '');
+    // Supprime les lettres “fantômes” isolées créées par l’ombre (ex: “f “, “l “, “I “)
+    t = t.replace(/^[ \t]*(f|l|I|i)[ \t]+/gm, ‘’);
 
     // Nettoie la fin des lignes de la même façon (bruit ou espaces inutiles)
-    t = t.replace(/[ \t]+([\]{}!_~^"“”‘’`%*#|<>/]+|l|I|i)[ \t]*$/gm, '');
+    t = t.replace(/[ \t]+([\]{}!_~^”””’’`%*#|<>/]+|l|I|i)[ \t]*$/gm, ‘’);
 
-    // Réduit les sauts de lignes multiples à un seul saut de ligne (efface le "double espacement" causé par le bruit)
-    t = t.replace(/\n(?:[ \t]*\n)+/g, '\n');
+    // Supprime les lignes entièrement composées de symboles/tirets répétés (bordures, séparateurs)
+    t = t.replace(/^[ \t]*[-=_*~.]{3,}[ \t]*$/gm, ‘’);
+
+    // Supprime les lignes de 1 ou 2 caractères (bruit isolé — trop court pour être du texte réel)
+    t = t.replace(/^[ \t]*[\S]{1,2}[ \t]*$/gm, ‘’);
+
+    // Supprime les lignes qui ne contiennent aucune lettre (chiffres/symboles seuls sans contexte)
+    t = t.replace(/^[ \t]*[^a-zA-ZäöüÄÖÜß\n]*[ \t]*$/gm, ‘’);
+
+    // Réduit les sauts de lignes multiples à un seul saut de ligne (efface le “double espacement” causé par le bruit)
+    t = t.replace(/\n(?:[ \t]*\n)+/g, ‘\n’);
 
     // Compresse les espaces multiples au sein des phrases
-    t = t.replace(/[ \t]{2,}/g, ' ');
+    t = t.replace(/[ \t]{2,}/g, ‘ ‘);
 
     return t.trim();
   }
@@ -511,8 +520,8 @@ export default function Scan() {
   // ── AI Analysis ────────────────────────────────────────────────────────────
   async function runAIAnalysis(ocrText) {
     setLoadingText('KI analysiert Dokument...')
-    const { data: refreshData } = await supabase.auth.refreshSession()
-    const session = refreshData?.session
+    const { data: sessionData } = await supabase.auth.getSession()
+    const session = sessionData?.session
     if (!session) throw new Error('Sitzung abgelaufen. Bitte erneut anmelden.')
     const { data, error } = await supabase.functions.invoke('ai-chat', {
       headers: { Authorization: `Bearer ${session.access_token}` },
