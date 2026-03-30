@@ -261,6 +261,7 @@ Coupons auto-appliqués au checkout (priorité) :
 3. **Stripe client supprimé** : `create-checkout-session` vérifie et recrée le client si supprimé.
 4. **Triple refresh Stripe** : au retour `?success=true`, polling 2s/20s jusqu'à `plan: pro`.
 5. **Vercel rewrites vs routes** : utiliser `routes` (pas `rewrites`) pour surcharger `/`.
+6. **`npx supabase db push` peut échouer** si l'historique des migrations local et remote sont désynchronisés. Solution : `npx supabase migration repair --status applied <timestamp>` pour marquer la migration comme déjà appliquée, puis réessayer. Alternative : exécuter le SQL directement dans le SQL Editor Supabase.
 
 ---
 
