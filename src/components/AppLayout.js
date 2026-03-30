@@ -125,28 +125,20 @@ export default function AppLayout() {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-section-title">Hauptmenü</div>
-        {navItems.map(item => {
-          const restricted = ['/scan', '/briefschreiber', '/bausteine', '/uebersetzung'].includes(item.to)
-          const disabled = restricted && !isPro
-          return (
-            <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive && !disabled ? ' active' : ''}`} onClick={(e) => { if (disabled) { e.preventDefault() } else { setMobileOpen(false) } }} style={disabled ? { opacity: 0.4, pointerEvents: 'none', cursor: 'not-allowed' } : {}}>
-              <span className="nav-item-icon">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          )
-        })}
+        {navItems.map(item => (
+          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
+            <span className="nav-item-icon">{item.icon}</span>
+            {item.label}
+          </NavLink>
+        ))}
 
         <div className="sidebar-section-title">Persönlich</div>
-        {personalItems.map(item => {
-          const restricted = ['/dateien'].includes(item.to)
-          const disabled = restricted && !isPro
-          return (
-            <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive && !disabled ? ' active' : ''}`} onClick={(e) => { if (disabled) { e.preventDefault() } else { setMobileOpen(false) } }} style={disabled ? { opacity: 0.4, pointerEvents: 'none', cursor: 'not-allowed' } : {}}>
-              <span className="nav-item-icon">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          )
-        })}
+        {personalItems.map(item => (
+          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
+            <span className="nav-item-icon">{item.icon}</span>
+            {item.label}
+          </NavLink>
+        ))}
 
         {!isPro && (
           <div
