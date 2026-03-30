@@ -160,6 +160,24 @@ Scan, Bausteine, Uebersetzung sauvegardent leur état dans `localStorage` pour s
 
 **Piège restauration** : L'effet `[selected]` qui fait `removeItem` quand `selected=null` s'exécute au premier rendu et efface la clé avant la restauration. Toujours utiliser un `restoredRef` ou stocker l'id dans un state React séparé initialisé depuis localStorage.
 
+## Règles de sécurité — checklist avant chaque nouvelle fonctionnalité
+
+Avant de livrer du code impliquant de l'UI dynamique, Supabase, ou du stockage :
+
+1. **HTML dynamique** → toujours passer par `DOMPurify.sanitize()` avant `dangerouslySetInnerHTML`
+2. **Données médicales (PHI)** → jamais dans `localStorage`. Utiliser `sessionStorage` (effacé à la fermeture de l'onglet). Seuls les préférences UI non-médicales (step, mode, panel) vont en `localStorage`.
+3. **Mutations Supabase côté client** → toujours ajouter `.eq('user_id', user.id)` sur tout `update`/`delete`, même si RLS est actif (défense en profondeur).
+
+## Table à créer manuellement dans Supabase SQL Editor
+
+```sql
+-- Idempotency Stripe webhook (à exécuter une fois dans le SQL Editor Supabase)
+create table if not exists public.stripe_events_processed (
+  event_id     text        primary key,
+  processed_at timestamptz default now()
+);
+```
+
 ## Pièges connus
 1. **CORS www** : `arvis-app.de` redirige (307) vers `www.arvis-app.de`. Toutes les Edge Functions doivent être déployées avec `--no-verify-jwt` et avoir `https://www.arvis-app.de` dans leur ALLOWED_ORIGINS. Vérifier après chaque déploiement (voir section "Edge Functions — flags").
 2. **Client Stripe supprimé** : `create-checkout-session` vérifie l'existence du client avant usage et le recrée si supprimé.

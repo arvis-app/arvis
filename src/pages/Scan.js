@@ -139,8 +139,8 @@ export default function Scan() {
   const [panel, setPanel] = useState(() => localStorage.getItem('arvis_scan_panel') || 'upload')
   const [mode, setMode] = useState(() => localStorage.getItem('arvis_scan_mode') || 'ai')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [aiHtml, setAiHtml] = useState(() => localStorage.getItem('arvis_scan_aiHtml') || '')
-  const [ocrText, setOcrText] = useState(() => localStorage.getItem('arvis_scan_ocrText') || '')
+  const [aiHtml, setAiHtml] = useState(() => sessionStorage.getItem('arvis_scan_aiHtml') || '')
+  const [ocrText, setOcrText] = useState(() => sessionStorage.getItem('arvis_scan_ocrText') || '')
   const [loadingText, setLoadingText] = useState('Analysiere Dokument...')
   const [errorMsg, setErrorMsg] = useState('')
   const [zoom, setZoom] = useState(1)
@@ -198,13 +198,13 @@ export default function Scan() {
   useEffect(() => { localStorage.setItem('arvis_scan_step', step) }, [step])
   useEffect(() => { localStorage.setItem('arvis_scan_panel', panel) }, [panel])
   useEffect(() => { localStorage.setItem('arvis_scan_mode', mode) }, [mode])
-  useEffect(() => { localStorage.setItem('arvis_scan_aiHtml', aiHtml) }, [aiHtml])
-  useEffect(() => { localStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_aiHtml', aiHtml) }, [aiHtml])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
   useEffect(() => { localStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
 
   // Restore image data on mount (for tab switch back during crop/anonymize step)
   useEffect(() => {
-    const saved = localStorage.getItem('arvis_scan_imgData')
+    const saved = sessionStorage.getItem('arvis_scan_imgData')
     if (saved) imgDataRef.current = saved
   }, [])
 
@@ -359,7 +359,7 @@ export default function Scan() {
       const reader = new FileReader()
       reader.onload = (e) => {
         imgDataRef.current = e.target.result
-        localStorage.setItem('arvis_scan_imgData', e.target.result)
+        sessionStorage.setItem('arvis_scan_imgData', e.target.result)
         setBlackouts([])
         setSelectedBk(null)
         if (imgRef.current) imgRef.current.src = e.target.result
@@ -618,7 +618,10 @@ export default function Scan() {
     setOcrText('')
     setZoom(1); setPanX(0); setPanY(0); setIsDragging(false); setViewerHeight(0); setErrorMsg(''); setLimitReached(false)
     goStep(1);
-    ['arvis_scan_step','arvis_scan_panel','arvis_scan_mode','arvis_scan_aiHtml','arvis_scan_ocrText','arvis_scan_limitReached','arvis_scan_imgData'].forEach(k => localStorage.removeItem(k))
+    // UI state (non-PHI) → localStorage
+    ;['arvis_scan_step','arvis_scan_panel','arvis_scan_mode','arvis_scan_limitReached'].forEach(k => localStorage.removeItem(k))
+    // PHI (contenu médical) → sessionStorage
+    ;['arvis_scan_aiHtml','arvis_scan_ocrText','arvis_scan_imgData'].forEach(k => sessionStorage.removeItem(k))
   }
 
   // ── Copy / Download ────────────────────────────────────────────────────────

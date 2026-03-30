@@ -497,7 +497,7 @@ export default function BriefSchreiber() {
                 <textarea className="brief-output-textarea" value={result} onChange={e => setResult(e.target.value)} />
               )}
               {diffMode === 'diff' && (
-                <div className="brief-diff-view" dangerouslySetInnerHTML={{ __html: renderDiff(orig, result) }} />
+                <div className="brief-diff-view" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderDiff(orig, result)) }} />
               )}
             </div>
           )}

@@ -69,6 +69,16 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
   )
 
+  // Idempotency — ignore events already successfully processed
+  const { data: alreadyProcessed } = await supabaseAdmin
+    .from('stripe_events_processed')
+    .select('event_id')
+    .eq('event_id', event.id)
+    .maybeSingle()
+  if (alreadyProcessed) {
+    return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 })
+  }
+
   try {
     switch (event.type) {
       case 'customer.subscription.updated':
@@ -259,6 +269,9 @@ serve(async (req) => {
       await logFailedEvent(supabaseAdmin, event, null, unexpectedErr.message)
     } catch (_) { /* ignore */ }
   }
+
+  // Mark event as processed (idempotency)
+  await supabaseAdmin.from('stripe_events_processed').insert({ event_id: event.id }).catch(() => {})
 
   // Always acknowledge to Stripe — prevents duplicate retries
   return new Response(JSON.stringify({ received: true }), {

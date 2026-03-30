@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
   }
 
   // Charger le profil depuis Supabase
-  async function loadProfile(userId) {
+  async function loadProfile(userId, _retried = false) {
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
           trial_started_at: new Date().toISOString(),
           onboarding_completed: false,
         })
-        return loadProfile(userId)
+        return loadProfile(userId, true)
       }
       setIsPro(false)
     }
