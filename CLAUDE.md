@@ -14,15 +14,17 @@ Avant toute modification de code :
 - Privilégier les **listes courtes** et le **langage du quotidien** plutôt que les termes techniques bruts.
 
 ## Stack technique
-- **Frontend** : React 19 + React Router v7 (Create React App), déployé sur **Vercel** à `arvis-app.de`
+- **Frontend** : React 19 + React Router v7 + **Vite 6**, déployé sur **Vercel** à `arvis-app.de`
 - **Backend** : Supabase (Auth, Postgres, Edge Functions Deno, Storage)
 - **Paiement** : Stripe (Checkout Sessions, Billing Portal, Webhooks)
-- **Build** : `npx react-scripts build`
+- **Build** : `npm run build` (Vite, output dans `build/`)
+- **Dev** : `npm run dev` (Vite dev server, port 3000)
 - **Deploy** : git push → Vercel auto-deploy
 
 ## Commandes essentielles
 ```bash
-npx react-scripts build          # build prod
+npm run build                    # build prod (Vite)
+npm run dev                      # dev server local
 npx supabase functions deploy <fn> --no-verify-jwt  # déployer une edge function
 npx supabase secrets set KEY=VAL # ajouter un secret
 npx supabase db push             # pousser une migration SQL
@@ -58,9 +60,9 @@ Le routing `/` est géré par `vercel.json` (routes) avant React.
 | `supabase/functions/create-checkout-session/` | Crée session Stripe Checkout |
 | `supabase/functions/create-portal-session/` | Ouvre Billing Portal Stripe |
 | `supabase/functions/stripe-webhook/` | Reçoit événements Stripe → maj DB |
-| `supabase/functions/ai-chat/` | Chat IA (verify_jwt: true) |
-| `supabase/functions/ai-whisper/` | Transcription audio (verify_jwt: true) |
-| `supabase/functions/realtime-token/` | Token Realtime (verify_jwt: true) |
+| `supabase/functions/ai-chat/` | Chat IA (--no-verify-jwt, valide JWT en interne) |
+| `supabase/functions/ai-whisper/` | Transcription audio (--no-verify-jwt) |
+| `supabase/functions/realtime-token/` | Token OpenAI Realtime WebSocket (--no-verify-jwt) |
 
 ## Règle critique : Edge Functions JWT
 `supabase.functions.invoke()` v2.99.2 **n'envoie PAS le JWT automatiquement**.
@@ -68,7 +70,7 @@ Toujours utiliser `invokeEdgeFunction()` depuis `src/supabaseClient.js` :
 ```js
 const data = await invokeEdgeFunction('nom-fonction', { param: valeur })
 ```
-Ce helper fait `refreshSession()` et passe explicitement `Authorization: Bearer <token>`.
+Ce helper fait `getSession()` (cache local) et passe explicitement `Authorization: Bearer <token>`.
 
 ## Edge Functions — flags de déploiement
 
@@ -131,11 +133,15 @@ Priorité de matching :
 Pour cibler un prix précis : dans Stripe Dashboard → coupon → Metadata → `price_id: price_xxx`
 
 ## Variables d'environnement
-### Vercel (frontend)
+### Vercel (frontend) — préfixe `VITE_` obligatoire (Vite, pas CRA)
 ```
-REACT_APP_STRIPE_PRICE_MONTHLY=price_xxx
-REACT_APP_STRIPE_PRICE_YEARLY=price_xxx
+VITE_STRIPE_PRICE_MONTHLY=price_xxx
+VITE_STRIPE_PRICE_YEARLY=price_xxx
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+VITE_SENTRY_DSN=https://...
 ```
+Accès dans le code : `import.meta.env.VITE_*` (jamais `process.env.REACT_APP_*`)
 ### Supabase Secrets (edge functions)
 ```
 STRIPE_SECRET_KEY
