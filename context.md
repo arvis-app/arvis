@@ -1,5 +1,5 @@
 # CONTEXTE PROJET — Arvis
-_Dernière mise à jour : 30 mars 2026_
+_Dernière mise à jour : 31 mars 2026_
 
 ---
 
@@ -294,15 +294,15 @@ URL de production : **https://arvis-app.de**
 | `create-checkout-session` | no-verify | Crée session Stripe Checkout |
 | `create-portal-session` | no-verify | Ouvre Billing Portal |
 | `stripe-webhook` | no-verify | Événements Stripe → DB (erreurs DB loggées dans `stripe_events_failed`) |
-| `ai-chat` | verify | Chat IA (OpenAI) pour l'analyse des scans et la rédaction |
-| `ai-whisper` | verify | Transcription audio asynchrone |
-| `realtime-token` | verify | Token Supabase Realtime (WebSocket pour l'IA en streaming) |
-| `admin-stats` | no-verify | Stats admin (vérification email admin **côté serveur**) |
+| `ai-chat` | no-verify | Chat IA (OpenAI) — valide JWT en interne, limite 20 msgs / 60k chars |
+| `ai-whisper` | no-verify | Transcription audio asynchrone |
+| `realtime-token` | no-verify | Token Supabase Realtime (WebSocket pour l'IA en streaming) |
+| `admin-stats` | no-verify | Stats admin — vérification UUID admin via secret `ADMIN_USER_ID` côté serveur |
 | `get-plan-status` | no-verify | Retourne `is_pro` calculé **côté serveur** (non manipulable client) |
 
 ### Base de données (RLS activé sur toutes les tables)
 Colonnes clés `users` : `id`, `email`, `first_name`, `last_name`, `title`, `plan`, `trial_started_at`, `stripe_customer_id`, `subscription_end_date`, `card_brand`, `card_last4`, `avatar_url`, `clinic`, `ai_tokens_used`, `ai_tokens_reset_at`.
-Tables protégées par RLS (`auth.uid() = user_id` ou `auth.uid() = id`) : `users`, `bausteine`, `folders`, `notes`, `events`, `patients`, `scan_sessions`, `stripe_events_failed`.
+Tables protégées par RLS (`auth.uid() = user_id` ou `auth.uid() = id`) : `users`, `bausteine`, `folders`, `notes`, `events`, `patients`, `scan_sessions`, `stripe_events_failed`, `stripe_events_processed`.
 
 ---
 
@@ -331,6 +331,38 @@ Tables protégées par RLS (`auth.uid() = user_id` ou `auth.uid() = id`) : `user
 ### 4. Admin & Sentry 📊
 - Implémentation globale d'`@sentry/react` et capture intelligente des erreurs.
 - Page d'administration `AdminStats.js` conçue pour le suivi des KPI d'Arvis (Conversion, utilisateurs actifs), protégée par une condition simple sur l'email administrateur.
+
+---
+
+## Mises à jour récentes (Session 10 — 31 mars 2026) ✅
+
+### 1. Audit sécurité complet — fixes définitifs
+
+- **Clés Supabase** : URL et anon key passées en `import.meta.env.VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (plus de valeurs hardcodées)
+- **admin-stats** : check admin par UUID (`ADMIN_USER_ID` secret) au lieu d'email — UUID immutable, email peut changer
+- **Stripe idempotency** : table `stripe_events_processed` — webhook ignore les événements déjà traités
+- **ai-chat** : validation payload (≤ 20 messages, ≤ 60 000 chars au total)
+- **Bausteine** : `.eq('user_id', user.id)` sur `toggleFav`, `handleSaveNeu`, `handleDelete` (défense en profondeur même avec RLS)
+- **BriefSchreiber** : `DOMPurify.sanitize()` avant `dangerouslySetInnerHTML` sur le diff Korrektur
+- **Profil** : extension avatar dérivée du MIME type (`image/jpeg→jpg`) au lieu du nom de fichier
+- **Scan** : null guard sur session avant `startMobileScan`
+- **Dashboard** : `userId` passé en prop à `EventsList` / `PatientsList` (évite double `getUser()`)
+- **supabaseClient** : log du body non-JSON sur les erreurs Edge Function (debug facilité)
+
+### 2. Secrets Supabase mis à jour
+
+| Secret | Valeur |
+|--------|--------|
+| `ADMIN_USER_ID` | UUID de l'admin (remplace `ADMIN_EMAIL`) |
+| `STRIPE_PRICE_MONTHLY` | `price_1TFjM6FPxR7QFABJwnMbND3B` |
+| `STRIPE_PRICE_YEARLY` | `price_1TFjM7FPxR7QFABJk5I1uBaC` |
+
+### 3. PHI — séparation sessionStorage / localStorage (Scan)
+
+| Clé | Stockage | Raison |
+|-----|----------|--------|
+| `arvis_scan_aiHtml`, `arvis_scan_ocrText`, `arvis_scan_imgData` | `sessionStorage` | PHI — effacé à la fermeture de l'onglet (DSGVO Art. 9) |
+| `arvis_scan_step`, `arvis_scan_panel`, `arvis_scan_mode`, `arvis_scan_limitReached` | `localStorage` | État UI non-médical — persisté entre onglets |
 
 ---
 

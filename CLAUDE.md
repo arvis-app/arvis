@@ -83,11 +83,11 @@ Si une fonction est déployée **sans** ce flag, le gateway Supabase intercepte 
 | `create-checkout-session` | `--no-verify-jwt` | Valide JWT en interne via SERVICE_ROLE_KEY |
 | `create-portal-session` | `--no-verify-jwt` | idem |
 | `stripe-webhook` | `--no-verify-jwt` | Stripe n'envoie pas de JWT |
-| `ai-chat` | `--no-verify-jwt` | Valide JWT en interne + CORS dynamique |
+| `ai-chat` | `--no-verify-jwt` | Valide JWT en interne + CORS dynamique + validation payload |
 | `ai-whisper` | `--no-verify-jwt` | idem |
 | `realtime-token` | `--no-verify-jwt` | idem |
 | `get-plan-status` | `--no-verify-jwt` | idem |
-| `admin-stats` | `--no-verify-jwt` | idem |
+| `admin-stats` | `--no-verify-jwt` | Valide UUID admin via `ADMIN_USER_ID` secret |
 
 Vérifier après déploiement :
 ```bash
@@ -135,10 +135,10 @@ Pour cibler un prix précis : dans Stripe Dashboard → coupon → Metadata → 
 ## Variables d'environnement
 ### Vercel (frontend) — préfixe `VITE_` obligatoire (Vite, pas CRA)
 ```
-VITE_STRIPE_PRICE_MONTHLY=price_xxx
-VITE_STRIPE_PRICE_YEARLY=price_xxx
-VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_URL=https://jmanxlmzvfnhpgcxsqly.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...
+VITE_STRIPE_PRICE_MONTHLY=price_1TFjM6FPxR7QFABJwnMbND3B
+VITE_STRIPE_PRICE_YEARLY=price_1TFjM7FPxR7QFABJk5I1uBaC
 VITE_SENTRY_DSN=https://...
 ```
 Accès dans le code : `import.meta.env.VITE_*` (jamais `process.env.REACT_APP_*`)
@@ -146,7 +146,10 @@ Accès dans le code : `import.meta.env.VITE_*` (jamais `process.env.REACT_APP_*`
 ```
 STRIPE_SECRET_KEY
 STRIPE_WEBHOOK_SECRET
-STRIPE_COUPON_MONTHLY  (optionnel, remplacé par auto-fetch)
+STRIPE_PRICE_MONTHLY=price_1TFjM6FPxR7QFABJwnMbND3B
+STRIPE_PRICE_YEARLY=price_1TFjM7FPxR7QFABJk5I1uBaC
+ADMIN_USER_ID=<uuid-admin>          ← remplace ADMIN_EMAIL
+STRIPE_COUPON_MONTHLY               (optionnel, remplacé par auto-fetch)
 ```
 
 ## Règle critique : invokeEdgeFunction()
@@ -168,10 +171,10 @@ Avant de livrer du code impliquant de l'UI dynamique, Supabase, ou du stockage :
 2. **Données médicales (PHI)** → jamais dans `localStorage`. Utiliser `sessionStorage` (effacé à la fermeture de l'onglet). Seuls les préférences UI non-médicales (step, mode, panel) vont en `localStorage`.
 3. **Mutations Supabase côté client** → toujours ajouter `.eq('user_id', user.id)` sur tout `update`/`delete`, même si RLS est actif (défense en profondeur).
 
-## Table à créer manuellement dans Supabase SQL Editor
+## Tables Supabase supplémentaires
 
 ```sql
--- Idempotency Stripe webhook (à exécuter une fois dans le SQL Editor Supabase)
+-- Idempotency Stripe webhook — créer si absent dans SQL Editor Supabase
 create table if not exists public.stripe_events_processed (
   event_id     text        primary key,
   processed_at timestamptz default now()
