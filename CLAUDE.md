@@ -71,10 +71,28 @@ const data = await invokeEdgeFunction('nom-fonction', { param: valeur })
 Ce helper fait `refreshSession()` et passe explicitement `Authorization: Bearer <token>`.
 
 ## Edge Functions — flags de déploiement
-- `create-checkout-session` → `--no-verify-jwt` (gateway désactivé, fonction valide JWT elle-même via SERVICE_ROLE_KEY)
-- `create-portal-session` → `--no-verify-jwt`
-- `stripe-webhook` → `--no-verify-jwt` (Stripe n'envoie pas de JWT)
-- `ai-chat`, `ai-whisper`, `realtime-token` → verify_jwt: true (défaut)
+
+**TOUTES les fonctions doivent être déployées avec `--no-verify-jwt`.**
+
+Si une fonction est déployée **sans** ce flag, le gateway Supabase intercepte le preflight OPTIONS et retourne son propre header CORS (wildcard ou mauvaise origin), annulant le fix CORS www.arvis-app.de.
+
+| Fonction | Flag | Raison |
+|----------|------|--------|
+| `create-checkout-session` | `--no-verify-jwt` | Valide JWT en interne via SERVICE_ROLE_KEY |
+| `create-portal-session` | `--no-verify-jwt` | idem |
+| `stripe-webhook` | `--no-verify-jwt` | Stripe n'envoie pas de JWT |
+| `ai-chat` | `--no-verify-jwt` | Valide JWT en interne + CORS dynamique |
+| `ai-whisper` | `--no-verify-jwt` | idem |
+| `realtime-token` | `--no-verify-jwt` | idem |
+| `get-plan-status` | `--no-verify-jwt` | idem |
+| `admin-stats` | `--no-verify-jwt` | idem |
+
+Vérifier après déploiement :
+```bash
+curl -s -I -X OPTIONS "https://jmanxlmzvfnhpgcxsqly.supabase.co/functions/v1/<fn>" \
+  -H "Origin: https://www.arvis-app.de" | grep access-control-allow-origin
+# Doit retourner : https://www.arvis-app.de
+```
 
 ## Table `users` (colonnes importantes)
 | Colonne | Type | Description |
@@ -125,11 +143,23 @@ STRIPE_WEBHOOK_SECRET
 STRIPE_COUPON_MONTHLY  (optionnel, remplacé par auto-fetch)
 ```
 
+## Règle critique : invokeEdgeFunction()
+Ne jamais utiliser `supabase.functions.invoke()` — ne transmet pas le JWT et masque les vraies erreurs. Toujours utiliser `invokeEdgeFunction()` de `src/supabaseClient.js` :
+```js
+const data = await invokeEdgeFunction('nom-fonction', { param: valeur })
+```
+
+## Persistance localStorage (pages stateful)
+Scan, Bausteine, Uebersetzung sauvegardent leur état dans `localStorage` pour survivre aux changements d'onglet. Préfixes de clés : `arvis_scan_*`, `arvis_bausteine_*`, `arvis_ueb_*`.
+
+**Piège restauration** : L'effet `[selected]` qui fait `removeItem` quand `selected=null` s'exécute au premier rendu et efface la clé avant la restauration. Toujours utiliser un `restoredRef` ou stocker l'id dans un state React séparé initialisé depuis localStorage.
+
 ## Pièges connus
-1. **Client Stripe supprimé** : `create-checkout-session` vérifie l'existence du client avant usage et le recrée si supprimé.
-2. **Triple refresh** : Au retour de Stripe (`?success=true`), polling toutes les 2s pendant 20s max jusqu'à détection `plan: pro`.
-3. **sed sur macOS** corrompt les gros fichiers — toujours utiliser l'outil Edit de Claude.
-4. **Vercel rewrites vs routes** : `rewrites` appliqués après filesystem → utiliser `routes` pour surcharger `/`.
+1. **CORS www** : `arvis-app.de` redirige (307) vers `www.arvis-app.de`. Toutes les Edge Functions doivent être déployées avec `--no-verify-jwt` et avoir `https://www.arvis-app.de` dans leur ALLOWED_ORIGINS. Vérifier après chaque déploiement (voir section "Edge Functions — flags").
+2. **Client Stripe supprimé** : `create-checkout-session` vérifie l'existence du client avant usage et le recrée si supprimé.
+3. **Triple refresh** : Au retour de Stripe (`?success=true`), polling toutes les 2s pendant 20s max jusqu'à détection `plan: pro`.
+4. **sed sur macOS** corrompt les gros fichiers — toujours utiliser l'outil Edit de Claude.
+5. **Vercel rewrites vs routes** : `rewrites` appliqués après filesystem → utiliser `routes` pour surcharger `/`.
 
 ## Compte de test
 - **Email** : amine.mabtoul@outlook.fr

@@ -1,5 +1,5 @@
 # CONTEXTE PROJET — Arvis
-_Dernière mise à jour : 29 mars 2026_
+_Dernière mise à jour : 30 mars 2026_
 
 ---
 
@@ -331,6 +331,81 @@ Tables protégées par RLS (`auth.uid() = user_id` ou `auth.uid() = id`) : `user
 ### 4. Admin & Sentry 📊
 - Implémentation globale d'`@sentry/react` et capture intelligente des erreurs.
 - Page d'administration `AdminStats.js` conçue pour le suivi des KPI d'Arvis (Conversion, utilisateurs actifs), protégée par une condition simple sur l'email administrateur.
+
+---
+
+## Mises à jour récentes (Session 9 — 30 mars 2026) ✅
+
+### 1. Fix CORS Safari — www.arvis-app.de
+
+**Cause racine** : `arvis-app.de` redirige (307) vers `www.arvis-app.de`. Le navigateur envoie donc `Origin: https://www.arvis-app.de`. Toutes les Edge Functions retournaient `Access-Control-Allow-Origin: https://arvis-app.de` (sans www) → mismatch CORS → Safari bloquait tout avec "Load failed".
+
+**Fix** : Les 7 Edge Functions ont maintenant un CORS dynamique — elles lisent l'`Origin` de chaque requête et répondent avec la même valeur si elle est dans `ALLOWED_ORIGINS`.
+
+```typescript
+const ALLOWED_ORIGINS = ['https://arvis-app.de', 'https://www.arvis-app.de', 'http://localhost:3000', 'http://localhost:5173']
+const corsHeaders = {
+  'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : 'https://arvis-app.de',
+  ...
+}
+```
+
+**Important** : Toutes les fonctions doivent être déployées avec `--no-verify-jwt`. Si déployées **sans** ce flag, le gateway Supabase intercepte le preflight OPTIONS et retourne son propre header CORS (avec wildcard ou mauvaise origin), annulant le fix. Vérifier après chaque déploiement :
+```bash
+curl -s -I -X OPTIONS "https://jmanxlmzvfnhpgcxsqly.supabase.co/functions/v1/<fn>" \
+  -H "Origin: https://www.arvis-app.de" | grep access-control-allow-origin
+# Doit retourner : https://www.arvis-app.de
+```
+
+### 2. invokeEdgeFunction() — helper fetch natif
+
+`supabase.functions.invoke()` v2.99.2 ne transmet pas le JWT et masque les vraies erreurs réseau. Remplacé par un helper `fetch` natif dans `src/supabaseClient.js` :
+
+```js
+export async function invokeEdgeFunction(fnName, body = {}) {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('Sitzung abgelaufen – bitte neu anmelden.')
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+    },
+    body: JSON.stringify(body),
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data?.error || data?.message || `HTTP ${response.status}`)
+  if (data?.error) throw new Error(data.error)
+  return data
+}
+```
+
+Toutes les pages utilisent maintenant ce helper (Scan.js, BriefSchreiber.js).
+
+### 3. Persistance localStorage — état entre onglets
+
+État sauvegardé dans `localStorage` sur 4 pages :
+
+| Page | Clés localStorage |
+|------|-------------------|
+| `Scan.js` | `arvis_scan_step`, `arvis_scan_panel`, `arvis_scan_mode`, `arvis_scan_aiHtml`, `arvis_scan_ocrText`, `arvis_scan_limitReached`, `arvis_scan_imgData` |
+| `Bausteine.js` | `arvis_bausteine_basket`, `arvis_bausteine_selected_id` |
+| `Uebersetzung.js` | `arvis_ueb_search`, `arvis_ueb_cat`, `arvis_ueb_langs`, `arvis_ueb_selected` |
+
+**Piège** : L'effet persist `[selected]` qui fait `removeItem` quand `selected=null` s'exécute au premier rendu et efface la clé sauvegardée avant que l'effet de restauration ait pu la lire. Solution : `useRef` (`restoredRef`) pour bloquer le `removeItem` tant que la restauration n'a pas eu lieu (Uebersetzung). Pour Bausteine : stocker l'id dans un state React séparé (`_pendingSelectedId`) initialisé depuis localStorage — indépendant du removeItem.
+
+### 4. Scan — résultats OCR/KI indépendants
+
+- OCR et KI stockent leurs résultats séparément (`aiHtml`, `ocrText`)
+- Switcher le mode toggle n'efface plus le résultat de l'autre mode
+- Le logo Arvis dans le badge KI-Analyse : 13px → 20px
+
+### 5. BriefSchreiber — prompt Korrektur réécrit
+
+Ancien prompt : imposait structure rigide Anamnese/Befunde/Diagnose/Verlauf/OP/Empfehlungen → modèle inventait des sections absentes.
+
+Nouveau prompt : corrige + réécrit en style Arztbrief professionnel, uniquement ce qui est dans l'input. Fachbegriffe actifs, paragraphe fluide avec transitions, pas de sections forcées.
 
 ---
 
