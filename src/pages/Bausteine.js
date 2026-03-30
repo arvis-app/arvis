@@ -142,7 +142,7 @@ export default function Bausteine() {
       })
     })
   }, [user])
-  const [basket, setBasket]             = useState([])
+  const [basket, setBasket]             = useState(() => { try { return JSON.parse(localStorage.getItem('arvis_bausteine_basket') || '[]') } catch { return [] } })
   const basketListRef                   = useRef(null)
   const [neuOpen, setNeuOpen]           = useState(false)
   const [editingB, setEditingB]         = useState(null)
@@ -162,11 +162,12 @@ export default function Bausteine() {
     return () => obs.disconnect()
   }, [])
 
-  // Scroll automatique vers le dernier élément du panier
+  // Scroll automatique vers le dernier élément du panier + persistence
   useEffect(() => {
     if (basketListRef.current && basket.length > 0) {
       basketListRef.current.scrollTop = basketListRef.current.scrollHeight
     }
+    localStorage.setItem('arvis_bausteine_basket', JSON.stringify(basket))
   }, [basket])
 
   // Attendre que bausteine_data.js soit chargé
