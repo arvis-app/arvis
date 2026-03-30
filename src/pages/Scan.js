@@ -135,12 +135,12 @@ export default function Scan() {
   const navigate = useNavigate()
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [step, setStep] = useState(1)
-  const [panel, setPanel] = useState('upload') // 'upload' | 'crop'
-  const [mode, setMode] = useState('ai')     // 'ai' | 'ocr'
-  const [result, setResult] = useState('empty')  // 'empty' | 'loading' | 'ai' | 'ocr'
-  const [aiHtml, setAiHtml] = useState('')
-  const [ocrText, setOcrText] = useState('')
+  const [step, setStep] = useState(() => Number(sessionStorage.getItem('arvis_scan_step')) || 1)
+  const [panel, setPanel] = useState(() => sessionStorage.getItem('arvis_scan_panel') || 'upload')
+  const [mode, setMode] = useState(() => sessionStorage.getItem('arvis_scan_mode') || 'ai')
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [aiHtml, setAiHtml] = useState(() => sessionStorage.getItem('arvis_scan_aiHtml') || '')
+  const [ocrText, setOcrText] = useState(() => sessionStorage.getItem('arvis_scan_ocrText') || '')
   const [loadingText, setLoadingText] = useState('Analysiere Dokument...')
   const [errorMsg, setErrorMsg] = useState('')
   const [zoom, setZoom] = useState(1)
@@ -151,7 +151,7 @@ export default function Scan() {
   const [blackouts, setBlackouts] = useState([])
   const [selectedBk, setSelectedBk] = useState(null)
   const [copied, setCopied] = useState(false)
-  const [limitReached, setLimitReached] = useState(false)
+  const [limitReached, setLimitReached] = useState(() => sessionStorage.getItem('arvis_scan_limitReached') === 'true')
 
   // Mobile multi-photo state
   const [mobilePhotos, setMobilePhotos] = useState([]) // { file, preview }[]
@@ -193,6 +193,20 @@ export default function Scan() {
   useEffect(() => {
     if (panel === 'upload') setFrozenRightH(0)
   }, [panel])
+
+  // ── Persist key state across tab switches ─────────────────────────────────
+  useEffect(() => { sessionStorage.setItem('arvis_scan_step', step) }, [step])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_panel', panel) }, [panel])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_mode', mode) }, [mode])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_aiHtml', aiHtml) }, [aiHtml])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
+
+  // Restore image data on mount (for tab switch back during crop/anonymize step)
+  useEffect(() => {
+    const saved = sessionStorage.getItem('arvis_scan_imgData')
+    if (saved) imgDataRef.current = saved
+  }, [])
 
   // ── Pan ───────────────────────────────────────────────────────────────────
   function startPan(e) {
@@ -345,6 +359,7 @@ export default function Scan() {
       const reader = new FileReader()
       reader.onload = (e) => {
         imgDataRef.current = e.target.result
+        sessionStorage.setItem('arvis_scan_imgData', e.target.result)
         setBlackouts([])
         setSelectedBk(null)
         if (imgRef.current) imgRef.current.src = e.target.result
@@ -537,9 +552,9 @@ export default function Scan() {
   async function proceedToAnalysis() {
     if (pdfDocRef.current) blackoutsByPageRef.current[pdfPageRef.current] = blackouts.map(b => ({ ...b }))
     goStep(3)
-    setResult('loading')
-    if (window.innerWidth <= 785) setTimeout(() => rightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    setIsAnalyzing(true)
     setErrorMsg('')
+    if (window.innerWidth <= 785) setTimeout(() => rightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     try {
       let fullOcrText = ''
       if (pdfDocRef.current && pdfTotalRef.current > 1) {
@@ -569,25 +584,23 @@ export default function Scan() {
 
       if (mode === 'ocr') {
         setOcrText(fullOcrText || 'Kein Text erkannt.')
-        setResult('ocr')
       } else {
         if (!fullOcrText || fullOcrText.length < 10) throw new Error('Kein Text erkannt')
         const analysis = await runAIAnalysis(fullOcrText)
         setAiHtml(markdownToHtml(analysis))
-        setResult('ai')
       }
       goStep(4)
     } catch (err) {
       if (err.message === '__limit_reached__') {
         setLimitReached(true)
-        setResult('error')
         setErrorMsg('Ihr monatliches KI-Kontingent wurde erreicht.')
         goStep(2)
       } else {
         setErrorMsg(err.message)
-        setResult('error')
         goStep(2)
       }
+    } finally {
+      setIsAnalyzing(false)
     }
   }
 
@@ -599,9 +612,13 @@ export default function Scan() {
     blackoutsByPageRef.current = {}
     setPdfPage(1); setPdfTotal(1)
     setBlackouts([]); setSelectedBk(null)
-    setPanel('upload'); setResult('empty')
+    setPanel('upload')
+    setIsAnalyzing(false)
+    setAiHtml('')
+    setOcrText('')
     setZoom(1); setPanX(0); setPanY(0); setIsDragging(false); setViewerHeight(0); setErrorMsg(''); setLimitReached(false)
-    goStep(1)
+    goStep(1);
+    ['arvis_scan_step','arvis_scan_panel','arvis_scan_mode','arvis_scan_aiHtml','arvis_scan_ocrText','arvis_scan_limitReached','arvis_scan_imgData'].forEach(k => sessionStorage.removeItem(k))
   }
 
   // ── Copy / Download ────────────────────────────────────────────────────────
@@ -821,7 +838,7 @@ export default function Scan() {
         </div>
 
         {/* RIGHT */}
-        <div className="scan-right" ref={rightRef} style={(result === 'ai' || result === 'ocr') && leftH > 0 ? { height: leftH } : panel !== 'upload' && frozenRightH > 0 ? { height: frozenRightH } : { alignSelf: 'stretch' }}>
+        <div className="scan-right" ref={rightRef} style={!isAnalyzing && (aiHtml || ocrText) && leftH > 0 ? { height: leftH } : panel !== 'upload' && frozenRightH > 0 ? { height: frozenRightH } : { alignSelf: 'stretch' }}>
           {/* Mode selector */}
           <div className="scan-mode-card">
             <div className="scan-mode-title">Analysemodus</div>
@@ -850,7 +867,7 @@ export default function Scan() {
           {/* Result card */}
           <div className="scan-result-card" id="resultCard">
             {/* Empty */}
-            {(result === 'empty') && (
+            {!isAnalyzing && !errorMsg && ((mode === 'ai' && !aiHtml) || (mode === 'ocr' && !ocrText)) && (
               <div className="scan-result-empty">
                 <img src="/arvis-icon-light.svg" width="90" height="90" alt="" style={{ display: 'block', filter: 'grayscale(1) opacity(0.35)' }} />
                 <div style={{ fontSize: 16, color: 'var(--text-3)', marginTop: 12 }}>Ergebnis erscheint hier</div>
@@ -858,7 +875,7 @@ export default function Scan() {
               </div>
             )}
             {/* Loading */}
-            {result === 'loading' && (
+            {isAnalyzing && (
               <div className="scan-result-loading">
                 <div className="scan-spinner" />
                 <div style={{ fontSize: 16, color: 'var(--text-2)', marginTop: 16, fontWeight: 600 }}>{loadingText}</div>
@@ -866,18 +883,18 @@ export default function Scan() {
               </div>
             )}
             {/* Error */}
-            {result === 'error' && (
+            {!isAnalyzing && errorMsg && (
               <div style={{ textAlign: 'center', color: 'var(--text-3)', padding: 24 }}>
                 <div style={{ fontSize: 15, marginTop: 4, color: '#DC2626' }}>{errorMsg}</div>
               </div>
             )}
             {/* AI result */}
-            {result === 'ai' && (
+            {!isAnalyzing && mode === 'ai' && aiHtml && (
               <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
                   <div className="result-header">
                     <div className="result-badge ai">
-                      <img src="/arvis-icon.svg" width="13" height="13" alt="" style={{ display: 'block' }} />
+                      <img src="/arvis-icon.svg" width="20" height="20" alt="" style={{ display: 'block' }} />
                       KI-Analyse
                     </div>
                     <div className="result-actions">
@@ -905,7 +922,7 @@ export default function Scan() {
               </div>
             )}
             {/* OCR result */}
-            {result === 'ocr' && (
+            {!isAnalyzing && mode === 'ocr' && ocrText && (
               <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <div className="result-header">
                   <div className="result-badge ocr">
