@@ -6,18 +6,26 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 /**
- * Appel sécurisé d'une Edge Function avec JWT explicite.
- * Même pattern que BriefSchreiber.js et Scan.js (qui fonctionnent).
+ * Appel sécurisé d'une Edge Function via fetch() natif.
+ * Contourne supabase.functions.invoke() qui peut lever FunctionsFetchError
+ * de façon aléatoire en v2.99.x. fetch() natif est plus fiable.
  */
 export async function invokeEdgeFunction(fnName, body = {}) {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) throw new Error('Sitzung abgelaufen – bitte neu anmelden.')
 
-  const { data, error } = await supabase.functions.invoke(fnName, {
-    headers: { Authorization: `Bearer ${session.access_token}` },
-    body
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+    },
+    body: JSON.stringify(body),
   })
-  if (error) throw error
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data?.error || data?.message || `HTTP ${response.status}`)
   if (data?.error) throw new Error(data.error)
   return data
 }

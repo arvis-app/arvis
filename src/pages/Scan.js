@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DOMPurify from 'dompurify'
-import { supabase } from '../supabaseClient'
+import { supabase, invokeEdgeFunction } from '../supabaseClient'
 import { downloadAsWord } from '../utils/downloadWord'
 import { QRCodeSVG } from 'qrcode.react'
 import { PDFDocument } from 'pdf-lib'
@@ -520,37 +520,15 @@ export default function Scan() {
   // ── AI Analysis ────────────────────────────────────────────────────────────
   async function runAIAnalysis(ocrText) {
     setLoadingText('KI analysiert Dokument...')
-    const { data: sessionData } = await supabase.auth.getSession()
-    const session = sessionData?.session
-    if (!session) throw new Error('Sitzung abgelaufen. Bitte erneut anmelden.')
-    const { data, error } = await supabase.functions.invoke('ai-chat', {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-      body: {
-        model: 'gpt-4o',
-        max_tokens: 4000,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: 'Anonymisierter Dokumententext:\n\n' + ocrText }
-        ]
-      }
+    const data = await invokeEdgeFunction('ai-chat', {
+      model: 'gpt-4o',
+      max_tokens: 4000,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: 'Anonymisierter Dokumententext:\n\n' + ocrText }
+      ]
     })
-    if (data?.error === 'limit_reached') {
-      throw new Error('__limit_reached__')
-    }
-    if (error || data?.error) {
-      let msg = data?.error
-      if (!msg && error?.context) {
-        try {
-          const text = await error.context.clone().text()
-          try { const b = JSON.parse(text); msg = b?.error || b?.message } catch { msg = text }
-        } catch {}
-      }
-      if (!msg) msg = error?.message || 'API Fehler'
-      if (msg?.toLowerCase().includes('jwt') || msg?.toLowerCase().includes('invalid') || error?.context?.status === 401) {
-        msg = 'Sitzung abgelaufen. Bitte Seite neu laden und erneut anmelden.'
-      }
-      throw new Error(msg)
-    }
+    if (data?.error === 'limit_reached') throw new Error('__limit_reached__')
     if (!data?.content) throw new Error('Leere Antwort vom Modell.')
     return data.content
   }

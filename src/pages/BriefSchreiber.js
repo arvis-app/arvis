@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import DOMPurify from 'dompurify'
-import { supabase } from '../supabaseClient'
+import { supabase, invokeEdgeFunction } from '../supabaseClient'
 import { downloadAsWord } from '../utils/downloadWord'
 
 function escHtml(s) {
@@ -262,15 +262,15 @@ export default function BriefSchreiber() {
       return
     }
     try {
-      const { data: refreshData } = await supabase.auth.refreshSession()
-      const session = refreshData?.session
-      if (!session) { showToast('Sitzung abgelaufen – bitte neu anmelden'); return }
-
-      const { data: tokenData, error: tokenError } = await supabase.functions.invoke('realtime-token', {
-        headers: { Authorization: `Bearer ${session.access_token}` }
-      })
-      if (tokenError || !tokenData?.token) {
-        showToast('Verbindung fehlgeschlagen: ' + (tokenData?.error || tokenError?.message || ''))
+      let tokenData
+      try {
+        tokenData = await invokeEdgeFunction('realtime-token', {})
+      } catch (tokenErr) {
+        showToast('Verbindung fehlgeschlagen: ' + tokenErr.message)
+        return
+      }
+      if (!tokenData?.token) {
+        showToast('Verbindung fehlgeschlagen: kein Token erhalten')
         return
       }
 
@@ -327,15 +327,11 @@ export default function BriefSchreiber() {
     if (!input) { showToast('Bitte Text eingeben'); return }
     setOrig(input); setState('loading')
     try {
-      const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { model: 'gpt-4o', max_tokens: 3000, messages: [{ role: 'system', content: SYS }, { role: 'user', content: buildPrompt(mode, style, length, input) }] }
+      const data = await invokeEdgeFunction('ai-chat', {
+        model: 'gpt-4o', max_tokens: 3000,
+        messages: [{ role: 'system', content: SYS }, { role: 'user', content: buildPrompt(mode, style, length, input) }]
       })
-      if (data?.error === 'limit_reached') {
-        setState('empty')
-        setLimitReached(true)
-        return
-      }
-      if (error || data?.error) throw new Error(error?.message || data?.error || 'API Fehler')
+      if (data?.error === 'limit_reached') { setState('empty'); setLimitReached(true); return }
       const content = data?.content
       if (!content) throw new Error('Leere Antwort.')
       setResult(content.trim()); setState('result'); setDiffMode('result')
