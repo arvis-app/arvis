@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 
 const UEB_LANGS = [
   { key:'en', label:'English',    abbr:'EN' },
@@ -32,6 +32,7 @@ export default function Uebersetzung() {
   const [copiedKey, setCopiedKey] = useState(null)
   const [visibleCount, setVisibleCount] = useState(200)
   const [loadError, setLoadError] = useState(false)
+  const restoredRef = useRef(false)
 
   useEffect(() => {
     function tryLoad() {
@@ -54,6 +55,7 @@ export default function Uebersetzung() {
   // Restore selected word once data is loaded
   useEffect(() => {
     if (!data.length) return
+    restoredRef.current = true
     const savedDe = localStorage.getItem('arvis_ueb_selected')
     if (savedDe) {
       const found = data.find(b => b.de === savedDe)
@@ -61,11 +63,15 @@ export default function Uebersetzung() {
     }
   }, [data])
 
-  // Persist state on change
+  // Persist state on change (skip until restore has run to avoid clearing saved value on mount)
   useEffect(() => { localStorage.setItem('arvis_ueb_search', search) }, [search])
   useEffect(() => { localStorage.setItem('arvis_ueb_cat', cat) }, [cat])
   useEffect(() => { localStorage.setItem('arvis_ueb_langs', JSON.stringify(visibleLangs)) }, [visibleLangs])
-  useEffect(() => { if (selected) localStorage.setItem('arvis_ueb_selected', selected.de); else localStorage.removeItem('arvis_ueb_selected') }, [selected])
+  useEffect(() => {
+    if (!restoredRef.current) return
+    if (selected) localStorage.setItem('arvis_ueb_selected', selected.de)
+    else localStorage.removeItem('arvis_ueb_selected')
+  }, [selected])
 
   useEffect(() => { setVisibleCount(200) }, [search, cat])
 

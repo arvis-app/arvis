@@ -128,6 +128,7 @@ export default function Bausteine() {
   const [search, setSearch]             = useState('')
   const [activeCat, setActiveCat]       = useState(null)
   const [selected, setSelected]         = useState(null)
+  const [_pendingSelectedId, _setPendingSelectedId] = useState(() => localStorage.getItem('arvis_bausteine_selected_id') || null)
   const [custom, setCustom]             = useState([])
   const [favs, setFavs]                 = useState([]) // array of IDs
 
@@ -185,6 +186,19 @@ export default function Bausteine() {
     const base = window.BAUSTEINE_DATA.filter(b=>!forkedIds.includes(b.id))
     return [...base, ...custom]
   }, [custom, baudataVersion]) // eslint-disable-line react-hooks/exhaustive-deps -- baudataVersion triggers recompute when window.BAUSTEINE_DATA loads
+
+  // Restore selected baustein once allData is available
+  useEffect(() => {
+    if (!_pendingSelectedId || !allData.length) return
+    const found = allData.find(b => b.id === _pendingSelectedId)
+    if (found) { setSelected(found); _setPendingSelectedId(null) }
+  }, [allData, _pendingSelectedId])
+
+  // Persist selected id
+  useEffect(() => {
+    if (selected) localStorage.setItem('arvis_bausteine_selected_id', selected.id)
+    else localStorage.removeItem('arvis_bausteine_selected_id')
+  }, [selected])
 
   const categories = useMemo(() => {
     const allCats = [...new Set(allData.map(b=>b.category))]
