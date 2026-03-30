@@ -206,6 +206,16 @@ Toujours utiliser `invokeEdgeFunction()` depuis `src/supabaseClient.js`.
 
 ---
 
+## Compte de test
+
+| Champ | Valeur |
+|-------|--------|
+| Email | amine.mabtoul@outlook.fr |
+| Mot de passe | test1144 |
+| URL | https://arvis-app.de/login (prod) ou http://localhost:3000/login (dev) |
+
+---
+
 ## Comment démarrer une nouvelle conversation
 
 1. Ouvrir `/Users/Amine/arvis` dans l'agent IA

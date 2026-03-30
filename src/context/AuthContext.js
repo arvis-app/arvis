@@ -122,8 +122,9 @@ export function AuthProvider({ children }) {
       }
       if (session) {
         setUser(session.user)
-        // Ne pas charger le profil ni réinitialiser isResettingPassword sur la page reset
-        if (!onResetPage) {
+        // Charger le profil uniquement sur SIGNED_IN/USER_UPDATED — INITIAL_SESSION est déjà
+        // couvert par getSession() ci-dessus, TOKEN_REFRESHED ne nécessite pas de rechargement
+        if (!onResetPage && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
           loadProfile(session.user.id)
           setIsResettingPassword(false)
         }
