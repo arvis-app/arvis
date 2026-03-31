@@ -254,6 +254,20 @@ Coupons auto-appliqués au checkout (priorité) :
 
 ---
 
+## Paywall (`src/components/Paywall.js`)
+
+Les onglets de la sidebar sont **toujours cliquables** — le blocage se fait uniquement dans `Paywall.js` (wrapper autour de chaque page premium). Ne jamais remettre `pointerEvents: none` dans la sidebar.
+
+Messages selon le plan :
+- `trial` expiré → "Ihre 14-tägige Testphase ist abgelaufen"
+- `canceled` → "Ihr Abonnement wurde gekündigt"
+
+Bouton "Jetzt upgraden" :
+- Si `stripe_customer_id` existe → Billing Portal (réactivation)
+- Sinon → Stripe Checkout (nouvel abonnement)
+
+---
+
 ## Pièges connus
 
 1. **CORS www** : `arvis-app.de` redirige (307) → `www.arvis-app.de`. Toutes les Edge Functions doivent être `--no-verify-jwt` + avoir `https://www.arvis-app.de` dans `ALLOWED_ORIGINS`.
