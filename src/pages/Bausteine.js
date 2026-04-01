@@ -128,7 +128,7 @@ export default function Bausteine() {
   const [search, setSearch]             = useState('')
   const [activeCat, setActiveCat]       = useState(null)
   const [selected, setSelected]         = useState(null)
-  const [_pendingSelectedId, _setPendingSelectedId] = useState(() => localStorage.getItem('arvis_bausteine_selected_id') || null)
+  const [_pendingSelectedId, _setPendingSelectedId] = useState(() => sessionStorage.getItem('arvis_bausteine_selected_id') || null)
   const [custom, setCustom]             = useState([])
   const [favs, setFavs]                 = useState([]) // array of IDs
 
@@ -143,7 +143,7 @@ export default function Bausteine() {
       })
     })
   }, [user])
-  const [basket, setBasket]             = useState(() => { try { return JSON.parse(localStorage.getItem('arvis_bausteine_basket') || '[]') } catch { return [] } })
+  const [basket, setBasket]             = useState(() => { try { return JSON.parse(sessionStorage.getItem('arvis_bausteine_basket') || '[]') } catch { return [] } })
   const basketListRef                   = useRef(null)
   const [neuOpen, setNeuOpen]           = useState(false)
   const [editingB, setEditingB]         = useState(null)
@@ -168,7 +168,7 @@ export default function Bausteine() {
     if (basketListRef.current && basket.length > 0) {
       basketListRef.current.scrollTop = basketListRef.current.scrollHeight
     }
-    localStorage.setItem('arvis_bausteine_basket', JSON.stringify(basket))
+    sessionStorage.setItem('arvis_bausteine_basket', JSON.stringify(basket))
   }, [basket])
 
   // Attendre que bausteine_data.js soit chargé
@@ -196,8 +196,8 @@ export default function Bausteine() {
 
   // Persist selected id
   useEffect(() => {
-    if (selected) localStorage.setItem('arvis_bausteine_selected_id', selected.id)
-    else localStorage.removeItem('arvis_bausteine_selected_id')
+    if (selected) sessionStorage.setItem('arvis_bausteine_selected_id', selected.id)
+    else sessionStorage.removeItem('arvis_bausteine_selected_id')
   }, [selected])
 
   const categories = useMemo(() => {

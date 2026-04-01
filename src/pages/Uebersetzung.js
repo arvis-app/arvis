@@ -25,9 +25,9 @@ const COPY_ICON = <svg width="13" height="13" viewBox="0 0 24 24" fill="none" st
 
 export default function Uebersetzung() {
   const [data, setData]           = useState([])
-  const [search, setSearch]       = useState(() => localStorage.getItem('arvis_ueb_search') || '')
-  const [cat, setCat]             = useState(() => localStorage.getItem('arvis_ueb_cat') || 'all')
-  const [visibleLangs, setVisible] = useState(() => { try { return JSON.parse(localStorage.getItem('arvis_ueb_langs') || 'null') || { en:true, es:true, fr:true, ru:true, uk:true } } catch { return { en:true, es:true, fr:true, ru:true, uk:true } } })
+  const [search, setSearch]       = useState(() => sessionStorage.getItem('arvis_ueb_search') || '')
+  const [cat, setCat]             = useState(() => sessionStorage.getItem('arvis_ueb_cat') || 'all')
+  const [visibleLangs, setVisible] = useState(() => { try { return JSON.parse(sessionStorage.getItem('arvis_ueb_langs') || 'null') || { en:true, es:true, fr:true, ru:true, uk:true } } catch { return { en:true, es:true, fr:true, ru:true, uk:true } } })
   const [selected, setSelected]   = useState(null)
   const [copiedKey, setCopiedKey] = useState(null)
   const [visibleCount, setVisibleCount] = useState(200)
@@ -56,7 +56,7 @@ export default function Uebersetzung() {
   useEffect(() => {
     if (!data.length) return
     restoredRef.current = true
-    const savedDe = localStorage.getItem('arvis_ueb_selected')
+    const savedDe = sessionStorage.getItem('arvis_ueb_selected')
     if (savedDe) {
       const found = data.find(b => b.de === savedDe)
       if (found) setSelected(found)
@@ -64,13 +64,13 @@ export default function Uebersetzung() {
   }, [data])
 
   // Persist state on change (skip until restore has run to avoid clearing saved value on mount)
-  useEffect(() => { localStorage.setItem('arvis_ueb_search', search) }, [search])
-  useEffect(() => { localStorage.setItem('arvis_ueb_cat', cat) }, [cat])
-  useEffect(() => { localStorage.setItem('arvis_ueb_langs', JSON.stringify(visibleLangs)) }, [visibleLangs])
+  useEffect(() => { sessionStorage.setItem('arvis_ueb_search', search) }, [search])
+  useEffect(() => { sessionStorage.setItem('arvis_ueb_cat', cat) }, [cat])
+  useEffect(() => { sessionStorage.setItem('arvis_ueb_langs', JSON.stringify(visibleLangs)) }, [visibleLangs])
   useEffect(() => {
     if (!restoredRef.current) return
-    if (selected) localStorage.setItem('arvis_ueb_selected', selected.de)
-    else localStorage.removeItem('arvis_ueb_selected')
+    if (selected) sessionStorage.setItem('arvis_ueb_selected', selected.de)
+    else sessionStorage.removeItem('arvis_ueb_selected')
   }, [selected])
 
   useEffect(() => { setVisibleCount(200) }, [search, cat])

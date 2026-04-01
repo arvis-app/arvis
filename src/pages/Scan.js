@@ -135,9 +135,9 @@ export default function Scan() {
   const navigate = useNavigate()
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [step, setStep] = useState(() => Number(localStorage.getItem('arvis_scan_step')) || 1)
-  const [panel, setPanel] = useState(() => localStorage.getItem('arvis_scan_panel') || 'upload')
-  const [mode, setMode] = useState(() => localStorage.getItem('arvis_scan_mode') || 'ai')
+  const [step, setStep] = useState(() => Number(sessionStorage.getItem('arvis_scan_step')) || 1)
+  const [panel, setPanel] = useState(() => sessionStorage.getItem('arvis_scan_panel') || 'upload')
+  const [mode, setMode] = useState(() => sessionStorage.getItem('arvis_scan_mode') || 'ai')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [aiHtml, setAiHtml] = useState(() => sessionStorage.getItem('arvis_scan_aiHtml') || '')
   const [ocrText, setOcrText] = useState(() => sessionStorage.getItem('arvis_scan_ocrText') || '')
@@ -151,7 +151,7 @@ export default function Scan() {
   const [blackouts, setBlackouts] = useState([])
   const [selectedBk, setSelectedBk] = useState(null)
   const [copied, setCopied] = useState(false)
-  const [limitReached, setLimitReached] = useState(() => localStorage.getItem('arvis_scan_limitReached') === 'true')
+  const [limitReached, setLimitReached] = useState(() => sessionStorage.getItem('arvis_scan_limitReached') === 'true')
 
   // Mobile multi-photo state
   const [mobilePhotos, setMobilePhotos] = useState([]) // { file, preview }[]
@@ -195,12 +195,12 @@ export default function Scan() {
   }, [panel])
 
   // ── Persist key state across tab switches ─────────────────────────────────
-  useEffect(() => { localStorage.setItem('arvis_scan_step', step) }, [step])
-  useEffect(() => { localStorage.setItem('arvis_scan_panel', panel) }, [panel])
-  useEffect(() => { localStorage.setItem('arvis_scan_mode', mode) }, [mode])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_step', step) }, [step])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_panel', panel) }, [panel])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_mode', mode) }, [mode])
   useEffect(() => { sessionStorage.setItem('arvis_scan_aiHtml', aiHtml) }, [aiHtml])
   useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
-  useEffect(() => { localStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
 
   // Restore image data on mount (for tab switch back during crop/anonymize step)
   useEffect(() => {
