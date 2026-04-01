@@ -23,9 +23,33 @@ Avant toute modification de code :
 
 **Arvis** — SaaS de documentation médicale assistée par IA pour médecins hospitaliers allemands.
 
+**Origine du nom :** Contraction de **Jarvis** (l'assistant IA d'Iron Man) + **Arzt** (médecin en allemand). L'idée : un assistant intelligent dédié aux médecins, comme Jarvis l'était pour Tony Stark.
+
 - **GitHub** : `https://github.com/arvis-app/arvis`
 - **URL prod** : `https://arvis-app.de` (redirige vers `www.arvis-app.de` via Cloudflare)
 - Outil strictement personnel : pas de partage entre collègues, pas de données patients identifiants
+
+### Description & utilité
+
+Arvis est conçu pour **réduire la charge administrative des médecins hospitaliers** en Allemagne. Le travail médical génère une quantité massive de documentation (courriers, comptes-rendus, traductions, analyses) qui prend du temps sur les soins. Arvis automatise cette partie grâce à l'IA.
+
+**Fonctionnalités principales :**
+
+| Fonctionnalité | Description |
+|----------------|-------------|
+| **Scan / OCR + KI-Analyse** | Scanne un document médical (ordonnance, compte-rendu, résultats), extrait le texte via OCR, puis l'IA l'analyse et génère un résumé structuré en allemand |
+| **BriefSchreiber** | Rédige ou corrige des courriers médicaux professionnels en allemand via IA (arztbrief, Überweisung, etc.) |
+| **Bausteine** | Bibliothèque de 1 550 blocs de texte médicaux réutilisables, organisés par spécialité — permet d'assembler rapidement des comptes-rendus standardisés |
+| **Übersetzung** | Dictionnaire médical multilingue de 1 585 termes traduits en 6 langues (DE, FR, EN, AR, TR, RU) — pour communiquer avec des patients allophones |
+| **Dateien** | Gestionnaire de fichiers PDF/images — stockage, organisation, accès rapide aux documents patients |
+| **Dashboard** | Vue d'ensemble : météo, agenda, gestion des patients |
+| **MobileScan** | Permet de scanner depuis le téléphone via QR code, en envoyant le document au PC |
+
+**Public cible :** Médecins hospitaliers en Allemagne (Assistenzärzte, Fachärzte).
+
+**Modèle économique :** Trial 14 jours gratuit → abonnement 19€/mois ou 249€/an.
+
+**Langue de l'interface :** Allemand uniquement (les médecins allemands sont les utilisateurs finaux).
 
 ---
 
@@ -41,6 +65,36 @@ Avant toute modification de code :
 | Monitoring | Sentry (`VITE_SENTRY_DSN`) |
 
 **Couleur** : `#e87722` (orange) — **Fonts** : Inter + Bricolage Grotesque (titres)
+
+## Identité visuelle
+
+### Couleurs
+- **Orange principal** : `#e87722` — couleur de marque, boutons CTA, accents
+- **Variables CSS** : `--orange`, `--bg`, etc. (CSS custom, pas de framework)
+- **Teal/bleu** : présent dans le logo et le panneau gauche de la LoginPage (fond sombre teal/brun)
+
+### Typographie
+- **Inter** — font principale, texte courant
+- **Bricolage Grotesque** — titres et en-têtes
+
+### Logo
+- Robot avec tête circulaire, couleur **orange `#e87722`**
+- Deux yeux blancs avec pupilles
+- Sourire
+- Oreillettes sur les côtés
+- **Lignes ECG/heartbeat** s'étendant horizontalement des deux côtés (référence médicale)
+- Fichier : `arvis_logo.png`
+
+### Ton & design
+- Interface **sobre et professionnelle**, orientée usage médical
+- Pas de framework CSS — design distinct et maîtrisé via variables CSS custom
+- Langue de l'interface : **allemand uniquement**
+
+### LoginPage
+- Panneau **gauche** : features Arvis sur fond sombre teal/brun
+- Panneau **droit** : formulaire (4 onglets : Anmelden / Registrieren / Forgot / Reset)
+- Liens légaux en bas du panneau droit : Impressum · Datenschutz · AGB
+- Google Login disponible
 
 ## Commandes essentielles
 
@@ -65,10 +119,12 @@ arvis/
 │   ├── context/AuthContext.js        ← Auth state, profil, isPro, refreshProfile()
 │   ├── components/
 │   │   ├── AppLayout.js              ← Sidebar + topbar
-│   │   └── Paywall.js                ← Bloque accès si pas Pro
+│   │   ├── Paywall.js                ← Bloque accès si pas Pro
+│   │   ├── ErrorBoundary.js          ← Capture les erreurs React
+│   │   └── ResetPasswordModal.js     ← Modale reset mot de passe
 │   └── pages/
 │       ├── LoginPage.js              ← Login + Register + Forgot + Reset (4 onglets)
-│       ├── Dashboard.js
+│       ├── Dashboard.js              ← Vue d'ensemble, météo, agenda, patients
 │       ├── Scan.js                   ← Scan + OCR + KI-Analyse (Paywall)
 │       ├── MobileScan.js             ← Scan via QR code (téléphone)
 │       ├── BriefSchreiber.js         ← Rédaction/correction IA courriers (Paywall)
@@ -76,7 +132,11 @@ arvis/
 │       ├── Uebersetzung.js           ← 1585 termes 6 langues (Paywall)
 │       ├── Dateien.js                ← Gestionnaire fichiers (Paywall)
 │       ├── Profil.js                 ← Profil + abonnement Stripe
-│       └── AdminStats.js             ← KPIs admin (accès UUID-protégé)
+│       ├── AdminStats.js             ← KPIs admin (accès UUID-protégé)
+│       ├── Impressum.js              ← Mentions légales
+│       ├── Datenschutz.js            ← Politique de confidentialité (DSGVO)
+│       ├── AGB.js                    ← Conditions générales
+│       └── ResetPasswordPage.js      ← Page reset mot de passe (lien email)
 └── supabase/functions/
     ├── ai-chat/                      ← Chat IA OpenAI
     ├── ai-whisper/                   ← Transcription audio
@@ -268,6 +328,17 @@ Bouton "Jetzt upgraden" :
 
 ---
 
+## Règles de développement
+
+1. Modifications **chirurgicales** — ne toucher que ce qui est demandé
+2. Interface en **allemand** uniquement
+3. Confirmations destructives → modale UI, jamais `confirm()` natif
+4. **Aucun médicament ni dose** dans les bausteine — classes thérapeutiques uniquement
+5. Placeholders dans les bausteine : `[_]`
+6. Deploy : `git push` → Vercel auto-deploy
+
+---
+
 ## Pièges connus
 
 1. **CORS www** : `arvis-app.de` redirige (307) → `www.arvis-app.de`. Toutes les Edge Functions doivent être `--no-verify-jwt` + avoir `https://www.arvis-app.de` dans `ALLOWED_ORIGINS`.
@@ -285,6 +356,7 @@ Bouton "Jetzt upgraden" :
 - [ ] Persistance favoris/custom côté serveur (Supabase)
 - [ ] Notifications push mobile pour déclencher scan depuis PC
 - [ ] App mobile React Native (futur)
+- [ ] Plateforme FSP/KP pour médecins étrangers (projet séparé)
 
 ---
 

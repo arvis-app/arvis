@@ -278,7 +278,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
             <input className="mini-input" type="text" placeholder="101" value={detailRoom} onChange={e => setDetailRoom(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
             <input className="mini-input" type="text" placeholder="Name, Vorname" value={detailName} onChange={e => setDetailName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
           </div>
-          <textarea className="mini-input" placeholder="Notiz..." rows={1} value={detailNote} onChange={e => setDetailNote(e.target.value)} style={{ resize: 'none', lineHeight: 1.5, margin: 0, overflow: 'hidden', fontSize: 16 }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} />
+          <textarea className="mini-input" placeholder="Notiz..." rows={1} value={detailNote} onChange={e => setDetailNote(e.target.value)} style={{ resize: 'none', lineHeight: 1.5, margin: 0, overflow: 'hidden', fontSize: 16 }} ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <button className="btn-action" onClick={handleSave} style={{ fontSize: 16, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Speichern</button>
             <button className="btn-danger" onClick={() => setConfirmDel(selected)} style={{ fontSize: 16, height: 40, justifyContent: 'center' }}>Löschen</button>

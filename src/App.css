@@ -637,7 +637,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .cal-day.selected.has-event::after { background: var(--orange); }
 
 /* Events */
-.events-list { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+.events-list { margin-top: 20px; display: flex; flex-direction: column; gap: 4px; }
 .event-item {
   display: flex; gap: 12px; align-items: flex-start;
   padding: 12px; border-radius: 6px;
