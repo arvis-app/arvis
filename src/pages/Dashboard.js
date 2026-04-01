@@ -16,8 +16,14 @@ async function fetchEvents(userId) {
   if (error) { console.error('[Dashboard] fetchEvents:', error); return {} }
   const map = {}
   data?.forEach(e => {
-    if (!map[e.date]) map[e.date] = []
-    map[e.date].push({ id: e.id, time: e.time, title: e.title, type: e.type || 'task' })
+    // Normalize date: PostgreSQL DATE columns return ISO "2026-04-01" but component keys use 0-indexed month "2026-3-1"
+    let key = e.date
+    if (e.date && /^\d{4}-\d{2}-\d{2}$/.test(e.date)) {
+      const [y, m, d] = e.date.split('-').map(Number)
+      key = `${y}-${m - 1}-${d}`
+    }
+    if (!map[key]) map[key] = []
+    map[key].push({ id: e.id, time: e.time, title: e.title, type: e.type || 'task' })
   })
   return map
 }
