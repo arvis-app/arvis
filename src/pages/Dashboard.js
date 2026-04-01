@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 
+// Helper: build ISO date key "YYYY-MM-DD" from JS components (month is 0-indexed)
+function toDateKey(y, m0, d) { return `${y}-${String(m0 + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}` }
+
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
 const MONTHS_S = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
 const DAYS_S = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
@@ -16,14 +19,8 @@ async function fetchEvents(userId) {
   if (error) { console.error('[Dashboard] fetchEvents:', error); return {} }
   const map = {}
   data?.forEach(e => {
-    // Normalize date: PostgreSQL DATE columns return ISO "2026-04-01" but component keys use 0-indexed month "2026-3-1"
-    let key = e.date
-    if (e.date && /^\d{4}-\d{2}-\d{2}$/.test(e.date)) {
-      const [y, m, d] = e.date.split('-').map(Number)
-      key = `${y}-${m - 1}-${d}`
-    }
-    if (!map[key]) map[key] = []
-    map[key].push({ id: e.id, time: e.time, title: e.title, type: e.type || 'task' })
+    if (!map[e.date]) map[e.date] = []
+    map[e.date].push({ id: e.id, time: e.time, title: e.title, type: e.type || 'task' })
   })
   return map
 }
@@ -90,7 +87,7 @@ function Calendar({ currentDate, setCurrentDate, selectedDay, setSelectedDay, ev
         {cells.map((c, i) => {
           const isToday = !c.other && c.day === today.getDate() && month === today.getMonth() && year === today.getFullYear()
           const isSel = !c.other && c.day === selectedDay
-          const hasEv = !c.other && (events[`${year}-${month}-${c.day}`] || []).length > 0
+          const hasEv = !c.other && (events[toDateKey(year, month, c.day)] || []).length > 0
           let cls = 'cal-day' + (c.other ? ' other-month' : '') + (isToday ? ' today' : '') + (!isToday && isSel ? ' selected' : '')
           return (
             <div key={i} className={cls} style={{ position: 'relative' }} onClick={() => {
@@ -132,14 +129,14 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
   const clicked = new Date(year, month, day)
   const isToday = clicked.toDateString() === now.toDateString()
   const dayLabel = isToday ? 'Heute' : `${DAYS_LONG[clicked.getDay()]}, ${day}. ${MONTHS_S[month]}`
-  const key = `${year}-${month}-${day}`
+  const key = toDateKey(year, month, day)
   const dayEvs = (events[key] || []).map(e => ({ ...e, date: clicked })).sort((a, b) => a.time.localeCompare(b.time))
   function isPast(e, d) { const [h, m] = e.time.split(':').map(Number); return new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m) < now }
   async function handleAdd() {
     if (!title.trim()) return
     let y = year, mo = month, d2 = day
     if (date && date.includes('.')) { const p = date.split('.'); d2 = parseInt(p[0]); mo = parseInt(p[1]) - 1; y = parseInt(p[2]) }
-    const k = `${y}-${mo}-${d2}`
+    const k = toDateKey(y, mo, d2)
     const ne = { ...events }
 
     if (editing) {
@@ -147,7 +144,7 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
       if (editing.id) {
         await supabase.from('events').delete().eq('id', editing.id)
       }
-      const ok = `${editing.year}-${editing.month}-${editing.day}`
+      const ok = toDateKey(editing.year, editing.month, editing.day)
       if (ne[ok]) { ne[ok] = ne[ok].filter(e => e.id !== editing.id); if (!ne[ok].length) delete ne[ok] }
       setEditing(null)
     }
@@ -164,7 +161,7 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
 
   async function handleDel(e, d) {
     if (e.id) await supabase.from('events').delete().eq('id', e.id)
-    const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`, ne = { ...events }
+    const k = toDateKey(d.getFullYear(), d.getMonth(), d.getDate()), ne = { ...events }
     if (ne[k]) { ne[k] = ne[k].filter(ev => ev.id !== e.id); if (!ne[k].length) delete ne[k] }
     setEvents(ne)
   }
