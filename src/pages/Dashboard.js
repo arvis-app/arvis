@@ -183,7 +183,7 @@ function EventsList({ currentDate, selectedDay, events, setEvents, showToast, ca
         <button className="btn-action" onClick={openAddForm} style={{ width: 28, height: 28, padding: 0, fontSize: 20, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 0 }}>+</button>
       </div>
       {dayEvs.length === 0 && !addOpen && <div style={{ textAlign: 'center', padding: '4px 0 16px', color: 'var(--text-muted)', fontSize: 15, fontStyle: 'italic' }}>Kein Termin</div>}
-      <div style={{ paddingBottom: 8 }}>
+      <div className="events-list" style={{ paddingBottom: 8 }}>
         {dayEvs.map((e, i) => (
           <div key={i} className="event-item" style={{ opacity: isPast(e, e.date) ? 0.45 : 1 }}>
             <div className="event-time" style={{ minWidth: 50, fontSize: 15, cursor: 'pointer' }} onClick={() => startEdit(e, e.date)}>{e.time}</div>
