@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 31 mars 2026_
+_Dernière mise à jour : 1er avril 2026_
 
 ---
 
@@ -294,14 +294,17 @@ Coupons auto-appliqués au checkout (priorité) :
 
 ## Persistance localStorage / sessionStorage
 
-| Page | Clé | Stockage |
-|------|-----|----------|
-| Scan | `arvis_scan_step`, `_panel`, `_mode`, `_limitReached` | `localStorage` (UI) |
-| Scan | `arvis_scan_aiHtml`, `_ocrText`, `_imgData` | `sessionStorage` (PHI — DSGVO Art. 9) |
-| Bausteine | `arvis_bausteine_basket`, `_selected_id` | `localStorage` |
-| Uebersetzung | `arvis_ueb_search`, `_cat`, `_langs`, `_selected` | `localStorage` |
+`sessionStorage` = effacé à la fermeture de l'onglet/fenêtre. `localStorage` = persistant indéfiniment.
 
-**Piège restauration** : l'effet `[selected]` avec `removeItem` s'exécute au premier rendu avant la restauration. Solutions : `restoredRef` (Uebersetzung) ou `_pendingSelectedId` state initialisé depuis localStorage (Bausteine).
+| Page | Clé | Stockage | Raison |
+|------|-----|----------|--------|
+| Scan | `arvis_scan_step`, `_panel`, `_mode`, `_limitReached` | `sessionStorage` | UI temporaire — ne doit pas persister entre sessions |
+| Scan | `arvis_scan_aiHtml`, `_ocrText`, `_imgData` | `sessionStorage` | PHI — DSGVO Art. 9 |
+| Bausteine | `arvis_bausteine_basket`, `_selected_id` | `sessionStorage` | UI temporaire |
+| Bausteine | `arvis_bausteine_migrated_v1` | `localStorage` | Flag migration one-shot |
+| Uebersetzung | `arvis_ueb_search`, `_cat`, `_langs`, `_selected` | `sessionStorage` | UI temporaire |
+
+**Piège restauration** : l'effet `[selected]` avec `removeItem` s'exécute au premier rendu avant la restauration. Solutions : `restoredRef` (Uebersetzung) ou `_pendingSelectedId` state initialisé depuis sessionStorage (Bausteine).
 
 ---
 
@@ -347,6 +350,8 @@ Bouton "Jetzt upgraden" :
 4. **Triple refresh Stripe** : au retour `?success=true`, polling 2s/20s jusqu'à `plan: pro`.
 5. **Vercel rewrites vs routes** : utiliser `routes` (pas `rewrites`) pour surcharger `/`.
 6. **`npx supabase db push` peut échouer** si l'historique des migrations local et remote sont désynchronisés. Solution : `npx supabase migration repair --status applied <timestamp>` pour marquer la migration comme déjà appliquée, puis réessayer. Alternative : exécuter le SQL directement dans le SQL Editor Supabase.
+7. **Date des events Calendrier** : JS `Date.getMonth()` est 0-indexé, PostgreSQL DATE est 1-indexé. Toujours construire les clés de date avec `toDateKey(y, m0, d)` (dans Dashboard.js) qui fait `m0 + 1` et `padStart(2,'0')` → format ISO `YYYY-MM-DD`. Ne jamais stocker `getMonth()` directement.
+8. **Favicons Safari** : les SVG favicons sont ignorés ou rendus fins sur Safari. Utiliser PNG + ICO comme fallback — `arvis-icon.svg` est la version bold (stroke-width:100px), sources pour les PNG générés.
 
 ---
 
