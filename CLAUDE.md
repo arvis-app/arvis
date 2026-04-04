@@ -201,7 +201,11 @@ Prix : **19€/mois** (`price_1TFjM6FPxR7QFABJwnMbND3B`) / **249€/an** (`price
 
 ### Autres tables (RLS activé sur toutes)
 
-`bausteine`, `folders`, `notes`, `events`, `patients`, `scan_sessions`, `stripe_events_failed`, `stripe_events_processed`
+`bausteine`, `user_bausteine_favs`, `folders`, `notes`, `events`, `patients`, `scan_sessions`, `stripe_events_failed`, `stripe_events_processed`
+
+**`user_bausteine_favs`** — favoris Bausteine (standards ET custom). Colonnes : `user_id` (uuid), `baustein_id` (text, ex: `"auf_001"` ou UUID custom). Clé primaire composite `(user_id, baustein_id)`. RLS : `auth.uid() = user_id`.
+
+> Note : la colonne `is_fav` dans `bausteine` est conservée pour rétrocompatibilité mais n'est plus utilisée en écriture — migration one-shot vers `user_bausteine_favs` au premier chargement de la page Bausteine.
 
 RLS pattern : `auth.uid() = user_id` (ou `auth.uid() = id` pour `users`).
 
@@ -362,7 +366,6 @@ Bouton "Jetzt upgraden" :
 ## Ce qui reste à faire
 
 - [ ] Édition des bausteine custom (en plus de la suppression)
-- [ ] Persistance favoris/custom côté serveur (Supabase)
 
 ---
 
