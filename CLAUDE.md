@@ -365,7 +365,7 @@ Bouton "Jetzt upgraden" :
 
 ## Ce qui reste à faire
 
-- [ ] Édition des bausteine custom (en plus de la suppression)
+_(rien pour l'instant)_
 
 ---
 
