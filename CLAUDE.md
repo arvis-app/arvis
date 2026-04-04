@@ -64,12 +64,12 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 | Deploy | Vercel (auto-deploy sur git push) + Cloudflare (DNS) |
 | Monitoring | Sentry (`VITE_SENTRY_DSN`) |
 
-**Couleur** : `#e87722` (orange) — **Fonts** : Inter + Bricolage Grotesque (titres)
+**Couleur** : `#D94B0A` (orange) — **Fonts** : Inter + Bricolage Grotesque (titres)
 
 ## Identité visuelle
 
 ### Couleurs
-- **Orange principal** : `#e87722` — couleur de marque, boutons CTA, accents
+- **Orange principal** : `#D94B0A` — couleur de marque, boutons CTA, accents (variable CSS `--orange`)
 - **Variables CSS** : `--orange`, `--bg`, etc. (CSS custom, pas de framework)
 - **Teal/bleu** : présent dans le logo et le panneau gauche de la LoginPage (fond sombre teal/brun)
 
@@ -78,7 +78,7 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 - **Bricolage Grotesque** — titres et en-têtes
 
 ### Logo
-- Robot avec tête circulaire, couleur **orange `#e87722`**
+- Robot avec tête circulaire, couleur **orange `#D94B0A`**
 - Deux yeux blancs avec pupilles
 - Sourire
 - Oreillettes sur les côtés
