@@ -870,31 +870,25 @@ footer {
   .features-row-3 { grid-template-columns: 1fr !important; }
   .features-row-3 > div { min-width: 0; overflow: hidden; }
 
-  /* ── Feature cards mobile : tout doit tenir dans le viewport ── */
-  .features-grid > div { padding: 16px !important; }
+  /* ── Feature cards mobile ── */
+  .features-grid > div {
+    min-width: 0; overflow: hidden; padding: 16px !important;
+  }
+  /* zoom réduit tout proportionnellement ET affecte le layout */
+  .feat-demo-wrap {
+    zoom: 0.75;
+    max-height: 200px;
+    overflow: hidden;
+  }
 
-  /* Brief Schreiber : 2 panneaux côte à côte, texte réduit */
-  .brief-2cols { overflow: hidden; }
-  .brief-2cols > div { min-width: 0; overflow: hidden; }
-  .brief-2cols span,
-  .brief-2cols div { font-size: inherit; }
-  .brief-2cols .brief-ki-panel div[style*="font-size:10.5px"],
-  .brief-2cols div[style*="font-size:10.5px"] { font-size: 9px !important; line-height: 1.5 !important; }
-  .brief-2cols div[style*="font-size:11.0px"] { font-size: 9.5px !important; }
-  .brief-2cols div[style*="font-size:10.0px"] { font-size: 8.5px !important; }
-  .brief-2cols div[style*="padding:4px 6px"] { padding: 3px 4px !important; font-size: 9px !important; }
-
-  /* Scan & Brief : limiter hauteur des demo containers */
-  .feat-demo-wrap { max-height: 260px; }
-
-  /* Übersetzung : grid interne + texte réduit */
-  .ueb-grid { overflow: hidden; }
-  .ueb-grid > div { min-width: 0; overflow: hidden; }
-  .ueb-grid span[style*="width:85px"] { width: 60px !important; font-size: 10px !important; }
-  .ueb-grid span[style*="font-size:13"] { font-size: 11px !important; }
-  .ueb-grid span[style*="font-size:12"] { font-size: 10px !important; }
-  .ueb-grid div[style*="font-size:12"] { font-size: 10px !important; }
-  .ueb-grid div[style*="font-size:11"] { font-size: 9.5px !important; }
+  /* Sections Scan & Brief Schreiber */
+  .scan-mockup {
+    zoom: 0.8;
+  }
+  .ubers-mockup {
+    zoom: 0.8;
+    padding: 16px !important;
+  }
 }
 @media (max-width: 1024px) {
   .features-grid > div[style*="grid-template-columns:1fr 1fr 1fr"]:not(.features-row-3) { grid-template-columns: 1fr 1fr !important; }
