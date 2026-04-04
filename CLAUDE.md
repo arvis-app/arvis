@@ -363,9 +363,6 @@ Bouton "Jetzt upgraden" :
 
 - [ ] Édition des bausteine custom (en plus de la suppression)
 - [ ] Persistance favoris/custom côté serveur (Supabase)
-- [ ] Notifications push mobile pour déclencher scan depuis PC
-- [ ] App mobile React Native (futur)
-- [ ] Plateforme FSP/KP pour médecins étrangers (projet séparé)
 
 ---
 

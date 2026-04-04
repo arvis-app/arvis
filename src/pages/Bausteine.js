@@ -135,12 +135,19 @@ export default function Bausteine() {
   // ── Charger depuis Supabase au montage ──────────────────────────────────────
   useEffect(() => {
     if (!user) return
-    migrateBausteineLocalStorage(user.id).then(() => {
-      supabase.from('bausteine').select('*').eq('user_id', user.id).then(({ data }) => {
-        if (!data) return
-        setCustom(data.map(b => ({ ...b, custom: true })))
-        setFavs(data.filter(b => b.is_fav).map(b => b.id))
-      })
+    migrateBausteineLocalStorage(user.id).then(async () => {
+      const [bausteineRes, favsRes] = await Promise.all([
+        supabase.from('bausteine').select('*').eq('user_id', user.id),
+        supabase.from('user_bausteine_favs').select('baustein_id').eq('user_id', user.id)
+      ])
+      if (bausteineRes.data) setCustom(bausteineRes.data.map(b => ({ ...b, custom: true })))
+      const newTableFavs = favsRes.data ? favsRes.data.map(f => f.baustein_id) : []
+      const oldFavs = bausteineRes.data ? bausteineRes.data.filter(b => b.is_fav).map(b => b.id) : []
+      setFavs([...new Set([...newTableFavs, ...oldFavs])])
+      // Migration one-shot : déplacer is_fav de bausteine → user_bausteine_favs
+      if (oldFavs.length > 0 && newTableFavs.length === 0) {
+        await supabase.from('user_bausteine_favs').insert(oldFavs.map(id => ({ user_id: user.id, baustein_id: id })))
+      }
     })
   }, [user])
   const [basket, setBasket]             = useState(() => { try { return JSON.parse(sessionStorage.getItem('arvis_bausteine_basket') || '[]') } catch { return [] } })
@@ -247,9 +254,8 @@ export default function Bausteine() {
   async function toggleFav(b) {
     const isFav = favs.includes(b.id)
     if (!isFav) {
-      await supabase.from('bausteine').update({ is_fav: true }).eq('id', b.id).eq('user_id', user.id)
-      const newFavs = [...favs, b.id]
-      setFavs(newFavs)
+      await supabase.from('user_bausteine_favs').insert({ user_id: user.id, baustein_id: b.id })
+      setFavs(prev => [...prev, b.id])
     } else {
       setConfirm({
         title:'Aus Favoriten entfernen',
@@ -258,9 +264,9 @@ export default function Bausteine() {
         iconBg:'var(--orange-ghost)',
         btnLabel:'Entfernen',
         onOk: async () => {
-          await supabase.from('bausteine').update({ is_fav: false }).eq('id', b.id).eq('user_id', user.id)
-          const newFavs = favs.filter(id=>id!==b.id)
-          setFavs(newFavs); setConfirm(null)
+          await supabase.from('user_bausteine_favs').delete().eq('user_id', user.id).eq('baustein_id', b.id)
+          setFavs(prev => prev.filter(id => id !== b.id))
+          setConfirm(null)
         }
       })
     }
