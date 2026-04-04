@@ -824,6 +824,7 @@ footer {
   .hero { padding: 120px 20px 80px; }
   section { padding: 72px 20px; }
   .features-grid { grid-template-columns: 1fr; }
+  .features-grid > div { min-width: 0; overflow: hidden; }
   .feature-card-large { grid-column: span 1; }
   .scan-section, .ubers-inner, .dsgvo-inner { grid-template-columns: 1fr; gap: 40px; }
   .steps { grid-template-columns: 1fr 1fr; }
@@ -868,6 +869,7 @@ footer {
   .features-grid > div[style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
   .features-row-3 { grid-template-columns: 1fr !important; }
   .features-row-3 > div { min-width: 0; overflow: hidden; }
+  .brief-2cols { overflow: hidden; }
   .brief-2cols > div { min-width: 0; overflow: hidden; }
 }
 @media (max-width: 1024px) {
