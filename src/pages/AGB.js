@@ -15,7 +15,7 @@ const S = {
   note:    { background: '#fff8f0', border: '1px solid #ffe4c4', borderRadius: 8, padding: '12px 16px', fontSize: 15, color: '#b45309', marginTop: 32 },
   footer:  { borderTop: '1px solid #eee', padding: '24px 40px', display: 'flex', justifyContent: 'center', gap: 24 },
   flink:   { fontSize: 15, color: '#888', textDecoration: 'none' },
-  a:       { color: '#e87722' },
+  a:       { color: '#D94B0A' },
 }
 
 export default function AGB() {

@@ -41,7 +41,7 @@ export default function Impressum() {
 
         <h2 style={S.h2}>Kontakt</h2>
         <p style={S.p}>
-          E-Mail: <a href="mailto:hello@arvis-app.de" style={{ color: '#e87722' }}>hello@arvis-app.de</a><br />
+          E-Mail: <a href="mailto:hello@arvis-app.de" style={{ color: '#D94B0A' }}>hello@arvis-app.de</a><br />
           Telefon: +49 152 29231538
         </p>
 
