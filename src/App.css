@@ -550,7 +550,6 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 
 /* Désactiver les styles :hover sur appareils tactiles (évite le fond gris résiduel après tap) */
 @media (hover: none) {
-  button:hover,
   .btn-secondary:hover,
   .btn-action:hover,
   .btn-action-secondary:hover,
