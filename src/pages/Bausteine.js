@@ -14,18 +14,17 @@ function formatBausteinText(s) {
   return s
 }
 
-function buildFilledText(rawText, values) {
-  if (!rawText) return ''
-  const parts = rawText.split(/(\[[^\]]+\])/g)
-  let idx = 0
-  return parts.map(part => {
-    if (/^\[[^\]]+\]$/.test(part)) {
-      const val = values[idx]
-      idx++
-      return val || part
-    }
-    return part
-  }).join('')
+function renderPlaceholders(text) {
+  let h = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')
+  h = h.replace(/\[([^\][]{0,80})\]/g, (match) => `<span class="ph-chip" data-encoded="${encodeURIComponent(match)}" contenteditable="false">${match}</span>`)
+  return h
+}
+
+function getPlainText(el) {
+  if (!el) return ''
+  let h = el.innerHTML
+  h = h.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]+>/g, '')
+  return h.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
 }
 
 // ── Migration unique depuis localStorage ─────────────────────────────────────
@@ -175,7 +174,9 @@ export default function Bausteine() {
   const [baudataVersion, setBaudataVersion] = useState(0)
   const rightRef                        = useRef(null)
   const [rightH, setRightH]             = useState(0)
-  const [phValues, setPhValues]         = useState({})  // {index: value} for editable placeholders
+  const previewRef                      = useRef(null)
+  const popupChipRef                    = useRef(null)
+  const [popup, setPopup]               = useState({ visible: false, choices: [], x: 0, y: 0 })
 
   // Sync left panel height with right panel
   useEffect(() => {
@@ -216,11 +217,16 @@ export default function Bausteine() {
     if (found) { setSelected(found); _setPendingSelectedId(null) }
   }, [allData, _pendingSelectedId])
 
-  // Persist selected id + reset placeholder values
+  // Persist selected id + render placeholders in preview
   useEffect(() => {
-    if (selected) sessionStorage.setItem('arvis_bausteine_selected_id', selected.id)
-    else sessionStorage.removeItem('arvis_bausteine_selected_id')
-    setPhValues({})
+    if (selected) {
+      sessionStorage.setItem('arvis_bausteine_selected_id', selected.id)
+      if (previewRef.current) previewRef.current.innerHTML = renderPlaceholders(selected.text)
+    } else {
+      sessionStorage.removeItem('arvis_bausteine_selected_id')
+      if (previewRef.current) previewRef.current.innerHTML = ''
+    }
+    hidePopup()
   }, [selected])
 
   const categories = useMemo(() => {
@@ -340,11 +346,64 @@ export default function Bausteine() {
     })
   }
 
+  // ── Placeholder interaction ────────────────────────────────
+  function hidePopup() { popupChipRef.current = null; setPopup({ visible: false, choices: [], x: 0, y: 0 }) }
+
+  function replaceChipWithCursor(chip) {
+    const textNode = document.createTextNode('')
+    chip.parentNode.replaceChild(textNode, chip)
+    const range = document.createRange(), sel = window.getSelection()
+    range.setStart(textNode, 0); range.collapse(true)
+    sel.removeAllRanges(); sel.addRange(range)
+    previewRef.current?.focus()
+  }
+
+  function replaceChipWithText(chip, text) {
+    const textNode = document.createTextNode(text)
+    chip.parentNode.replaceChild(textNode, chip)
+    const range = document.createRange(), sel = window.getSelection()
+    range.setStartAfter(textNode); range.collapse(true)
+    sel.removeAllRanges(); sel.addRange(range)
+    previewRef.current?.focus()
+  }
+
+  function handlePreviewClick(e) {
+    const chip = e.target.closest('.ph-chip')
+    if (!chip) return
+    const raw = decodeURIComponent(chip.dataset.encoded || '')
+    const inner = raw.slice(1, -1)
+    const isChoice = inner.indexOf('/') !== -1 && !inner.startsWith('_')
+    if (isChoice) {
+      const choices = inner.split('/').map(c => c.trim())
+      const rect = chip.getBoundingClientRect()
+      popupChipRef.current = chip
+      const popupWidth = 160
+      const x = Math.min(rect.left, window.innerWidth - popupWidth - 8)
+      setPopup({ visible: true, choices, x: Math.max(8, x), y: rect.bottom + 6 })
+    } else {
+      replaceChipWithCursor(chip)
+      hidePopup()
+    }
+  }
+
+  function choosePopup(val) { const chip = popupChipRef.current; if (chip) replaceChipWithText(chip, val); hidePopup() }
+  function andereEingeben() { const chip = popupChipRef.current; if (chip) replaceChipWithCursor(chip); hidePopup() }
+
+  useEffect(() => {
+    if (!popup.visible) return
+    function onDocClick(e) {
+      const el = document.getElementById('bausteinePlaceholderPopup')
+      if (el && !el.contains(e.target) && !e.target.closest('.ph-chip')) hidePopup()
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [popup.visible])
+
   // ── Copy ───────────────────────────────────────────────────
   function copyBaustein() {
     if (!selected) return
-    const filled = buildFilledText(selected.text, phValues)
-    navigator.clipboard.writeText(formatBausteinText(filled))
+    const text = getPlainText(previewRef.current)
+    navigator.clipboard.writeText(text)
     setCopied(true); setTimeout(()=>setCopied(false), 1500)
   }
 
@@ -478,47 +537,9 @@ export default function Bausteine() {
                     )}
                   </div>
                 </div>
-                <div className="baustein-preview-text" style={{overflowY:'auto',flex:1,lineHeight:2.1,fontSize:14}}>
-                  {(() => {
-                    const parts = selected.text.split(/(\[[^\]]+\])/g)
-                    let idx = 0
-                    return parts.map((part, i) => {
-                      const m = part.match(/^\[([^\]]+)\]$/)
-                      if (!m) return <span key={i}>{part}</span>
-                      const label = m[1]
-                      const ci = idx++
-                      const hasSlash = / \/ /.test(label)
-                      if (hasSlash) {
-                        const options = label.split(' / ').map(o => o.trim())
-                        return (
-                          <select key={i} value={phValues[ci] || ''}
-                            onChange={e => setPhValues(prev => ({ ...prev, [ci]: e.target.value }))}
-                            style={{
-                              font:'inherit',fontSize:13,color:phValues[ci]?'var(--text)':'var(--text-3)',
-                              background:'var(--bg)',border:'none',borderBottom:phValues[ci]?'2px solid var(--orange)':'2px dashed var(--orange)',
-                              borderRadius:0,padding:'2px 4px',margin:'0 2px',outline:'none',cursor:'pointer',
-                              maxWidth:200,verticalAlign:'baseline',appearance:'auto'
-                            }}>
-                            <option value="" style={{color:'var(--text-3)'}}>— wählen —</option>
-                            {options.map((o, j) => <option key={j} value={o}>{o}</option>)}
-                          </select>
-                        )
-                      }
-                      const isBlank = /^[_]+$/.test(label)
-                      return (
-                        <input key={i} value={phValues[ci] || ''} placeholder={isBlank ? '...' : label}
-                          onChange={e => setPhValues(prev => ({ ...prev, [ci]: e.target.value }))}
-                          style={{
-                            font:'inherit',fontSize:13,color:'var(--text)',
-                            background:'transparent',border:'none',borderBottom:phValues[ci]?'2px solid var(--orange)':'2px dashed var(--orange)',
-                            borderRadius:0,padding:'2px 4px',margin:'0 2px',outline:'none',
-                            width:Math.max(40, Math.min(200, (phValues[ci]||label||'...').length * 8 + 16)),
-                            verticalAlign:'baseline'
-                          }} />
-                      )
-                    })
-                  })()}
-                </div>
+                <div ref={previewRef} className="baustein-preview-text" contentEditable suppressContentEditableWarning spellCheck={false}
+                  onClick={handlePreviewClick}
+                  style={{overflowY:'auto',flex:1,outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)'}} />
                 <div style={{display:'flex',gap:8,marginTop:16}}>
                   <button className="btn-secondary" onClick={addToBasket} style={{flex:1,justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -558,6 +579,16 @@ export default function Bausteine() {
           )}
         </div>
       </div>
+
+      {/* Placeholder popup */}
+      {popup.visible && (
+        <div id="bausteinePlaceholderPopup" style={{position:'fixed',zIndex:9999,top:popup.y,left:popup.x,background:'var(--card)',border:'1px solid var(--border)',borderRadius:6,padding:8,boxShadow:'var(--shadow-lg)',minWidth:140,display:'flex',flexDirection:'column'}}>
+          {popup.choices.map(c => (
+            <button key={c} className="ph-popup-btn" onMouseDown={e=>{e.preventDefault();choosePopup(c)}}>{c}</button>
+          ))}
+          <button className="ph-popup-btn ph-andere" onMouseDown={e=>{e.preventDefault();andereEingeben()}}>Andere eingeben…</button>
+        </div>
+      )}
 
       {/* Modals */}
       <NeuBausteinModal
