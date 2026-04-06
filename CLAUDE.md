@@ -146,7 +146,10 @@ arvis/
     ├── stripe-webhook/               ← Webhooks Stripe → DB
     ├── get-plan-status/              ← isPro calculé côté serveur
     ├── admin-stats/                  ← Stats KPI admin
-    └── send-bug-report/             ← Bug report → DB + email via Resend
+    ├── send-bug-report/              ← Bug report → DB + email via Resend
+    ├── send-notification-email/      ← Mail transactionnel (welcome, trial, abo)
+    ├── check-trial-emails/           ← Cron daily : mails trial J-3 + J-0
+    └── _shared/email-templates.ts    ← Templates HTML partagés (5 types)
 ```
 
 ## Routes
@@ -199,6 +202,9 @@ Prix : **19€/mois** (`price_1TFjM6FPxR7QFABJwnMbND3B`) / **249€/an** (`price
 | `clinic` | text | Nom de l'hôpital |
 | `ai_tokens_used` | integer | Tokens IA consommés ce mois (reset 1er du mois) |
 | `ai_tokens_reset_at` | timestamptz | Date dernier reset |
+| `welcome_email_sent` | boolean | Flag anti-doublon mail welcome |
+| `trial_reminder_sent` | boolean | Flag anti-doublon mail trial J-3 |
+| `trial_expired_sent` | boolean | Flag anti-doublon mail trial expiré |
 
 ### Autres tables (RLS activé sur toutes)
 
@@ -232,10 +238,12 @@ create table if not exists public.stripe_events_processed (
 | `realtime-token` | Token WebSocket OpenAI Realtime |
 | `create-checkout-session` | Stripe Checkout, coupons auto-appliqués |
 | `create-portal-session` | Billing Portal Stripe |
-| `stripe-webhook` | Événements Stripe → DB, idempotency via `stripe_events_processed` |
+| `stripe-webhook` | Événements Stripe → DB + mails abo confirmé/annulé via Resend |
 | `get-plan-status` | Retourne `{ is_pro }` calculé côté serveur |
 | `admin-stats` | Stats KPI — accès restreint à `ADMIN_USER_ID` (UUID) côté serveur |
 | `send-bug-report` | Bug report → sauvegarde `bug_reports` table + email via Resend à `support@arvis-app.de` |
+| `send-notification-email` | Mail transactionnel (welcome, trial_reminder, trial_expired, subscription_confirmed/cancelled) |
+| `check-trial-emails` | Cron daily 9h — envoie mails trial J-3 et J-0 via Resend |
 
 Vérification CORS après déploiement :
 ```bash
@@ -405,6 +413,22 @@ Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mod
 - **Photos** stockées dans bucket Supabase Storage `bug-reports` (public, RLS `auth.uid()`)
 - **Edge function** `send-bug-report` : sauvegarde dans table `bug_reports` + envoie email via Resend à `support@arvis-app.de`
 - **Fallback** : si `RESEND_API_KEY` absent → sauvegarde DB quand même, pas d'email
+
+## Mails automatiques transactionnels
+
+Tous via **Resend** depuis `noreply@arvis-app.de`. Templates HTML partagés dans `_shared/email-templates.ts` (même design que `confirm-signup.html` : wrapper 560px, card blanche, CTA orange `#D94B0A`).
+
+| Mail | Trigger | Edge function |
+|------|---------|---------------|
+| **Willkommen** | Inscription (`register()` dans AuthContext) | `send-notification-email` |
+| **Trial J-3** | Cron daily 9h (pg_cron → pg_net) | `check-trial-emails` |
+| **Trial expiré** | Même cron | `check-trial-emails` |
+| **Abo bestätigt** | Stripe webhook (`plan = 'pro'`) | `stripe-webhook` |
+| **Abo gekündigt** | Stripe webhook (`plan = 'canceled_pending'`) | `stripe-webhook` |
+
+**Tracking anti-doublon** : colonnes `welcome_email_sent`, `trial_reminder_sent`, `trial_expired_sent` (boolean) sur table `users`.
+
+**Cron** : `cron.schedule('check-trial-emails', '0 9 * * *', ...)` via pg_cron + pg_net (SQL Editor Supabase).
 
 ---
 
