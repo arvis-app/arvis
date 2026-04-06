@@ -547,6 +547,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   transition: all 0.2s;
 }
 .btn-secondary:hover { background: var(--bg-3); }
+.btn-secondary-orange:hover { background: var(--orange-ghost) !important; }
 
 /* Désactiver les styles :hover sur appareils tactiles (évite le fond gris résiduel après tap) */
 @media (hover: none) {

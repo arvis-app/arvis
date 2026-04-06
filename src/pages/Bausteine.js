@@ -507,7 +507,7 @@ export default function Bausteine() {
                   onClick={handlePreviewClick}
                   style={{overflowY:'auto',flex:1,outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)'}} />
                 <div style={{display:'flex',gap:8,marginTop:16}}>
-                  <button className="btn-secondary" onClick={copyBaustein} style={{flex:1,justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:copied?'var(--orange)':'var(--orange)'}}>
+                  <button className="btn-secondary btn-secondary-orange" onClick={copyBaustein} style={{flex:1,justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
                     {copied
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
