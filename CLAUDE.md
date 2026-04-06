@@ -377,6 +377,27 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Modèle** : `gpt-4o`, `max_tokens: 4000`
 - **Tableau médication** : le renderer `markdownToHtml()` supporte les lignes `|...|` (header skippé, données en colonnes alignées)
 
+## BriefSchreiber — Korrektur Prompt
+
+Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mode `korrektur`). Règles clés :
+- **Prose** pour Anamnese, Befunde, Bildgebung, Procedere — phrases complètes et connectées, pas de fragments
+- **Liste** pour Medikation (toujours schema 1-0-1) et Diagnosen
+- **Laborwerte** compacts en 1–2 phrases, valeurs + unités, **aucune interprétation**
+- **Dates** gardées en format original (`02.04.` pas `02. April`)
+- **Abréviations** : `KI` après médicament + dose = Kurzinfusion (pas Kontraindikation)
+- **Ton** : Facharzt — concis, sachlich, pas de sur-explication (le lecteur est médecin)
+- Constructions-types fournies dans le prompt : Anamnese ("stellte sich vor… berichtet über…"), Befunde ("Die Untersuchung ergab…"), Procedere ("Es erfolgte… Der Patient erhielt…")
+
+## Bausteine — Placeholders éditables
+
+- Placeholders `[...]` rendus comme `<span class="ph-chip">` (même système que BriefSchreiber)
+- Clic sur placeholder sans `/` → curseur remplace le chip (saisie libre)
+- Clic sur placeholder avec `/` (ex: `[bejaht / verneint]`) → popup de choix + option "Andere eingeben…"
+- Bouton **Kopieren** (grand, outline orange) copie le texte avec valeurs remplies via `getPlainText()`
+- Bouton **An Brief Schreiber** envoie le texte brut au rédacteur IA
+- Warenkorb supprimé — le flow est : sélectionner → remplir placeholders → copier
+- Layout 40/60 (liste / preview)
+
 ## Bug melden
 
 - **Accès** : chevron SVG ▾ à gauche de l'avatar topbar → menu dropdown → "Bug melden"
