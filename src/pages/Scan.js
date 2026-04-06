@@ -135,12 +135,12 @@ export default function Scan() {
   const navigate = useNavigate()
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [step, setStep] = useState(() => Number(sessionStorage.getItem('arvis_scan_step')) || 1)
-  const [panel, setPanel] = useState(() => sessionStorage.getItem('arvis_scan_panel') || 'upload')
+  const [step, setStep] = useState(1)
+  const [panel, setPanel] = useState('upload')
   const [mode, setMode] = useState(() => sessionStorage.getItem('arvis_scan_mode') || 'ai')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [aiHtml, setAiHtml] = useState(() => sessionStorage.getItem('arvis_scan_aiHtml') || '')
-  const [ocrText, setOcrText] = useState(() => sessionStorage.getItem('arvis_scan_ocrText') || '')
+  const [aiHtml, setAiHtml] = useState('')
+  const [ocrText, setOcrText] = useState('')
   const [loadingText, setLoadingText] = useState('Analysiere Dokument...')
   const [errorMsg, setErrorMsg] = useState('')
   const [zoom, setZoom] = useState(1)
@@ -151,7 +151,7 @@ export default function Scan() {
   const [blackouts, setBlackouts] = useState([])
   const [selectedBk, setSelectedBk] = useState(null)
   const [copied, setCopied] = useState(false)
-  const [limitReached, setLimitReached] = useState(() => sessionStorage.getItem('arvis_scan_limitReached') === 'true')
+  const [limitReached, setLimitReached] = useState(false)
 
   // Mobile multi-photo state
   const [mobilePhotos, setMobilePhotos] = useState([]) // { file, preview }[]
@@ -202,10 +202,9 @@ export default function Scan() {
   useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
   useEffect(() => { sessionStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
 
-  // Restore image data on mount (for tab switch back during crop/anonymize step)
+  // Clear stale scan state on mount — page refresh always starts fresh
   useEffect(() => {
-    const saved = sessionStorage.getItem('arvis_scan_imgData')
-    if (saved) imgDataRef.current = saved
+    ;['arvis_scan_step','arvis_scan_panel','arvis_scan_aiHtml','arvis_scan_ocrText','arvis_scan_imgData','arvis_scan_limitReached'].forEach(k => sessionStorage.removeItem(k))
   }, [])
 
   // ── Pan ───────────────────────────────────────────────────────────────────

@@ -266,7 +266,7 @@ export default function MobileScan() {
     }
   }
 
-  const btnSchwärzen = { height: 32, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: '#1C1C1E', color: 'white', border: 'none', borderRadius: 6, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: 'pointer' }
+  const btnSchwärzen = { height: 32, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: '#1C1C1E', color: 'white', border: 'none', borderRadius: 6, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }
 
   // ── Schwarzen screen ──────────────────────────────────────────────────────
   if (status === 'schwarzen') {
