@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 5 avril 2026_
+_Dernière mise à jour : 6 avril 2026_
 
 ---
 
@@ -118,7 +118,7 @@ arvis/
 │   ├── supabaseClient.js             ← Client Supabase + invokeEdgeFunction()
 │   ├── context/AuthContext.js        ← Auth state, profil, isPro, refreshProfile()
 │   ├── components/
-│   │   ├── AppLayout.js              ← Sidebar + topbar
+│   │   ├── AppLayout.js              ← Sidebar + topbar + Bug melden modal
 │   │   ├── Paywall.js                ← Bloque accès si pas Pro
 │   │   ├── ErrorBoundary.js          ← Capture les erreurs React
 │   │   └── ResetPasswordModal.js     ← Modale reset mot de passe
@@ -145,7 +145,8 @@ arvis/
     ├── create-portal-session/        ← Stripe Billing Portal
     ├── stripe-webhook/               ← Webhooks Stripe → DB
     ├── get-plan-status/              ← isPro calculé côté serveur
-    └── admin-stats/                  ← Stats KPI admin
+    ├── admin-stats/                  ← Stats KPI admin
+    └── send-bug-report/             ← Bug report → DB + email via Resend
 ```
 
 ## Routes
@@ -201,7 +202,7 @@ Prix : **19€/mois** (`price_1TFjM6FPxR7QFABJwnMbND3B`) / **249€/an** (`price
 
 ### Autres tables (RLS activé sur toutes)
 
-`bausteine`, `user_bausteine_favs`, `folders`, `notes`, `events`, `patients`, `scan_sessions`, `stripe_events_failed`, `stripe_events_processed`
+`bausteine`, `user_bausteine_favs`, `folders`, `notes`, `events`, `patients`, `scan_sessions`, `stripe_events_failed`, `stripe_events_processed`, `bug_reports`
 
 **`user_bausteine_favs`** — favoris Bausteine (standards ET custom). Colonnes : `user_id` (uuid), `baustein_id` (text, ex: `"auf_001"` ou UUID custom). Clé primaire composite `(user_id, baustein_id)`. RLS : `auth.uid() = user_id`.
 
@@ -234,6 +235,7 @@ create table if not exists public.stripe_events_processed (
 | `stripe-webhook` | Événements Stripe → DB, idempotency via `stripe_events_processed` |
 | `get-plan-status` | Retourne `{ is_pro }` calculé côté serveur |
 | `admin-stats` | Stats KPI — accès restreint à `ADMIN_USER_ID` (UUID) côté serveur |
+| `send-bug-report` | Bug report → sauvegarde `bug_reports` table + email via Resend à `support@arvis-app.de` |
 
 Vérification CORS après déploiement :
 ```bash
@@ -265,6 +267,7 @@ STRIPE_WEBHOOK_SECRET
 STRIPE_PRICE_MONTHLY=price_1TFjM6FPxR7QFABJwnMbND3B
 STRIPE_PRICE_YEARLY=price_1TFjM7FPxR7QFABJk5I1uBaC
 ADMIN_USER_ID=<uuid-admin>
+RESEND_API_KEY=re_xxxxx
 ```
 
 ---
@@ -359,7 +362,28 @@ Bouton "Jetzt upgraden" :
 11. **Apple Touch Icon (iOS share sheet)** : doit être full-bleed — robot blanc sur fond orange `#D94B0A`, sans padding, 180×180px. Fichier : `public/apple-touch-icon.png`. Safari met l'icône en cache agressivement — changer le nom de fichier pour invalider le cache.
 12. **Couleur orange** : `#D94B0A` est la couleur officielle Arvis (variable CSS `--orange`). Ne jamais utiliser `#e87722` — c'était une erreur. La couleur est présente dans `index.html`, `landing_page.html`, `manifest.json`, `Impressum.js`, `Datenschutz.js`, `AGB.js`.
 9. **Landing page mobile — inline styles** : `public/landing_page.html` est massivement inline-stylé. Les sélecteurs CSS `div[style*="font-size:..."]` ne fonctionnent pas fiablement sur Safari. La bonne approche : ajouter une `class` aux éléments cibles, puis cibler via CSS. Pour réduire proportionnellement tout le contenu d'un mockup : `zoom: 0.75` sur le container (affecte layout + rendu, contrairement à `transform: scale`).
+13. **iOS sticky hover** : le bloc `@media (hover: none)` dans `App.css` ne doit PAS cibler `button:hover` générique — ça rend les boutons invisibles sur iOS (le `:hover` reste actif après un tap). Cibler uniquement les classes spécifiques (`.btn-secondary:hover`, `.btn-action:hover`, etc.).
 10. **Landing page mobile — feature cards** : les containers mockup dans les feature cards ont la classe `feat-demo-wrap` → `zoom: 0.75` appliqué dans `@media (max-width: 768px)`. Le grid interne Brief Schreiber a la classe `brief-2cols`. Footer mobile : `.footer-links` doit avoir `position: static; transform: none;` sur mobile sinon il se superpose au logo.
+
+---
+
+## Scan KI-Analyse — System Prompt
+
+Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
+- **Raisonnement interne** (5 axes, non affichés) : Medikation, Klinische Kohärenz, Dokumentation & Daten, Nachsorge & Prävention, Selbstprüfung
+- **Sortie** : Zusammenfassung (### sections 1–7, médication en tableau markdown) + ### Nicht übersehen (liste plate 🔴🟡🟢)
+- **Format Nicht übersehen** : `🔴 **Problemstelle** Mécanisme → Handlungsempfehlung` (2–4 phrases par item, alternatives concrètes)
+- **Température** : `0.2` (déterministe, évite les oublis)
+- **Modèle** : `gpt-4o`, `max_tokens: 4000`
+- **Tableau médication** : le renderer `markdownToHtml()` supporte les lignes `|...|` (header skippé, données en colonnes alignées)
+
+## Bug melden
+
+- **Accès** : chevron SVG ▾ à gauche de l'avatar topbar → menu dropdown → "Bug melden"
+- **Modal** dans `AppLayout.js` : email (pré-rempli), textarea, upload max 5 photos / 10 MB total
+- **Photos** stockées dans bucket Supabase Storage `bug-reports` (public, RLS `auth.uid()`)
+- **Edge function** `send-bug-report` : sauvegarde dans table `bug_reports` + envoie email via Resend à `support@arvis-app.de`
+- **Fallback** : si `RESEND_API_KEY` absent → sauvegarde DB quand même, pas d'email
 
 ---
 
