@@ -284,7 +284,7 @@ export default function MobileScan() {
           )}
 
           {/* Toolbar — séparateur haut seulement si nav pages visible */}
-          <div className="scan-viewer-toolbar" style={{ flexShrink: 0, position: 'relative', zIndex: 2, borderTop: photos.length > 1 ? undefined : 'none' }}>
+          <div className="scan-viewer-toolbar" style={{ flexShrink: 0, position: 'relative', zIndex: 2, borderTop: photos.length > 1 ? undefined : 'none', flexWrap: 'nowrap' }}>
             <button onClick={addBlackout} style={btnSchwärzen} onTouchEnd={e => e.currentTarget.blur()}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
               Schwärzen
@@ -292,7 +292,7 @@ export default function MobileScan() {
             <button className="btn-secondary" onClick={undoBlackout} title="Rückgängig" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} onTouchEnd={e => e.currentTarget.blur()}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
             </button>
-            <div className="scan-toolbar-zoom">
+            <div className="scan-toolbar-zoom" style={{ margin: 0 }}>
               <button className="btn-secondary" onClick={() => { const z = Math.max(1, zoom - 0.25); setZoom(z); zoomRef.current = z; if (z === 1) { setPanX(0); setPanY(0) } }} title="Verkleinern" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onTouchEnd={e => e.currentTarget.blur()}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
               </button>
@@ -303,7 +303,7 @@ export default function MobileScan() {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
               </button>
             </div>
-            <button className="btn-action scan-toolbar-weiter" onClick={handleSend} onTouchEnd={e => e.currentTarget.blur()}>
+            <button className="btn-action scan-toolbar-weiter" onClick={handleSend} onTouchEnd={e => e.currentTarget.blur()} style={{ marginLeft: 'auto' }}>
               Senden
             </button>
           </div>
