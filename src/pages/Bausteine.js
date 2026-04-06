@@ -14,6 +14,20 @@ function formatBausteinText(s) {
   return s
 }
 
+function buildFilledText(rawText, values) {
+  if (!rawText) return ''
+  const parts = rawText.split(/(\[[^\]]+\])/g)
+  let idx = 0
+  return parts.map(part => {
+    if (/^\[[^\]]+\]$/.test(part)) {
+      const val = values[idx]
+      idx++
+      return val || part
+    }
+    return part
+  }).join('')
+}
+
 // ── Migration unique depuis localStorage ─────────────────────────────────────
 async function migrateBausteineLocalStorage(userId) {
   if (localStorage.getItem('arvis_bausteine_migrated_v1')) return
@@ -161,6 +175,7 @@ export default function Bausteine() {
   const [baudataVersion, setBaudataVersion] = useState(0)
   const rightRef                        = useRef(null)
   const [rightH, setRightH]             = useState(0)
+  const [phValues, setPhValues]         = useState({})  // {index: value} for editable placeholders
 
   // Sync left panel height with right panel
   useEffect(() => {
@@ -201,10 +216,11 @@ export default function Bausteine() {
     if (found) { setSelected(found); _setPendingSelectedId(null) }
   }, [allData, _pendingSelectedId])
 
-  // Persist selected id
+  // Persist selected id + reset placeholder values
   useEffect(() => {
     if (selected) sessionStorage.setItem('arvis_bausteine_selected_id', selected.id)
     else sessionStorage.removeItem('arvis_bausteine_selected_id')
+    setPhValues({})
   }, [selected])
 
   const categories = useMemo(() => {
@@ -327,7 +343,8 @@ export default function Bausteine() {
   // ── Copy ───────────────────────────────────────────────────
   function copyBaustein() {
     if (!selected) return
-    navigator.clipboard.writeText(formatBausteinText(selected.text))
+    const filled = buildFilledText(selected.text, phValues)
+    navigator.clipboard.writeText(formatBausteinText(filled))
     setCopied(true); setTimeout(()=>setCopied(false), 1500)
   }
 
@@ -461,7 +478,47 @@ export default function Bausteine() {
                     )}
                   </div>
                 </div>
-                <div className="baustein-preview-text" style={{overflowY:'auto',flex:1}}>{formatBausteinText(selected.text)}</div>
+                <div className="baustein-preview-text" style={{overflowY:'auto',flex:1,lineHeight:2.1,fontSize:14}}>
+                  {(() => {
+                    const parts = selected.text.split(/(\[[^\]]+\])/g)
+                    let idx = 0
+                    return parts.map((part, i) => {
+                      const m = part.match(/^\[([^\]]+)\]$/)
+                      if (!m) return <span key={i}>{part}</span>
+                      const label = m[1]
+                      const ci = idx++
+                      const hasSlash = / \/ /.test(label)
+                      if (hasSlash) {
+                        const options = label.split(' / ').map(o => o.trim())
+                        return (
+                          <select key={i} value={phValues[ci] || ''}
+                            onChange={e => setPhValues(prev => ({ ...prev, [ci]: e.target.value }))}
+                            style={{
+                              font:'inherit',fontSize:13,color:phValues[ci]?'var(--text)':'var(--text-3)',
+                              background:'var(--bg)',border:'none',borderBottom:phValues[ci]?'2px solid var(--orange)':'2px dashed var(--orange)',
+                              borderRadius:0,padding:'2px 4px',margin:'0 2px',outline:'none',cursor:'pointer',
+                              maxWidth:200,verticalAlign:'baseline',appearance:'auto'
+                            }}>
+                            <option value="" style={{color:'var(--text-3)'}}>— wählen —</option>
+                            {options.map((o, j) => <option key={j} value={o}>{o}</option>)}
+                          </select>
+                        )
+                      }
+                      const isBlank = /^[_]+$/.test(label)
+                      return (
+                        <input key={i} value={phValues[ci] || ''} placeholder={isBlank ? '...' : label}
+                          onChange={e => setPhValues(prev => ({ ...prev, [ci]: e.target.value }))}
+                          style={{
+                            font:'inherit',fontSize:13,color:'var(--text)',
+                            background:'transparent',border:'none',borderBottom:phValues[ci]?'2px solid var(--orange)':'2px dashed var(--orange)',
+                            borderRadius:0,padding:'2px 4px',margin:'0 2px',outline:'none',
+                            width:Math.max(40, Math.min(200, (phValues[ci]||label||'...').length * 8 + 16)),
+                            verticalAlign:'baseline'
+                          }} />
+                      )
+                    })
+                  })()}
+                </div>
                 <div style={{display:'flex',gap:8,marginTop:16}}>
                   <button className="btn-secondary" onClick={addToBasket} style={{flex:1,justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
