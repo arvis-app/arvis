@@ -1126,7 +1126,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 /* ═══════════════════════════════════
    BAUSTEINE PAGE
 ═══════════════════════════════════ */
-.bausteine-layout { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; min-width:0; overflow-x:auto; }
+.bausteine-layout { display:grid; grid-template-columns:2fr 3fr; gap:20px; align-items:start; min-width:0; overflow-x:auto; }
 .bausteine-left { display:flex; flex-direction:column; gap:12px; min-width:0; }
 .bausteine-right { display:flex; flex-direction:column; gap:12px; min-width:0; }
 .bausteine-search { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius: 8px; box-shadow:var(--shadow); }
