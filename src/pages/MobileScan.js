@@ -41,9 +41,6 @@ export default function MobileScan() {
   const [panX, setPanX] = useState(0)
   const [panY, setPanY] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
-  // ── Point 3: fixed viewer height = rendered image height at 100% width ────
-  const [viewerHeight, setViewerHeight] = useState(0)
-
   const imgRef = useRef(null)
   const cropInnerRef = useRef(null)
   const viewerRef = useRef(null)
@@ -102,12 +99,7 @@ export default function MobileScan() {
     }
   }, [status, sIdx])
 
-  // ── Viewer height = natural ratio (not constrained by parent layout) ───────
   function handleImageLoad() {
-    const img = imgRef.current
-    if (!img) return
-    const naturalH = Math.round((img.naturalHeight / img.naturalWidth) * img.offsetWidth)
-    setViewerHeight(naturalH)
     setZoom(1); zoomRef.current = 1
     setPanX(0); setPanY(0)
   }
@@ -126,7 +118,7 @@ export default function MobileScan() {
     setSIdx(0)
     setBlackouts([])
     setSelectedBk(null)
-    setZoom(1); zoomRef.current = 1; setPanX(0); setPanY(0); setViewerHeight(0)
+    setZoom(1); zoomRef.current = 1; setPanX(0); setPanY(0)
     setStatus('schwarzen')
   }
 
@@ -141,7 +133,7 @@ export default function MobileScan() {
     const spx = panX, spy = panY
     // Capture dimensions now (same as Scan.js)
     const cw = viewerRef.current?.offsetWidth || 0
-    const ch = viewerHeight || (viewerRef.current?.offsetHeight || 0)
+    const ch = viewerRef.current?.offsetHeight || 0
     const onMove = (ev) => {
       const t = ev.touches ? ev.touches[0] : ev
       // Scan.js clamping: image cannot leave the container
@@ -223,7 +215,6 @@ export default function MobileScan() {
     setBlackouts(blackoutsByPhotoRef.current[newIdx]?.map(b => ({ ...b })) || [])
     setSelectedBk(null)
     setZoom(1); zoomRef.current = 1; setPanX(0); setPanY(0)
-    setViewerHeight(0) // Reset so handleImageLoad recalculates for new photo
     setSIdx(newIdx)
   }
 
@@ -271,11 +262,11 @@ export default function MobileScan() {
   // ── Schwarzen screen ──────────────────────────────────────────────────────
   if (status === 'schwarzen') {
     return (
-      // Outer background — scrollable, wraps content
-      <div style={{ minHeight: '100vh', background: 'var(--bg, #F6F4F1)', overflowY: 'auto', padding: '12px 16px 16px' }}>
+      // Outer: fixed viewport height — never scrolls, toolbar always visible
+      <div style={{ height: '100dvh', background: 'var(--bg, #F6F4F1)', display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '12px 16px 16px', boxSizing: 'border-box' }}>
 
-        {/* Card wraps content — no fixed height */}
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: 32 }}>
+        {/* Card fills remaining space */}
+        <div style={{ flex: 1, minHeight: 0, background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
           {/* Warning banner — border top + bottom */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEE2E2', borderTop: '1px solid #FCA5A5', borderBottom: '1px solid #FCA5A5', padding: '10px 16px', flexShrink: 0 }}>
@@ -317,15 +308,16 @@ export default function MobileScan() {
             </button>
           </div>
 
-          {/* Viewer — overflow:hidden clips zoom, height = natural ratio */}
+          {/* Viewer — flex:1 fills remaining space, scrolls at zoom=1, clips at zoom>1 */}
           <div
             ref={viewerRef}
             onMouseDown={startPan}
             onTouchStart={startPan}
             onClick={(e) => { if (e.target === viewerRef.current || e.target === imgRef.current) setSelectedBk(null) }}
             style={{
-              height: viewerHeight > 0 ? viewerHeight : 'auto',
-              overflow: 'hidden',
+              flex: 1,
+              minHeight: 0,
+              overflow: zoom > 1 ? 'hidden' : 'auto',
               cursor: isDragging ? 'grabbing' : zoom > 1 ? 'grab' : 'default',
               touchAction: zoom > 1 ? 'none' : 'pan-y'
             }}
