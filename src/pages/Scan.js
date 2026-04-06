@@ -558,6 +558,7 @@ export default function Scan() {
     const data = await invokeEdgeFunction('ai-chat', {
       model: 'gpt-4o',
       max_tokens: 4000,
+      temperature: 0.2,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: 'Anonymisierter Dokumententext:\n\n' + ocrText }
