@@ -148,11 +148,13 @@ export default function AppLayout() {
         </div>
 
         <div className="topbar-right">
-          <div style={{position:'relative',display:'flex',alignItems:'center',gap:4,cursor:'pointer'}} ref={avatarRef} onClick={() => setAvatarOpen(v => !v)}>
+          <div style={{position:'relative',display:'flex',alignItems:'center',gap:6,cursor:'pointer'}} ref={avatarRef} onClick={() => setAvatarOpen(v => !v)}>
+            <svg width="10" height="7" viewBox="0 0 10 7" fill="none" style={{transition:'transform 0.15s',transform:avatarOpen?'rotate(180deg)':'none'}}>
+              <path d="M1 1.5L5 5.5L9 1.5" stroke="var(--text-3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
             <div className="topbar-avatar" title="Menü">
               {initials}
             </div>
-            <span style={{fontSize:10,color:'var(--text-3)',userSelect:'none',transition:'transform 0.15s',transform:avatarOpen?'rotate(180deg)':'none'}}>▾</span>
             {avatarOpen && (
               <div style={{position:'absolute',right:0,top:'calc(100% + 8px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
                 <div onClick={() => { setAvatarOpen(false); navigate('/profil') }}
