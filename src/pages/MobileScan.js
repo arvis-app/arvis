@@ -326,9 +326,9 @@ export default function MobileScan() {
               ref={cropInnerRef}
               style={{
                 position: 'relative',
+                zIndex: 1,
                 width: '100%',
                 transformOrigin: 'top left',
-                // ── Point 3: no transform when zoom=1 (photo stays fixed)
                 transform: zoom > 1 ? `translate(${panX}px,${panY}px) scale(${zoom})` : 'none'
               }}
             >
