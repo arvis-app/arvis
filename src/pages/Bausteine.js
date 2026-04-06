@@ -163,8 +163,6 @@ export default function Bausteine() {
       }
     })
   }, [user])
-  const [basket, setBasket]             = useState(() => { try { return JSON.parse(sessionStorage.getItem('arvis_bausteine_basket') || '[]') } catch { return [] } })
-  const basketListRef                   = useRef(null)
   const [neuOpen, setNeuOpen]           = useState(false)
   const [editingB, setEditingB]         = useState(null)
   const [confirm, setConfirm]           = useState(null)
@@ -185,14 +183,6 @@ export default function Bausteine() {
     obs.observe(rightRef.current)
     return () => obs.disconnect()
   }, [])
-
-  // Scroll automatique vers le dernier élément du panier + persistence
-  useEffect(() => {
-    if (basketListRef.current && basket.length > 0) {
-      basketListRef.current.scrollTop = basketListRef.current.scrollHeight
-    }
-    sessionStorage.setItem('arvis_bausteine_basket', JSON.stringify(basket))
-  }, [basket])
 
   // Attendre que bausteine_data.js soit chargé
   useEffect(() => {
@@ -407,24 +397,6 @@ export default function Bausteine() {
     setCopied(true); setTimeout(()=>setCopied(false), 1500)
   }
 
-  // ── Basket ─────────────────────────────────────────────────
-  function addToBasket() {
-    if (!selected) return
-    if (basket.find(b=>b.id===selected.id)) { showToast('Bereits im Warenkorb', true); return }
-    setBasket(prev=>[...prev, selected])
-    showToast('Zum Warenkorb hinzugefügt', true)
-  }
-
-  function removeFromBasket(id) { setBasket(prev=>prev.filter(b=>b.id!==id)) }
-  function clearBasket() { setBasket([]) }
-
-  function sendBasketToBrief() {
-    if (!basket.length) return
-    const text = basket.map(b=>b.text).join('\n\n')
-    sessionStorage.setItem('arvis_brief_input', text)
-    navigate('/briefschreiber')
-  }
-
   function sendDirectToBrief() {
     if (!selected) return
     sessionStorage.setItem('arvis_brief_input', selected.text)
@@ -450,7 +422,7 @@ export default function Bausteine() {
       <div className="bausteine-layout" style={{paddingTop:4}}>
 
         {/* LEFT: Search + List */}
-        <div className="bausteine-left bausteine-left-col" style={{height:basket.length>0?Math.max(560,rightH):560}}>
+        <div className="bausteine-left bausteine-left-col" style={{height:560}}>
 
           {/* Search */}
           <div id="bausteineSearchBox" style={{position:'relative',background:'var(--card)',border:'1.5px solid var(--border)',borderRadius:8,overflow:'hidden',boxShadow:'var(--shadow)'}}>
@@ -541,10 +513,6 @@ export default function Bausteine() {
                   onClick={handlePreviewClick}
                   style={{overflowY:'auto',flex:1,outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)'}} />
                 <div style={{display:'flex',gap:8,marginTop:16}}>
-                  <button className="btn-secondary" onClick={addToBasket} style={{flex:1,justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Zum Warenkorb
-                  </button>
                   <button className="btn-action" onClick={sendDirectToBrief} style={{flex:1,justifyContent:'center',display:'flex',gap:6}}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     An Brief Schreiber
@@ -554,29 +522,6 @@ export default function Bausteine() {
             )}
           </div>
 
-          {/* Basket */}
-          {basket.length > 0 && (
-            <div style={{border:'1px solid var(--border)',background:'var(--card)',borderRadius:8,padding:14,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',flexShrink:0}}>
-              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,flexShrink:0}}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                <span className="baustein-basket-title">Warenkorb</span>
-                <span className="baustein-basket-count">{basket.length} Baustein{basket.length>1?'e':''}</span>
-                <button className="result-action-btn" onClick={clearBasket} style={{marginLeft:'auto',width:'auto',padding:'0 10px',fontSize:14,fontWeight:600,fontFamily:'DM Sans,sans-serif'}}>Leeren</button>
-              </div>
-              <div ref={basketListRef} className="baustein-basket-items" style={{overflowY:'auto'}}>
-                {basket.map(b=>(
-                  <div key={b.id} className="baustein-basket-item">
-                    <span className="baustein-basket-item-title" onClick={()=>setSelected(b)}>{b.title}</span>
-                    <span className="baustein-basket-remove" onClick={()=>removeFromBasket(b.id)}>&#215;</span>
-                  </div>
-                ))}
-              </div>
-              <button className="btn-action" onClick={sendBasketToBrief} style={{width:'100%',justifyContent:'center',display:'flex',gap:6,marginTop:8}}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                An Brief Schreiber senden
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

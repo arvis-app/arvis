@@ -307,7 +307,7 @@ Coupons auto-appliqués au checkout (priorité) :
 |------|-----|----------|--------|
 | Scan | `arvis_scan_step`, `_panel`, `_mode`, `_limitReached` | `sessionStorage` | UI temporaire — ne doit pas persister entre sessions |
 | Scan | `arvis_scan_aiHtml`, `_ocrText`, `_imgData` | `sessionStorage` | PHI — DSGVO Art. 9 |
-| Bausteine | `arvis_bausteine_basket`, `_selected_id` | `sessionStorage` | UI temporaire |
+| Bausteine | `arvis_bausteine_selected_id` | `sessionStorage` | UI temporaire |
 | Bausteine | `arvis_bausteine_migrated_v1` | `localStorage` | Flag migration one-shot |
 | Uebersetzung | `arvis_ueb_search`, `_cat`, `_langs`, `_selected` | `sessionStorage` | UI temporaire |
 
