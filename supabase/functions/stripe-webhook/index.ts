@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import Stripe from 'npm:stripe@^14.19.0'
+import { buildEmailHtml } from '../_shared/email-templates.ts'
 
 const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
 if (!stripeKey) throw new Error('STRIPE_SECRET_KEY not configured')
@@ -31,6 +32,26 @@ async function logFailedEvent(
     console.error('stripe_events_failed insert error:', insertErr)
   }
   console.error(`[stripe-webhook] DB error for event ${event.id} (${event.type}): ${errorMessage}`)
+}
+
+async function sendNotificationEmail(resendKey: string, to: string, type: string, firstName?: string) {
+  try {
+    const { subject, html } = buildEmailHtml(type, firstName || undefined)
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Arvis <noreply@arvis-app.de>',
+        to: [to],
+        reply_to: 'support@arvis-app.de',
+        subject,
+        html,
+      }),
+    })
+    if (!res.ok) console.error(`Resend error (${type}):`, await res.text())
+  } catch (e) {
+    console.error(`Email send error (${type}):`, e)
+  }
 }
 
 serve(async (req) => {
@@ -136,6 +157,20 @@ serve(async (req) => {
             .eq('stripe_customer_id', customerId)
           if (error) {
             await logFailedEvent(supabaseAdmin, event, customerId, error.message)
+          } else {
+            // Send notification email on plan change
+            const resendKey = Deno.env.get('RESEND_API_KEY')
+            if (resendKey && (plan === 'pro' || plan === 'canceled_pending')) {
+              const { data: userData } = await supabaseAdmin
+                .from('users')
+                .select('email, first_name')
+                .eq('stripe_customer_id', customerId)
+                .single()
+              if (userData?.email) {
+                const emailType = plan === 'pro' ? 'subscription_confirmed' : 'subscription_cancelled'
+                await sendNotificationEmail(resendKey, userData.email, emailType, userData.first_name)
+              }
+            }
           }
         } catch (dbErr: any) {
           await logFailedEvent(supabaseAdmin, event, customerId, dbErr.message)

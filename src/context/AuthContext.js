@@ -163,6 +163,8 @@ export function AuthProvider({ children }) {
         plan: 'trial',
         trial_started_at: new Date().toISOString()
       })
+      // Welcome email (non-bloquant)
+      invokeEdgeFunction('send-notification-email', { type: 'welcome', email, firstName }).catch(() => {})
     }
     return data
   }
