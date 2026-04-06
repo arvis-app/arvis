@@ -163,6 +163,7 @@ export default function Scan() {
   const [showQrModal, setShowQrModal] = useState(false)
   const [qrUrl, setQrUrl] = useState('')
   const [scanChannel, setScanChannel] = useState(null)
+  const [mobileTransferring, setMobileTransferring] = useState(false)
 
   // PDF state
   const pdfDocRef = useRef(null)
@@ -197,6 +198,7 @@ export default function Scan() {
   // ── Persist key state across tab switches ─────────────────────────────────
   useEffect(() => { sessionStorage.setItem('arvis_scan_step', step) }, [step])
   useEffect(() => { sessionStorage.setItem('arvis_scan_panel', panel) }, [panel])
+  useEffect(() => { if (panel !== 'upload') setMobileTransferring(false) }, [panel])
   useEffect(() => { sessionStorage.setItem('arvis_scan_mode', mode) }, [mode])
   useEffect(() => { sessionStorage.setItem('arvis_scan_aiHtml', aiHtml) }, [aiHtml])
   useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
@@ -263,6 +265,7 @@ export default function Scan() {
       }, async (payload) => {
         if (payload.new.status === 'completed' && payload.new.image_url) {
           setShowQrModal(false)
+          setMobileTransferring(true)
           channel.unsubscribe()
           try {
             const raw = payload.new.image_url
@@ -295,6 +298,7 @@ export default function Scan() {
               loadFile(new File([pdfBlob], 'mobile_scan.pdf', { type: 'application/pdf' }))
             }
           } catch (e) {
+            setMobileTransferring(false)
             console.error('[Scan] Failed to download secure image', e)
             alert("Erreur de téléchargement depuis le bucket privé : " + e.message)
           }
@@ -719,7 +723,13 @@ export default function Scan() {
 
           {/* Upload panel */}
           {panel === 'upload' && (
-            <div className="scan-panel" id="panelUpload">
+            <div className="scan-panel" id="panelUpload" style={{ position: 'relative' }}>
+              {mobileTransferring && (
+                <div style={{ position: 'absolute', inset: 0, background: 'var(--bg)', borderRadius: 'inherit', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+                  <div className="spinner" />
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-2)' }}>Foto wird übertragen…</div>
+                </div>
+              )}
               <div className="scan-panel-header">
                 <span className="scan-panel-title">Dokument laden</span>
                 <span className="scan-panel-sub">Foto aufnehmen oder Datei hochladen</span>
