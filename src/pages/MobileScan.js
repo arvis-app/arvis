@@ -262,11 +262,11 @@ export default function MobileScan() {
   // ── Schwarzen screen ──────────────────────────────────────────────────────
   if (status === 'schwarzen') {
     return (
-      // Outer: fixed viewport height — never scrolls, toolbar always visible
-      <div style={{ height: '100dvh', background: 'var(--bg, #F6F4F1)', display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '12px 16px 16px', boxSizing: 'border-box' }}>
+      // Outer: natural height, scrollable if photo is very tall
+      <div style={{ minHeight: '100vh', background: 'var(--bg, #F6F4F1)', overflowY: 'auto', padding: '12px 16px 16px' }}>
 
-        {/* Card fills remaining space */}
-        <div style={{ flex: 1, minHeight: 0, background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {/* Card: height = banner + toolbar + photo */}
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
           {/* Warning banner — border top + bottom */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEE2E2', borderTop: '1px solid #FCA5A5', borderBottom: '1px solid #FCA5A5', padding: '10px 16px', flexShrink: 0 }}>
@@ -315,9 +315,7 @@ export default function MobileScan() {
             onTouchStart={startPan}
             onClick={(e) => { if (e.target === viewerRef.current || e.target === imgRef.current) setSelectedBk(null) }}
             style={{
-              flex: 1,
-              minHeight: 0,
-              overflow: zoom > 1 ? 'hidden' : 'auto',
+              overflow: zoom > 1 ? 'hidden' : 'visible',
               cursor: isDragging ? 'grabbing' : zoom > 1 ? 'grab' : 'default',
               touchAction: zoom > 1 ? 'none' : 'pan-y'
             }}
