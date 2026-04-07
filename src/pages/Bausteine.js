@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
+import { logError } from '../utils/logger'
 
 const SPECIAL_FIRST = ['Notaufnahme','Aufnahme','Befunde','OP-Berichte','Verlauf','Entlassung','Sozialmedizin/Gutachten','Diverses']
 
@@ -41,7 +43,7 @@ async function migrateBausteineLocalStorage(userId) {
       })))
     }
     localStorage.setItem('arvis_bausteine_migrated_v1', '1')
-  } catch (e) { console.error('[Bausteine] Bausteine migration error:', e) }
+  } catch (e) { logError('Bausteine.migrate', e) }
 }
 
 // ── Confirm Modal ──────────────────────────────────────────────────────────────
@@ -51,7 +53,7 @@ function ConfirmModal({ opts, onOk, onCancel }) {
     <div style={{position:'fixed',inset:0,zIndex:1100,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{background:'var(--card)',borderRadius: 8,padding:24,width:'100%',maxWidth:380,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:16}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          {opts.icon && <div style={{width:36,height:36,borderRadius: 6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:opts.iconBg||'var(--bg-3)'}} dangerouslySetInnerHTML={{__html:opts.icon}}/>}
+          {opts.icon && <div style={{width:36,height:36,borderRadius: 6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,background:opts.iconBg||'var(--bg-3)'}} dangerouslySetInnerHTML={{__html:DOMPurify.sanitize(opts.icon,{USE_PROFILES:{svg:true}})}}/>}
           <div>
             <div style={{fontSize:17,fontWeight:700,color:'var(--text)'}}>{opts.title}</div>
             <div style={{fontSize:15,color:'var(--text-2)',marginTop:3,lineHeight:1.5,whiteSpace:'pre-line'}}>{opts.msg}</div>
@@ -184,9 +186,14 @@ export default function Bausteine() {
     return () => obs.disconnect()
   }, [])
 
-  // Attendre que bausteine_data.js soit chargé
+  // Charger bausteine_data.js dynamiquement (retiré de index.html pour ne pas bloquer le chargement initial)
   useEffect(() => {
     if (window.BAUSTEINE_DATA) return
+    if (!document.querySelector('script[src*="bausteine_data"]')) {
+      const s = document.createElement('script')
+      s.src = '/bausteine_data.js'
+      document.head.appendChild(s)
+    }
     const interval = setInterval(() => {
       if (window.BAUSTEINE_DATA) { setBaudataVersion(v => v + 1); clearInterval(interval) }
     }, 100)

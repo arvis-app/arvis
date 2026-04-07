@@ -4,7 +4,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 const ADMIN_USER_ID = Deno.env.get('ADMIN_USER_ID')
 if (!ADMIN_USER_ID) throw new Error('ADMIN_USER_ID secret is not set')
 
-const ALLOWED_ORIGINS = ['https://arvis-app.de', 'https://www.arvis-app.de', 'http://localhost:3000', 'http://localhost:5173']
+const ALLOWED_ORIGINS: string[] = ['https://arvis-app.de', 'https://www.arvis-app.de',
+  ...(Deno.env.get('ALLOW_LOCALHOST') === 'true' ? ['http://localhost:3000', 'http://localhost:5173'] : [])]
 
 serve(async (req) => {
   const origin = req.headers.get('Origin') ?? ''
@@ -96,7 +97,7 @@ serve(async (req) => {
     })
   } catch (err: any) {
     console.error('admin-stats error:', err)
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500, headers: { ...CORS, 'Content-Type': 'application/json' }
     })
   }

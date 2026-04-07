@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
+import { logError } from '../utils/logger'
 
 function renderWithBlackouts(src, bkOuts, containerWidth) {
   return new Promise((resolve, reject) => {
@@ -252,7 +253,7 @@ export default function MobileScan() {
         .eq('token', token)
       setStatus('done')
     } catch (err) {
-      console.error(err)
+      logError('MobileScan.upload', err)
       setStatus('error')
     }
   }

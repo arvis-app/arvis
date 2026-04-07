@@ -244,6 +244,11 @@ export default function Datenschutz() {
               <td style={S.td}>DNS-Verwaltung und Netzwerkschutz</td>
               <td style={S.td}>USA — <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" style={S.a}>Datenschutzerklärung</a></td>
             </tr>
+            <tr>
+              <td style={S.td}><strong>Resend Inc.</strong></td>
+              <td style={S.td}>Versand transaktionaler E-Mails (Willkommen, Testphasen-Erinnerung, Abo-Bestätigung)</td>
+              <td style={S.td}>USA — <a href="https://resend.com/privacy" target="_blank" rel="noopener noreferrer" style={S.a}>Datenschutzerklärung</a></td>
+            </tr>
           </tbody>
         </table>
         <p style={S.p}>

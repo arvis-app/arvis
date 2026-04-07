@@ -49,9 +49,26 @@ export default function AppLayout() {
   const [bugSending,       setBugSending]       = useState(false)
   const [bugSuccess,       setBugSuccess]       = useState(false)
   const [bugError,         setBugError]         = useState('')
+  const [isOffline, setIsOffline] = useState(!navigator.onLine)
   const avatarRef = useRef(null)
   const bugFileRef = useRef(null)
   const navigate  = useNavigate()
+
+  // Fermeture modale par ESC
+  useEffect(() => {
+    const handleEsc = (e) => { if (e.key === 'Escape') { setBugModalOpen(false); setAvatarOpen(false) } }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [])
+
+  // Détection offline
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true)
+    const goOnline  = () => setIsOffline(false)
+    window.addEventListener('offline', goOffline)
+    window.addEventListener('online', goOnline)
+    return () => { window.removeEventListener('offline', goOffline); window.removeEventListener('online', goOnline) }
+  }, [])
 
   const initials    = getInitials()
   const displayName = getDisplayName()
@@ -119,6 +136,13 @@ export default function AppLayout() {
 
   return (
     <div className={`app-layout${sidebarCollapsed ? ' sidebar-collapsed' : ''}${mobileOpen ? ' menu-open' : ''}`}>
+
+      {/* Offline banner */}
+      {isOffline && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000, background: '#e53e3e', color: 'white', textAlign: 'center', padding: '8px 16px', fontSize: 14, fontWeight: 600 }}>
+          Keine Internetverbindung — Einige Funktionen sind nicht verfügbar.
+        </div>
+      )}
 
       {/* Topbar — grid-column 1/-1 */}
       <header className="topbar">

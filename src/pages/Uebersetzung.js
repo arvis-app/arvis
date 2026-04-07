@@ -34,12 +34,18 @@ export default function Uebersetzung() {
   const [loadError, setLoadError] = useState(false)
   const restoredRef = useRef(false)
 
+  // Charger begriffe_data.js dynamiquement (retiré de index.html pour ne pas bloquer le chargement initial)
   useEffect(() => {
     function tryLoad() {
       if (window._begriffe?.length) { setData(window._begriffe); return true }
       return false
     }
     if (!tryLoad()) {
+      if (!document.querySelector('script[src*="begriffe_data"]')) {
+        const s = document.createElement('script')
+        s.src = '/begriffe_data.js'
+        document.head.appendChild(s)
+      }
       const iv = setInterval(() => { if (tryLoad()) clearInterval(iv) }, 100)
       const timeout = setTimeout(() => { clearInterval(iv); setLoadError(true) }, 8000)
       return () => { clearInterval(iv); clearTimeout(timeout) }

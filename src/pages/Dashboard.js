@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
+import { logError } from '../utils/logger'
 
 // Helper: build ISO date key "YYYY-MM-DD" from JS components (month is 0-indexed)
 function toDateKey(y, m0, d) { return `${y}-${String(m0 + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}` }
@@ -16,7 +17,7 @@ async function fetchEvents(userId) {
   const { data, error } = await supabase
     .from('events').select('*').eq('user_id', userId)
     .abortSignal(AbortSignal.timeout(8000))
-  if (error) { console.error('[Dashboard] fetchEvents:', error); return {} }
+  if (error) { logError('Dashboard.fetchEvents', error); return {} }
   const map = {}
   data?.forEach(e => {
     if (!map[e.date]) map[e.date] = []
@@ -29,7 +30,7 @@ async function fetchPatients(userId) {
   const { data, error } = await supabase
     .from('patients').select('*').eq('user_id', userId).order('created_at')
     .abortSignal(AbortSignal.timeout(8000))
-  if (error) { console.error('[Dashboard] fetchPatients:', error); return [] }
+  if (error) { logError('Dashboard.fetchPatients', error); return [] }
   return data || []
 }
 
@@ -50,7 +51,7 @@ async function migrateLocalStorage(userId) {
       await supabase.from('patients').insert(realPatients.map(p => ({ user_id: userId, room: p.room || '—', name: p.name, note: p.note || '' })))
     }
     localStorage.setItem('arvis_migrated_v1', '1')
-  } catch (e) { console.error('[Dashboard] Migration error:', e) }
+  } catch (e) { logError('Dashboard.migrateLocalStorage', e) }
 }
 
 function Toast({ msg }) {
@@ -329,7 +330,7 @@ export default function Dashboard() {
         fetchPatients(user.id).then(setPatients)
       ]))
       .catch(e => {
-        console.error('[Dashboard] Dashboard load error:', e)
+        logError('Dashboard.load', e)
         setFetchError('Daten konnten nicht geladen werden. Bitte Seite neu laden.')
       })
       .finally(() => setLoading(false))

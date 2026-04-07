@@ -51,8 +51,12 @@ function cta(text: string, url: string): string {
   return `<div class="cta-wrapper"><a href="${url}" class="cta-button">${text}</a></div>`
 }
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 export function buildEmailHtml(type: string, firstName?: string): EmailTemplate {
-  const name = firstName || 'dort'
+  const name = escapeHtml(firstName || 'dort')
   const loginUrl = `${SITE_URL}/login`
 
   switch (type) {

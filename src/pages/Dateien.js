@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { downloadAsWord } from '../utils/downloadWord'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
+import { logError } from '../utils/logger'
 import DOMPurify from 'dompurify'
 
 
@@ -40,7 +41,7 @@ async function migrateDateienLocalStorage(userId) {
       })))
     }
     localStorage.setItem('arvis_dateien_migrated_v1', '1')
-  } catch (e) { console.error('[Dateien] Dateien migration error:', e) }
+  } catch (e) { logError('Dateien.migrate', e) }
 }
 
 const ICO = {

@@ -1,7 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
-const ALLOWED_ORIGINS = ['https://arvis-app.de', 'https://www.arvis-app.de', 'http://localhost:3000', 'http://localhost:5173']
+const ALLOWED_ORIGINS: string[] = ['https://arvis-app.de', 'https://www.arvis-app.de',
+  ...(Deno.env.get('ALLOW_LOCALHOST') === 'true' ? ['http://localhost:3000', 'http://localhost:5173'] : [])]
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get('Origin') ?? ''
@@ -36,7 +37,7 @@ serve(async (req) => {
 
     const { data: profile } = await supabaseAdmin
       .from('users')
-      .select('plan, trial_started_at, subscription_end_date, ai_tokens_used, ai_tokens_reset_at')
+      .select('plan, trial_started_at, subscription_end_date, ai_tokens_used, ai_tokens_reset_at, ai_hourly_tokens, ai_hourly_reset_at')
       .eq('id', user.id)
       .single()
 
@@ -85,6 +86,27 @@ serve(async (req) => {
       )
     }
 
+    // Rate limit horaire : max 100k tokens / heure
+    const HOURLY_TOKEN_LIMIT = 100_000
+    let hourlyTokens = profile?.ai_hourly_tokens ?? 0
+    const hourlyResetAt = profile?.ai_hourly_reset_at ? new Date(profile.ai_hourly_reset_at) : new Date(0)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+
+    if (hourlyResetAt < oneHourAgo) {
+      hourlyTokens = 0
+      await supabaseAdmin
+        .from('users')
+        .update({ ai_hourly_tokens: 0, ai_hourly_reset_at: now_utc.toISOString() })
+        .eq('id', user.id)
+    }
+
+    if (hourlyTokens >= HOURLY_TOKEN_LIMIT) {
+      return new Response(
+        JSON.stringify({ error: 'rate_limited', message: 'Bitte warten Sie einen Moment. Stündliches KI-Limit erreicht.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const ALLOWED_MODELS = new Set(['gpt-4o', 'gpt-4o-mini'])
     const { model: requestedModel = 'gpt-4o', max_tokens: requestedTokens = 4000, temperature: requestedTemp, messages } = await req.json()
     const model = ALLOWED_MODELS.has(requestedModel) ? requestedModel : 'gpt-4o'
@@ -119,11 +141,15 @@ serve(async (req) => {
 
     const content = data.choices?.[0]?.message?.content ?? null
 
-    // Incrémenter les tokens utilisés
+    // Incrémenter les tokens utilisés (mensuel + horaire)
     const tokensConsumed = data.usage?.total_tokens ?? 0
     if (tokensConsumed > 0) {
       await supabaseAdmin
         .rpc('increment_ai_tokens', { p_user_id: user.id, p_tokens: tokensConsumed })
+      await supabaseAdmin
+        .from('users')
+        .update({ ai_hourly_tokens: (hourlyTokens + tokensConsumed) })
+        .eq('id', user.id)
     }
 
     return new Response(
@@ -131,8 +157,9 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (e) {
+    console.error('ai-chat error:', e)
     return new Response(
-      JSON.stringify({ error: e.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

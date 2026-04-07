@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { invokeEdgeFunction } from '../supabaseClient'
+import { logError } from '../utils/logger'
 
 const MONTHLY_TOKEN_LIMIT = 1_000_000
 
@@ -110,7 +111,7 @@ export default function AdminStats() {
           // Not admin — redirect instead of showing error
           navigate('/dashboard', { replace: true })
         } else {
-          console.error('AdminStats error:', e)
+          logError('AdminStats.load', e)
           setError('Impossible de charger les statistiques.')
         }
       } finally {

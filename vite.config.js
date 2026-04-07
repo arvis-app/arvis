@@ -16,8 +16,15 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
+    modulePreload: { polyfill: false },
   },
   server: {
     port: 3000,
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setup.js'],
+    globals: true,
+    exclude: ['tests/**', 'node_modules/**'],
   },
 })

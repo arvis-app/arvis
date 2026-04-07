@@ -77,6 +77,9 @@ export default function Profil() {
 
   // Modals
   const [showCancelModal, setShowCancelModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [portalLoading, setPortalLoading] = useState(false)
 
   async function handleCheckout() {
@@ -104,6 +107,18 @@ export default function Profil() {
     } finally {
       setPortalLoading(false)
       setShowCancelModal(false)
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteLoading(true)
+    try {
+      await invokeEdgeFunction('delete-user-account', {})
+      sessionStorage.clear()
+      window.location.href = '/login'
+    } catch (err) {
+      showToast('Fehler beim Löschen des Kontos', false)
+      setDeleteLoading(false)
     }
   }
 
@@ -145,6 +160,13 @@ export default function Profil() {
   }, [profile])
 
   function showToast(msg, light = true) { setToast({ msg, light }); setTimeout(() => setToast(null), 2500) }
+
+  // Fermeture modales par ESC
+  useEffect(() => {
+    const handleEsc = (e) => { if (e.key === 'Escape') { setShowCancelModal(false); setShowDeleteModal(false) } }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [])
 
   // ── Photo ──────────────────────────────────────────────────────────────────
   function handlePhoto(e) {
@@ -554,6 +576,22 @@ export default function Profil() {
               </div>
             </div>
           </div>
+
+          {/* Konto löschen */}
+          <div style={{ padding: '14px 16px', background: 'rgba(229,62,62,0.04)', border: '1px solid rgba(229,62,62,0.15)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#e53e3e' }}>Konto löschen</div>
+              <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 2 }}>Alle Daten werden unwiderruflich gelöscht.</div>
+            </div>
+            <button
+              onClick={() => { setDeleteConfirmText(''); setShowDeleteModal(true) }}
+              style={{ padding: '7px 16px', borderRadius: 6, border: '1px solid #e53e3e', background: 'transparent', color: '#e53e3e', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', whiteSpace: 'nowrap', transition: 'background 0.2s' }}
+              onMouseOver={e => e.target.style.background = 'rgba(229,62,62,0.08)'}
+              onMouseOut={e => e.target.style.background = 'transparent'}
+            >
+              Konto löschen
+            </button>
+          </div>
         </div>
       </div>
 
@@ -579,6 +617,45 @@ export default function Profil() {
                 style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: '#e53e3e', color: 'white', cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}
               >
                 {portalLoading ? 'Lädt...' : 'Kündigen'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete account modal */}
+      {showDeleteModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '28px 28px 22px', width: 380, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(229,62,62,0.1)', border: '1px solid rgba(229,62,62,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+              </div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: '#e53e3e' }}>Konto unwiderruflich löschen</div>
+            </div>
+            <div style={{ fontSize: 15, color: 'var(--text-2)', marginBottom: 12, lineHeight: 1.6 }}>
+              Diese Aktion kann <strong>nicht rückgängig</strong> gemacht werden. Alle Ihre Daten, Dateien und Ihr Abonnement werden dauerhaft gelöscht.
+            </div>
+            <div style={{ fontSize: 14, color: 'var(--text-3)', marginBottom: 8 }}>
+              Bitte geben Sie <strong>LÖSCHEN</strong> ein, um zu bestätigen:
+            </div>
+            <input
+              type="text"
+              className="form-input"
+              value={deleteConfirmText}
+              onChange={e => setDeleteConfirmText(e.target.value)}
+              placeholder="LÖSCHEN"
+              style={{ marginBottom: 16, textAlign: 'center', fontWeight: 600, letterSpacing: '0.1em' }}
+              autoFocus
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <button className="btn-secondary" onClick={() => setShowDeleteModal(false)} style={{ height: 38, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading || deleteConfirmText !== 'LÖSCHEN'}
+                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: deleteConfirmText === 'LÖSCHEN' ? '#e53e3e' : '#ccc', color: 'white', cursor: (deleteLoading || deleteConfirmText !== 'LÖSCHEN') ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: deleteLoading ? 0.6 : 1 }}
+              >
+                {deleteLoading ? 'Wird gelöscht...' : 'Endgültig löschen'}
               </button>
             </div>
           </div>

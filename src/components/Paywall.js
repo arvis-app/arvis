@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { invokeEdgeFunction } from '../supabaseClient'
+import { logError } from '../utils/logger'
 
 export default function Paywall({ children }) {
   const { isPro, getPlanInfo, profile } = useAuth()
@@ -31,7 +32,7 @@ export default function Paywall({ children }) {
         window.location.href = data.url
       }
     } catch (err) {
-      console.error('Checkout error:', err)
+      logError('Paywall.checkout', err)
       alert('Fehler: ' + err.message)
     } finally {
       setLoading(false)

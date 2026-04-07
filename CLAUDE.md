@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 6 avril 2026_
+_Dernière mise à jour : 8 avril 2026_
 
 ---
 
@@ -105,6 +105,8 @@ npx supabase functions deploy <fn> --no-verify-jwt      # déployer une edge fun
 npx supabase secrets set KEY=VAL                        # ajouter un secret Supabase
 git add <fichiers> && git commit -m "..." && git push   # deploy Vercel auto
 ```
+
+**Supabase CLI** : installé (`v2.75.0`), projet linké (`jmanxlmzvfnhpgcxsqly`). Tu peux déployer les edge functions directement sans demander — pas besoin de confirmation.
 
 ---
 
@@ -372,6 +374,17 @@ Bouton "Jetzt upgraden" :
 9. **Landing page mobile — inline styles** : `public/landing_page.html` est massivement inline-stylé. Les sélecteurs CSS `div[style*="font-size:..."]` ne fonctionnent pas fiablement sur Safari. La bonne approche : ajouter une `class` aux éléments cibles, puis cibler via CSS. Pour réduire proportionnellement tout le contenu d'un mockup : `zoom: 0.75` sur le container (affecte layout + rendu, contrairement à `transform: scale`).
 13. **iOS sticky hover** : le bloc `@media (hover: none)` dans `App.css` ne doit PAS cibler `button:hover` générique — ça rend les boutons invisibles sur iOS (le `:hover` reste actif après un tap). Cibler uniquement les classes spécifiques (`.btn-secondary:hover`, `.btn-action:hover`, etc.).
 10. **Landing page mobile — feature cards** : les containers mockup dans les feature cards ont la classe `feat-demo-wrap` → `zoom: 0.75` appliqué dans `@media (max-width: 768px)`. Le grid interne Brief Schreiber a la classe `brief-2cols`. Footer mobile : `.footer-links` doit avoir `position: static; transform: none;` sur mobile sinon il se superpose au logo.
+14. **config.toml vs Supabase Dashboard** : `supabase/config.toml` configure les templates email en local uniquement. Pour la prod, configurer aussi dans Supabase Dashboard > Authentication > Email Templates. Templates actifs : `confirm-signup.html`, `recovery.html`, `email-change.html`.
+
+---
+
+## Sentry
+
+- **Fichier init** : `src/index.js` — DSN via `VITE_SENTRY_DSN`, `environment: import.meta.env.MODE`
+- **Intégrations** : `browserTracingIntegration()` (perf, 20% sample) + `replayIntegration()` (replay vidéo sur erreur, 100%)
+- **Helper** : `src/utils/logger.js` → `logError(context, error, extra)` — à utiliser dans tous les `catch`
+- **Branché dans** : `supabaseClient.invokeEdgeFunction`, `Dashboard`, `Scan`, `AdminStats`, `Dateien`, `Bausteine`, `MobileScan`, `Paywall`, `ErrorBoundary`
+- **Ne pas utiliser** `console.error` seul dans les catch — toujours passer par `logError()`
 
 ---
 
@@ -383,7 +396,7 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Format Nicht übersehen** : `🔴 **Problemstelle** Mécanisme → Handlungsempfehlung` (2–4 phrases par item, alternatives concrètes)
 - **Température** : `0.2` (déterministe, évite les oublis)
 - **Modèle** : `gpt-4o`, `max_tokens: 4000`
-- **Tableau médication** : le renderer `markdownToHtml()` supporte les lignes `|...|` (header skippé, données en colonnes alignées)
+- **Tableau médication** : 3 colonnes `| Medikament (Dosis) | Schema | ggf. Dauer |` — médicament et dose dans la même colonne. Le renderer `markdownToHtml()` supporte les lignes `|...|` (header skippé, données en colonnes alignées)
 
 ## BriefSchreiber — Korrektur Prompt
 
@@ -432,9 +445,46 @@ Tous via **Resend** depuis `noreply@arvis-app.de`. Templates HTML partagés dans
 
 ---
 
-## Ce qui reste à faire
+## Audit 6 avril 2026 — Résolu le 7 avril 2026
 
-_(rien pour l'instant)_
+Tous les points de l'audit ont été traités. Résumé :
+
+### 🔴 CRITIQUE — ✅ Résolu
+
+- [x] **check-trial-emails : validation JWT** — Vérifie maintenant le token (service_role OU admin user)
+- [x] **Rate limiting horaire** — 100k tokens/heure sur ai-chat et ai-whisper (colonnes `ai_hourly_tokens`, `ai_hourly_reset_at`)
+- [x] **sessionStorage.clear() au logout** — Ajouté dans `AuthContext.js:logout()`
+- [x] **XSS send-bug-report** — `escapeHtml()` + validation URL Supabase Storage sur photoUrls
+- [x] **"Konto löschen"** — Edge function `delete-user-account` + modale confirmation (taper "LÖSCHEN") dans Profil.js
+
+### 🟠 IMPORTANT — ✅ Résolu
+
+- [x] **Resend dans Datenschutz.js** — Ajouté dans le tableau Drittanbieter (section 8)
+- [x] **firstName échappé dans emails** — `escapeHtml()` dans `_shared/email-templates.ts`
+- [x] **Bausteine.js DOMPurify** — `DOMPurify.sanitize(opts.icon, {USE_PROFILES:{svg:true}})`
+- [x] **CORS conditionnel** — localhost activé uniquement si secret `ALLOW_LOCALHOST=true`
+- [x] **Erreurs censurées** — `{ error: 'Internal server error' }` dans tous les catch finaux
+- [x] **Sentry** — `import.meta.env.MODE` au lieu de `process.env.NODE_ENV`
+- [x] **CI/CD** — `.github/workflows/ci.yml` (npm ci + build)
+- [x] **ErrorBoundary** — MobileScan, AdminStats, ResetPasswordPage wrappées
+
+### 🟡 MOYEN TERME — ✅ Résolu
+
+- [x] **CSP** — `unsafe-inline` retiré de `script-src` (gardé dans `style-src` car inline styles partout)
+- [x] **SRI** — Hashes SHA-384 sur Tesseract.js et PDF.js
+- [x] **Code splitting** — `React.lazy()` sur toutes les pages sauf Dashboard et LoginPage
+- [x] **Chargement dynamique** — bausteine_data.js et begriffe_data.js chargés à la demande par les composants
+- [x] **Retry** — Exponential backoff (max 3x) dans `invokeEdgeFunction()`, skip sur erreurs 4xx
+- [x] **Offline** — Bannière rouge "Keine Internetverbindung" dans AppLayout.js
+- [x] **Accessibilité** — Fermeture ESC sur toutes les modales (AppLayout, Profil)
+- [x] **Tests** — Vitest + 40 tests unitaires (DOMPurify, escapeHtml, invokeEdgeFunction retry)
+- [x] **Backups** — Vérifier dans Supabase Dashboard > Settings > Database > Backups (PITR activé par défaut sur plans Pro)
+
+### Actions manuelles requises après déploiement
+
+1. **Migration DB** : exécuter `supabase/migrations/20260407000001_ai_hourly_rate_limit.sql` dans SQL Editor Supabase
+2. **Déployer les edge functions** : `npx supabase functions deploy <fn> --no-verify-jwt` pour toutes les fonctions modifiées + la nouvelle `delete-user-account`
+3. **Secret ALLOW_LOCALHOST** : ne PAS le définir en prod (localhost bloqué par défaut). Pour le dev local : `npx supabase secrets set ALLOW_LOCALHOST=true`
 
 ---
 

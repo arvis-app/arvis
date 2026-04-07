@@ -1,7 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
-const ALLOWED_ORIGINS = ['https://arvis-app.de', 'https://www.arvis-app.de', 'http://localhost:3000', 'http://localhost:5173']
+const ALLOWED_ORIGINS: string[] = ['https://arvis-app.de', 'https://www.arvis-app.de',
+  ...(Deno.env.get('ALLOW_LOCALHOST') === 'true' ? ['http://localhost:3000', 'http://localhost:5173'] : [])]
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get('Origin') ?? ''
@@ -33,6 +34,16 @@ serve(async (req) => {
     const { email, message, photoUrls } = await req.json()
     if (!message?.trim()) throw new Error('Nachricht ist erforderlich')
 
+    function escapeHtml(str: string): string {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    }
+
+    // Validate photoUrls are actual Supabase Storage URLs
+    const STORAGE_PREFIX = Deno.env.get('SUPABASE_URL') + '/storage/v1/object/public/'
+    const safePhotoUrls = (photoUrls || []).filter((url: string) =>
+      typeof url === 'string' && url.startsWith(STORAGE_PREFIX)
+    )
+
     // 1. Store in database
     const { error: dbError } = await supabaseAdmin
       .from('bug_reports')
@@ -47,10 +58,10 @@ serve(async (req) => {
     // 2. Send notification email via Resend (if configured)
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (resendKey) {
-      const senderEmail = email || user.email || 'unknown'
-      const photoHtml = (photoUrls || []).length > 0
-        ? `<h3>Screenshots:</h3>${(photoUrls as string[]).map((url: string, i: number) =>
-            `<p><a href="${url}">Foto ${i + 1}</a></p><img src="${url}" style="max-width:400px;border-radius:8px;margin:8px 0;" />`
+      const senderEmail = escapeHtml(email || user.email || 'unknown')
+      const photoHtml = safePhotoUrls.length > 0
+        ? `<h3>Screenshots:</h3>${safePhotoUrls.map((url: string, i: number) =>
+            `<p><a href="${escapeHtml(url)}">Foto ${i + 1}</a></p><img src="${escapeHtml(url)}" style="max-width:400px;border-radius:8px;margin:8px 0;" />`
           ).join('')}`
         : ''
 
@@ -60,15 +71,15 @@ serve(async (req) => {
         body: JSON.stringify({
           from: 'Arvis Bug Report <noreply@arvis-app.de>',
           to: ['support@arvis-app.de'],
-          reply_to: senderEmail,
+          reply_to: email || user.email || 'unknown',
           subject: `Bug Report von ${senderEmail}`,
           html: `<h2>Neuer Bug Report</h2>
 <p><strong>Von:</strong> ${senderEmail}</p>
-<p><strong>User ID:</strong> ${user.id}</p>
+<p><strong>User ID:</strong> ${escapeHtml(user.id)}</p>
 <p><strong>Datum:</strong> ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</p>
 <hr/>
 <h3>Beschreibung:</h3>
-<p style="white-space:pre-wrap;">${message.trim()}</p>
+<p style="white-space:pre-wrap;">${escapeHtml(message.trim())}</p>
 ${photoHtml}`,
         }),
       })
@@ -83,8 +94,9 @@ ${photoHtml}`,
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (e) {
+    console.error('send-bug-report error:', e)
     return new Response(
-      JSON.stringify({ error: e.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

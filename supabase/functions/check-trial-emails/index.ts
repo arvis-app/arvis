@@ -13,6 +13,22 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
   )
 
+  // Validate JWT — reject forged or expired tokens
+  const token = authHeader.slice(7)
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  // pg_cron calls with service_role key — allow. Otherwise validate as user JWT.
+  if (token !== serviceRoleKey) {
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+    }
+    // Only admin can trigger manually
+    const adminId = Deno.env.get('ADMIN_USER_ID')
+    if (!adminId || user.id !== adminId) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { 'Content-Type': 'application/json' } })
+    }
+  }
+
   const resendKey = Deno.env.get('RESEND_API_KEY')
   if (!resendKey) {
     return new Response(JSON.stringify({ error: 'RESEND_API_KEY not configured' }), { status: 500, headers: { 'Content-Type': 'application/json' } })
@@ -31,7 +47,7 @@ serve(async (req) => {
 
   if (error) {
     console.error('DB query error:', error)
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500, headers: { 'Content-Type': 'application/json' } })
   }
 
   for (const user of (users || [])) {

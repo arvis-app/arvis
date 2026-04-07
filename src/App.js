@@ -1,24 +1,27 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import LoginPage      from './pages/LoginPage'
 import AppLayout      from './components/AppLayout'
 import Dashboard      from './pages/Dashboard'
-import Scan           from './pages/Scan'
-import BriefSchreiber from './pages/BriefSchreiber'
-import Bausteine      from './pages/Bausteine'
-import Uebersetzung   from './pages/Uebersetzung'
-import Dateien        from './pages/Dateien'
 import Paywall        from './components/Paywall'
-import Profil         from './pages/Profil'
-import MobileScan     from './pages/MobileScan'
 import ErrorBoundary      from './components/ErrorBoundary'
-import ResetPasswordPage  from './pages/ResetPasswordPage'
-import Impressum   from './pages/Impressum'
-import Datenschutz from './pages/Datenschutz'
-import AGB         from './pages/AGB'
-import AdminStats  from './pages/AdminStats'
 import NotFound    from './pages/NotFound'
 import './App.css'
+
+// Code splitting : pages premium chargées à la demande
+const Scan           = lazy(() => import('./pages/Scan'))
+const BriefSchreiber = lazy(() => import('./pages/BriefSchreiber'))
+const Bausteine      = lazy(() => import('./pages/Bausteine'))
+const Uebersetzung   = lazy(() => import('./pages/Uebersetzung'))
+const Dateien        = lazy(() => import('./pages/Dateien'))
+const Profil         = lazy(() => import('./pages/Profil'))
+const MobileScan     = lazy(() => import('./pages/MobileScan'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const Impressum      = lazy(() => import('./pages/Impressum'))
+const Datenschutz    = lazy(() => import('./pages/Datenschutz'))
+const AGB            = lazy(() => import('./pages/AGB'))
+const AdminStats     = lazy(() => import('./pages/AdminStats'))
 
 function PrivateRoute({ children }) {
   const { user, loading, isResettingPassword } = useAuth()
@@ -39,13 +42,16 @@ function PublicRoute({ children }) {
   return user ? <Navigate to="/dashboard" replace /> : children
 }
 
+const LazyFallback = () => <div className="app-loader"><div className="spinner" /></div>
+
 function AppRoutes() {
   return (
+    <Suspense fallback={<LazyFallback />}>
     <Routes>
       <Route path="/login" element={
         <PublicRoute><LoginPage /></PublicRoute>
       } />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/reset-password" element={<ErrorBoundary><ResetPasswordPage /></ErrorBoundary>} />
       <Route path="/" element={
         <PrivateRoute><AppLayout /></PrivateRoute>
       }>
@@ -57,14 +63,15 @@ function AppRoutes() {
         <Route path="uebersetzung"   element={<Paywall><ErrorBoundary><Uebersetzung /></ErrorBoundary></Paywall>} />
         <Route path="dateien"        element={<Paywall><ErrorBoundary><Dateien /></ErrorBoundary></Paywall>} />
         <Route path="profil"         element={<ErrorBoundary><Profil /></ErrorBoundary>} />
-        <Route path="mobile-scan/:token" element={<MobileScan />} />
+        <Route path="mobile-scan/:token" element={<ErrorBoundary><MobileScan /></ErrorBoundary>} />
       </Route>
       <Route path="/impressum"   element={<Impressum />} />
       <Route path="/datenschutz" element={<Datenschutz />} />
       <Route path="/agb"         element={<AGB />} />
-      <Route path="/admin/stats" element={<PrivateRoute><AdminStats /></PrivateRoute>} />
+      <Route path="/admin/stats" element={<PrivateRoute><ErrorBoundary><AdminStats /></ErrorBoundary></PrivateRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
   )
 }
 

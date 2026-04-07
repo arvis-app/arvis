@@ -1,7 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
-const ALLOWED_ORIGINS = ['https://arvis-app.de', 'https://www.arvis-app.de', 'http://localhost:3000', 'http://localhost:5173']
+const ALLOWED_ORIGINS: string[] = ['https://arvis-app.de', 'https://www.arvis-app.de',
+  ...(Deno.env.get('ALLOW_LOCALHOST') === 'true' ? ['http://localhost:3000', 'http://localhost:5173'] : [])]
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get('Origin') ?? ''
@@ -61,6 +62,33 @@ serve(async (req) => {
     }
     // ────────────────────────────────────────────────────────
 
+    // Rate limit horaire : max 100k tokens / heure (partagé avec ai-chat)
+    const HOURLY_TOKEN_LIMIT = 100_000
+    const { data: rateCols } = await supabaseAdmin
+      .from('users')
+      .select('ai_hourly_tokens, ai_hourly_reset_at')
+      .eq('id', user.id)
+      .single()
+
+    let hourlyTokens = rateCols?.ai_hourly_tokens ?? 0
+    const hourlyResetAt = rateCols?.ai_hourly_reset_at ? new Date(rateCols.ai_hourly_reset_at) : new Date(0)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+
+    if (hourlyResetAt < oneHourAgo) {
+      hourlyTokens = 0
+      await supabaseAdmin
+        .from('users')
+        .update({ ai_hourly_tokens: 0, ai_hourly_reset_at: new Date().toISOString() })
+        .eq('id', user.id)
+    }
+
+    if (hourlyTokens >= HOURLY_TOKEN_LIMIT) {
+      return new Response(
+        JSON.stringify({ error: 'rate_limited', message: 'Bitte warten Sie einen Moment. Stündliches KI-Limit erreicht.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const apiKey = Deno.env.get('OPENAI_API_KEY')
     if (!apiKey) return new Response(
       JSON.stringify({ error: 'OPENAI_API_KEY not configured' }),
@@ -106,13 +134,21 @@ serve(async (req) => {
       { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
+    // Incrémenter compteur horaire (~1000 tokens estimés par transcription)
+    const estimatedTokens = 1000
+    await supabaseAdmin
+      .from('users')
+      .update({ ai_hourly_tokens: (hourlyTokens + estimatedTokens) })
+      .eq('id', user.id)
+
     return new Response(
       JSON.stringify({ text: data.text }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (e) {
+    console.error('ai-whisper error:', e)
     return new Response(
-      JSON.stringify({ error: e.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
