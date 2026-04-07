@@ -288,7 +288,7 @@ RESEND_API_KEY=re_xxxxx
 ```js
 const data = await invokeEdgeFunction('nom-fonction', { param: valeur })
 ```
-Le helper (`src/supabaseClient.js`) fait `getSession()` et passe `Authorization: Bearer <token>`.
+Le helper (`src/supabaseClient.js`) fait `getSession()` et passe `Authorization: Bearer <token>`. Retry automatique (max 3×, backoff exponentiel), skip sur erreurs 4xx.
 
 ---
 
@@ -328,9 +328,15 @@ Coupons auto-appliqués au checkout (priorité) :
 ## Sécurité — checklist avant chaque fonctionnalité
 
 1. **HTML dynamique** → `DOMPurify.sanitize()` avant tout `dangerouslySetInnerHTML`
-2. **PHI (données médicales)** → jamais en `localStorage`, toujours `sessionStorage`
+2. **PHI (données médicales)** → jamais en `localStorage`, toujours `sessionStorage` — `sessionStorage.clear()` au logout
 3. **Mutations Supabase client** → `.eq('user_id', user.id)` sur tout `update`/`delete` (même si RLS actif)
 4. **Admin check** → UUID via `ADMIN_USER_ID` secret côté serveur, jamais côté client
+5. **Edge Functions** : CORS conditionnel (localhost seulement si `ALLOW_LOCALHOST=true`), erreurs censurées (`{ error: 'Internal server error' }`), JWT validé en interne
+6. **Rate limiting IA** : 1M tokens/mois + 100k tokens/heure par user (colonnes `ai_tokens_used`, `ai_hourly_tokens`)
+7. **Emails** : `escapeHtml()` sur tout contenu dynamique (`firstName`, `message`, `photoUrls`)
+8. **CSP** : `unsafe-inline` retiré de `script-src` (gardé dans `style-src`), SRI sur Tesseract.js et PDF.js
+9. **Erreurs** : toujours `logError(context, error)` dans les catch — jamais `console.error` seul
+10. **Konto löschen** : edge function `delete-user-account` (Stripe + Storage + DB + Auth) — modale confirmation "LÖSCHEN" dans Profil.js
 
 ---
 
@@ -356,6 +362,9 @@ Bouton "Jetzt upgraden" :
 4. **Aucun médicament ni dose** dans les bausteine — classes thérapeutiques uniquement
 5. Placeholders dans les bausteine : `[_]`
 6. Deploy : `git push` → Vercel auto-deploy
+7. **Code splitting** : `React.lazy()` sur toutes les pages sauf Dashboard et LoginPage — `ErrorBoundary` sur les routes sensibles
+8. **Offline** : bannière "Keine Internetverbindung" dans AppLayout.js
+9. **Tests** : `npm test` → Vitest (jsdom), 40+ tests unitaires — CI via `.github/workflows/ci.yml`
 
 ---
 
@@ -445,46 +454,9 @@ Tous via **Resend** depuis `noreply@arvis-app.de`. Templates HTML partagés dans
 
 ---
 
-## Audit 6 avril 2026 — Résolu le 7 avril 2026
+## Audit sécurité (7 avril 2026) — Résolu
 
-Tous les points de l'audit ont été traités. Résumé :
-
-### 🔴 CRITIQUE — ✅ Résolu
-
-- [x] **check-trial-emails : validation JWT** — Vérifie maintenant le token (service_role OU admin user)
-- [x] **Rate limiting horaire** — 100k tokens/heure sur ai-chat et ai-whisper (colonnes `ai_hourly_tokens`, `ai_hourly_reset_at`)
-- [x] **sessionStorage.clear() au logout** — Ajouté dans `AuthContext.js:logout()`
-- [x] **XSS send-bug-report** — `escapeHtml()` + validation URL Supabase Storage sur photoUrls
-- [x] **"Konto löschen"** — Edge function `delete-user-account` + modale confirmation (taper "LÖSCHEN") dans Profil.js
-
-### 🟠 IMPORTANT — ✅ Résolu
-
-- [x] **Resend dans Datenschutz.js** — Ajouté dans le tableau Drittanbieter (section 8)
-- [x] **firstName échappé dans emails** — `escapeHtml()` dans `_shared/email-templates.ts`
-- [x] **Bausteine.js DOMPurify** — `DOMPurify.sanitize(opts.icon, {USE_PROFILES:{svg:true}})`
-- [x] **CORS conditionnel** — localhost activé uniquement si secret `ALLOW_LOCALHOST=true`
-- [x] **Erreurs censurées** — `{ error: 'Internal server error' }` dans tous les catch finaux
-- [x] **Sentry** — `import.meta.env.MODE` au lieu de `process.env.NODE_ENV`
-- [x] **CI/CD** — `.github/workflows/ci.yml` (npm ci + build)
-- [x] **ErrorBoundary** — MobileScan, AdminStats, ResetPasswordPage wrappées
-
-### 🟡 MOYEN TERME — ✅ Résolu
-
-- [x] **CSP** — `unsafe-inline` retiré de `script-src` (gardé dans `style-src` car inline styles partout)
-- [x] **SRI** — Hashes SHA-384 sur Tesseract.js et PDF.js
-- [x] **Code splitting** — `React.lazy()` sur toutes les pages sauf Dashboard et LoginPage
-- [x] **Chargement dynamique** — bausteine_data.js et begriffe_data.js chargés à la demande par les composants
-- [x] **Retry** — Exponential backoff (max 3x) dans `invokeEdgeFunction()`, skip sur erreurs 4xx
-- [x] **Offline** — Bannière rouge "Keine Internetverbindung" dans AppLayout.js
-- [x] **Accessibilité** — Fermeture ESC sur toutes les modales (AppLayout, Profil)
-- [x] **Tests** — Vitest + 40 tests unitaires (DOMPurify, escapeHtml, invokeEdgeFunction retry)
-- [x] **Backups** — Vérifier dans Supabase Dashboard > Settings > Database > Backups (PITR activé par défaut sur plans Pro)
-
-### Actions manuelles requises après déploiement
-
-1. **Migration DB** : exécuter `supabase/migrations/20260407000001_ai_hourly_rate_limit.sql` dans SQL Editor Supabase
-2. **Déployer les edge functions** : `npx supabase functions deploy <fn> --no-verify-jwt` pour toutes les fonctions modifiées + la nouvelle `delete-user-account`
-3. **Secret ALLOW_LOCALHOST** : ne PAS le définir en prod (localhost bloqué par défaut). Pour le dev local : `npx supabase secrets set ALLOW_LOCALHOST=true`
+22 points traités (5 critiques, 8 importants, 9 moyen terme). Les correctifs sont intégrés dans les sections Sécurité, Règles de développement et Sentry ci-dessus. Détail des commits : `git log --grep="Audit"`.
 
 ---
 
