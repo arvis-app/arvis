@@ -454,12 +454,6 @@ Tous via **Resend** depuis `noreply@arvis-app.de`. Templates HTML partagés dans
 
 ---
 
-## Audit sécurité (7 avril 2026) — Résolu
-
-22 points traités (5 critiques, 8 importants, 9 moyen terme). Les correctifs sont intégrés dans les sections Sécurité, Règles de développement et Sentry ci-dessus. Détail des commits : `git log --grep="Audit"`.
-
----
-
 ## Compte de test
 
 - **Email** : amine.mabtoul@outlook.fr — **MDP** : test1144
