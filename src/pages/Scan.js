@@ -668,11 +668,12 @@ export default function Scan() {
         setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: 'OCR Text', aiHtml: '', ocrText: txt, mode: 'ocr', thumb }, ...prev].slice(0, 5))
       } else {
         if (!fullOcrText || fullOcrText.length < 10) throw new Error('Kein Text erkannt')
+        setOcrText(fullOcrText)
         sessionStorage.setItem('arvis_scan_pendingOcr', fullOcrText)
         const analysis = await runAIAnalysis(fullOcrText)
         const html = markdownToHtml(analysis)
         setAiHtml(html)
-        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: extractScanLabel(analysis), aiHtml: html, ocrText: '', mode: 'ai', thumb }, ...prev].slice(0, 5))
+        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: extractScanLabel(analysis), aiHtml: html, ocrText: fullOcrText, mode: 'ai', thumb }, ...prev].slice(0, 5))
       }
       goStep(4)
     } catch (err) {
