@@ -294,7 +294,7 @@ export default function Profil() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
               <div id="profilAvatar" onClick={() => photoInputRef.current?.click()}
                 style={{ width: 100, height: 100, borderRadius: '50%', background: 'linear-gradient(135deg,var(--orange),var(--orange-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 700, color: 'white', flexShrink: 0, cursor: 'pointer', overflow: 'hidden' }}>
-                {photo ? <img src={photo} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : initials}
+                {photo ? <img src={photo} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
               </div>
               <div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

@@ -177,7 +177,9 @@ export default function AppLayout() {
               <path d="M1 1.5L5 5.5L9 1.5" stroke="var(--text-3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <div className="topbar-avatar" title="Menü">
-              {initials}
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}} alt="" />
+                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
             </div>
             {avatarOpen && (
               <div style={{position:'absolute',right:0,top:'calc(100% + 8px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
@@ -249,7 +251,11 @@ export default function AppLayout() {
 
         <div className="sidebar-footer">
           <div className="sidebar-user" style={{cursor:'default'}}>
-            <div className="sidebar-avatar" onClick={() => { setMobileOpen(false); navigate('/profil') }} style={{cursor:'pointer'}}>{initials}</div>
+            <div className="sidebar-avatar" onClick={() => { setMobileOpen(false); navigate('/profil') }} style={{cursor:'pointer'}}>
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}} alt="" />
+                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+            </div>
             <div className="sidebar-user-info" onClick={() => { setMobileOpen(false); navigate('/profil') }} style={{cursor:'pointer'}}>
               <div className="sidebar-user-name">{displayName}</div>
               <div className="sidebar-user-role">{clinic}</div>
