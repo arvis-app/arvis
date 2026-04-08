@@ -86,7 +86,7 @@ function markdownToHtml(md) {
       const cells = line.trim().replace(/^\||\|$/g, '').split('|').map(c => escHtml(c.trim()).replace(/\*\*(.+?)\*\*/g, '$1'))
       if (!inTable) {
         inTable = true
-        html += '<div style="border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:2px 0;margin-top:2px;overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tbody>'
+        html += '<div style="border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:2px 0;margin-top:2px;overflow-x:auto;"><table style="width:auto;border-collapse:collapse;font-size:12.5px;"><tbody>'
       } else {
         html += '<tr>' + cells.map((c, i) => {
           const val = (c === '—' || c === '-') ? '' : c
