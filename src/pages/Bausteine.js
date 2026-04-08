@@ -429,7 +429,7 @@ export default function Bausteine() {
       <div className="bausteine-layout" style={{paddingTop:4}}>
 
         {/* LEFT: Search + List */}
-        <div className="bausteine-left bausteine-left-col" style={{height:560}}>
+        <div className="bausteine-left bausteine-left-col" style={{height:'calc(100vh - 310px)',minHeight:400}}>
 
           {/* Search */}
           <div id="bausteineSearchBox" style={{position:'relative',background:'var(--card)',border:'1.5px solid var(--border)',borderRadius:8,overflow:'hidden',boxShadow:'var(--shadow)'}}>
