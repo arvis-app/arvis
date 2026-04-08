@@ -2,7 +2,6 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const ADMIN_USER_ID = Deno.env.get('ADMIN_USER_ID')
-if (!ADMIN_USER_ID) throw new Error('ADMIN_USER_ID secret is not set')
 
 const ALLOWED_ORIGINS: string[] = ['https://arvis-app.de', 'https://www.arvis-app.de',
   ...(Deno.env.get('ALLOW_LOCALHOST') === 'true' ? ['http://localhost:3000', 'http://localhost:5173'] : [])]
@@ -46,7 +45,7 @@ serve(async (req) => {
     }
 
     // Server-side admin check — cannot be bypassed from the client
-    if (user.id !== ADMIN_USER_ID) {
+    if (!ADMIN_USER_ID || user.id !== ADMIN_USER_ID) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403, headers: { ...CORS, 'Content-Type': 'application/json' }
       })
