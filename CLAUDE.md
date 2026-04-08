@@ -390,6 +390,7 @@ Bouton "Jetzt upgraden" :
 13. **iOS sticky hover** : le bloc `@media (hover: none)` dans `App.css` ne doit PAS cibler `button:hover` générique — ça rend les boutons invisibles sur iOS (le `:hover` reste actif après un tap). Cibler uniquement les classes spécifiques (`.btn-secondary:hover`, `.btn-action:hover`, etc.).
 10. **Landing page mobile — feature cards** : les containers mockup dans les feature cards ont la classe `feat-demo-wrap` → `zoom: 0.75` appliqué dans `@media (max-width: 768px)`. Le grid interne Brief Schreiber a la classe `brief-2cols`. Footer mobile : `.footer-links` doit avoir `position: static; transform: none;` sur mobile sinon il se superpose au logo.
 14. **config.toml vs Supabase Dashboard** : `supabase/config.toml` configure les templates email en local uniquement. Pour la prod, configurer aussi dans Supabase Dashboard > Authentication > Email Templates. Templates actifs : `confirm-signup.html`, `recovery.html`, `email-change.html`.
+15. **Chunk Vite introuvable sur mobile (Safari)** : après un déploiement, un téléphone avec `index.html` en cache tente de charger des chunks avec d'anciens hash → Vercel renvoie `index.html` (`text/html`) → Safari throw `TypeError: 'text/html' is not a valid JavaScript MIME type`. Fix : `window.addEventListener('vite:preloadError', () => window.location.reload())` dans `src/index.js` — rechargement automatique qui récupère le bon `index.html`.
 
 ---
 
