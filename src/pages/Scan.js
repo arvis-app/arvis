@@ -579,6 +579,24 @@ export default function Scan() {
     return cleanOcrText(text)
   }
 
+  // ── Thumbnail compressé pour l'historique (300px wide, JPEG 0.7) ────────────
+  function createThumbnail(dataUrl) {
+    return new Promise(resolve => {
+      if (!dataUrl) return resolve(null)
+      const img = new Image()
+      img.onload = () => {
+        const w = Math.min(300, img.naturalWidth)
+        const h = Math.round(img.naturalHeight * (w / img.naturalWidth))
+        const canvas = document.createElement('canvas')
+        canvas.width = w; canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', 0.7))
+      }
+      img.onerror = () => resolve(null)
+      img.src = dataUrl
+    })
+  }
+
   // ── Extrait un label court depuis le texte IA (première ligne de contenu) ──
   function extractScanLabel(text) {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
@@ -643,17 +661,18 @@ export default function Scan() {
       }
 
       const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+      const thumb = await createThumbnail(imgDataRef.current)
       if (mode === 'ocr') {
         const txt = fullOcrText || 'Kein Text erkannt.'
         setOcrText(txt)
-        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: 'OCR Text', aiHtml: '', ocrText: txt, mode: 'ocr' }, ...prev].slice(0, 5))
+        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: 'OCR Text', aiHtml: '', ocrText: txt, mode: 'ocr', thumb }, ...prev].slice(0, 5))
       } else {
         if (!fullOcrText || fullOcrText.length < 10) throw new Error('Kein Text erkannt')
         sessionStorage.setItem('arvis_scan_pendingOcr', fullOcrText)
         const analysis = await runAIAnalysis(fullOcrText)
         const html = markdownToHtml(analysis)
         setAiHtml(html)
-        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: extractScanLabel(analysis), aiHtml: html, ocrText: '', mode: 'ai' }, ...prev].slice(0, 5))
+        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: extractScanLabel(analysis), aiHtml: html, ocrText: '', mode: 'ai', thumb }, ...prev].slice(0, 5))
       }
       goStep(4)
     } catch (err) {
@@ -771,7 +790,14 @@ export default function Scan() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
           <span style={{ fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap', flexShrink: 0 }}>Verlauf:</span>
           {scanHistory.map(item => (
-            <button key={item.id} onClick={() => { setAiHtml(item.aiHtml); setOcrText(item.ocrText); setMode(item.mode); goStep(4) }}
+            <button key={item.id} onClick={() => {
+              if (item.thumb) {
+                imgDataRef.current = item.thumb
+                if (imgRef.current) imgRef.current.src = item.thumb
+                setPanel('crop')
+              }
+              setAiHtml(item.aiHtml); setOcrText(item.ocrText); setMode(item.mode); goStep(4)
+            }}
               style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text-2)', fontSize: 12, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}
               title={item.label}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
