@@ -1196,7 +1196,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .brief-diff-toggle { display:flex; gap:0; margin:12px 18px 0; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:3px; flex-shrink:0; }
 .brief-diff-btn { flex:1; padding:6px; border-radius:6px; border:none; background:transparent; font-size: 14px; font-weight:600; color:var(--text-3); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
 .brief-diff-btn.active { background:var(--bg-2); color:var(--text); box-shadow:var(--shadow); }
-.brief-output-textarea { flex:1; margin:12px 18px; padding:14px; border:1px solid var(--border); border-radius: 6px; background:var(--bg); color:var(--text); font-size: 16px; font-family:'DM Sans',sans-serif; resize:none; outline:none; line-height:1.8; transition:border-color 0.2s; width:calc(100% - 36px); box-sizing:border-box; overflow-y:auto; }
+.brief-output-textarea { flex:1; margin:12px 18px; padding:14px; border:1px solid var(--border); border-radius: 6px; background:var(--bg); color:var(--text); font-size: 16px; font-family:'DM Sans',sans-serif; resize:none; outline:none; line-height:1.8; transition:border-color 0.2s; width:calc(100% - 36px); box-sizing:border-box; overflow-y:auto; tab-size:4; -moz-tab-size:4; word-spacing:-0.05em; }
 .brief-output-textarea:focus { border-color:var(--orange); }
 .brief-diff-view { min-height:280px; margin:0 18px 12px; padding:14px; border:1px solid var(--border); border-radius: 6px; background:var(--bg); font-size: 15px; line-height:1.8; }
 .diff-add { background:#22C55E22; color:#16A34A; text-decoration:none; border-radius:2px; }
