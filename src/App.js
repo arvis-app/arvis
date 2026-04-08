@@ -39,7 +39,15 @@ function PublicRoute({ children }) {
   const { user, loading, isResettingPassword } = useAuth()
   if (loading) return <div className="app-loader"><div className="spinner" /></div>
   if (isResettingPassword) return children // rester sur /login pendant le reset
-  return user ? <Navigate to="/dashboard" replace /> : children
+  if (user) {
+    const saved = sessionStorage.getItem('redirectAfterLogin')
+    if (saved) {
+      sessionStorage.removeItem('redirectAfterLogin')
+      return <Navigate to={saved} replace />
+    }
+    return <Navigate to="/dashboard" replace />
+  }
+  return children
 }
 
 const LazyFallback = () => <div className="app-loader"><div className="spinner" /></div>

@@ -49,13 +49,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(loginEmail, loginPassword)
-      const savedRedirect = sessionStorage.getItem('redirectAfterLogin')
-      if (savedRedirect) {
-        sessionStorage.removeItem('redirectAfterLogin')
-        navigate(savedRedirect, { replace: true })
-      } else {
-        navigate(redirectTo, { replace: true })
-      }
+      // La redirection est gérée par PublicRoute (lit redirectAfterLogin depuis sessionStorage)
     } catch {
       setError('E-Mail-Adresse oder Passwort ist falsch.')
     } finally {
