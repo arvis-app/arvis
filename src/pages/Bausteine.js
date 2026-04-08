@@ -429,7 +429,7 @@ export default function Bausteine() {
       <div className="bausteine-layout" style={{paddingTop:4}}>
 
         {/* LEFT: Search + List */}
-        <div className="bausteine-left bausteine-left-col" style={{height:'calc(100vh - 310px)',minHeight:400}}>
+        <div className="bausteine-left bausteine-left-col">
 
           {/* Search */}
           <div id="bausteineSearchBox" style={{position:'relative',background:'var(--card)',border:'1.5px solid var(--border)',borderRadius:8,overflow:'hidden',boxShadow:'var(--shadow)'}}>
@@ -462,7 +462,7 @@ export default function Bausteine() {
           </div>
 
           {/* List */}
-          <div className="bausteine-list" style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',minHeight:0,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow)'}}>
+          <div className="bausteine-list" style={{height:'calc(100vh - 340px)',minHeight:280,overflowY:'auto',display:'flex',flexDirection:'column',background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow)'}}>
             {filtered.length===0 && (
               <div style={{padding:32,textAlign:'center',color:'var(--text-3)',fontSize:15}}>Keine Ergebnisse</div>
             )}
