@@ -114,7 +114,7 @@ git add <fichiers> && git commit -m "..." && git push   # deploy Vercel auto
 
 ```
 arvis/
-├── public/landing_page.html          ← Landing page statique (Vercel route /)
+├── public/landing_page.html          ← Landing page statique (Vercel route /) — hero : 1 seul bouton CTA "Jetzt kostenlos testen" (le bouton "Demo ansehen" a été supprimé)
 ├── src/
 │   ├── App.js                        ← Routes + PrivateRoute + PublicRoute
 │   ├── supabaseClient.js             ← Client Supabase + invokeEdgeFunction()
@@ -349,6 +349,8 @@ Coupons auto-appliqués au checkout (priorité) :
 ## Paywall (`src/components/Paywall.js`)
 
 Les onglets de la sidebar sont **toujours cliquables** — le blocage se fait uniquement dans `Paywall.js` (wrapper autour de chaque page premium). Ne jamais remettre `pointerEvents: none` dans la sidebar.
+
+**Mein Profil n'est PAS dans la sidebar** — accessible uniquement via l'avatar en haut à droite (dropdown). Ne pas le remettre dans la sidebar, c'est redondant.
 
 Messages selon le plan :
 - `trial` expiré → "Ihre 14-tägige Testphase ist abgelaufen"
