@@ -152,12 +152,16 @@ export default function Scan() {
   const navigate = useNavigate()
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [step, setStep] = useState(1)
-  const [panel, setPanel] = useState('upload')
+  const [step, setStep] = useState(() => parseInt(sessionStorage.getItem('arvis_scan_step')) || 1)
+  const [panel, setPanel] = useState(() => {
+    const saved = sessionStorage.getItem('arvis_scan_panel')
+    if (saved === 'crop' && !sessionStorage.getItem('arvis_scan_imgData')) return 'upload'
+    return saved || 'upload'
+  })
   const [mode, setMode] = useState(() => sessionStorage.getItem('arvis_scan_mode') || 'ai')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [aiHtml, setAiHtml] = useState('')
-  const [ocrText, setOcrText] = useState('')
+  const [aiHtml, setAiHtml] = useState(() => sessionStorage.getItem('arvis_scan_aiHtml') || '')
+  const [ocrText, setOcrText] = useState(() => sessionStorage.getItem('arvis_scan_ocrText') || '')
   const [loadingText, setLoadingText] = useState('Analysiere Dokument...')
   const [errorMsg, setErrorMsg] = useState('')
   const [zoom, setZoom] = useState(1)
@@ -168,7 +172,7 @@ export default function Scan() {
   const [blackouts, setBlackouts] = useState([])
   const [selectedBk, setSelectedBk] = useState(null)
   const [copied, setCopied] = useState(false)
-  const [limitReached, setLimitReached] = useState(false)
+  const [limitReached, setLimitReached] = useState(() => sessionStorage.getItem('arvis_scan_limitReached') === 'true')
 
   // Mobile multi-photo state
   const [mobilePhotos, setMobilePhotos] = useState([]) // { file, preview }[]
@@ -195,7 +199,7 @@ export default function Scan() {
   const viewerRef = useRef(null)
   const fileInputRef = useRef(null)
   const cameraInputRef = useRef(null)
-  const imgDataRef = useRef(null) // current image data url
+  const imgDataRef = useRef(sessionStorage.getItem('arvis_scan_imgData') || null) // current image data url
   const leftRef = useRef(null)
   const rightRef = useRef(null)
   const [leftH, setLeftH] = useState(0)
@@ -220,11 +224,6 @@ export default function Scan() {
   useEffect(() => { sessionStorage.setItem('arvis_scan_aiHtml', aiHtml) }, [aiHtml])
   useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
   useEffect(() => { sessionStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
-
-  // Clear stale scan state on mount — page refresh always starts fresh
-  useEffect(() => {
-    ;['arvis_scan_step','arvis_scan_panel','arvis_scan_aiHtml','arvis_scan_ocrText','arvis_scan_imgData','arvis_scan_limitReached'].forEach(k => sessionStorage.removeItem(k))
-  }, [])
 
   // ── Pan ───────────────────────────────────────────────────────────────────
   function startPan(e) {
