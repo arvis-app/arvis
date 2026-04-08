@@ -173,6 +173,9 @@ export default function Scan() {
   const [selectedBk, setSelectedBk] = useState(null)
   const [copied, setCopied] = useState(false)
   const [limitReached, setLimitReached] = useState(() => sessionStorage.getItem('arvis_scan_limitReached') === 'true')
+  const [scanHistory, setScanHistory] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('arvis_scan_history') || '[]') } catch { return [] }
+  })
 
   // Mobile multi-photo state
   const [mobilePhotos, setMobilePhotos] = useState([]) // { file, preview }[]
@@ -224,6 +227,7 @@ export default function Scan() {
   useEffect(() => { sessionStorage.setItem('arvis_scan_aiHtml', aiHtml) }, [aiHtml])
   useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
   useEffect(() => { sessionStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_history', JSON.stringify(scanHistory)) }, [scanHistory])
 
   // ── Auto-retry AI si scan interrompu par changement d'onglet ─────────────
   useEffect(() => {
@@ -550,6 +554,9 @@ export default function Scan() {
     // Supprime les lignes qui ne contiennent aucune lettre (chiffres/symboles seuls sans contexte)
     t = t.replace(/^[ \t]*[^a-zA-ZäöüÄÖÜß\n]*[ \t]*$/gm, '');
 
+    // Puces de liste mal reconnues par Tesseract (• → "e", "A" ou "o" isolés en début de ligne)
+    t = t.replace(/^([ \t]*)[eAo][ \t]+(?=\S)/gm, '$1- ')
+
     // Réduit les sauts de lignes multiples à un seul saut de ligne (efface le "double espacement" causé par le bruit)
     t = t.replace(/\n(?:[ \t]*\n)+/g, '\n');
 
@@ -570,6 +577,17 @@ export default function Scan() {
     const { data: { text } } = await worker.recognize(imageDataUrl)
     await worker.terminate()
     return cleanOcrText(text)
+  }
+
+  // ── Extrait un label court depuis le texte IA (première ligne de contenu) ──
+  function extractScanLabel(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+    let found = false
+    for (const l of lines) {
+      if (/^###/.test(l)) { found = true; continue }
+      if (found) return l.replace(/^[-–*]\s*/, '').replace(/\*\*/g, '').slice(0, 45)
+    }
+    return 'Analyse'
   }
 
   // ── AI Analysis ────────────────────────────────────────────────────────────
@@ -624,13 +642,18 @@ export default function Scan() {
         fullOcrText = await runTesseract(getAnonymizedDataUrl())
       }
 
+      const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
       if (mode === 'ocr') {
-        setOcrText(fullOcrText || 'Kein Text erkannt.')
+        const txt = fullOcrText || 'Kein Text erkannt.'
+        setOcrText(txt)
+        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: 'OCR Text', aiHtml: '', ocrText: txt, mode: 'ocr' }, ...prev].slice(0, 5))
       } else {
         if (!fullOcrText || fullOcrText.length < 10) throw new Error('Kein Text erkannt')
         sessionStorage.setItem('arvis_scan_pendingOcr', fullOcrText)
         const analysis = await runAIAnalysis(fullOcrText)
-        setAiHtml(markdownToHtml(analysis))
+        const html = markdownToHtml(analysis)
+        setAiHtml(html)
+        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: extractScanLabel(analysis), aiHtml: html, ocrText: '', mode: 'ai' }, ...prev].slice(0, 5))
       }
       goStep(4)
     } catch (err) {
@@ -740,6 +763,21 @@ export default function Scan() {
           <span style={{ color: '#D94B0A', fontSize: 15, fontWeight: 500 }}>
             Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert.
           </span>
+        </div>
+      )}
+
+      {/* Historique de session */}
+      {scanHistory.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
+          <span style={{ fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap', flexShrink: 0 }}>Verlauf:</span>
+          {scanHistory.map(item => (
+            <button key={item.id} onClick={() => { setAiHtml(item.aiHtml); setOcrText(item.ocrText); setMode(item.mode); goStep(4) }}
+              style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text-2)', fontSize: 12, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}
+              title={item.label}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {item.time}{item.label !== 'OCR Text' ? ` — ${item.label.slice(0, 28)}${item.label.length > 28 ? '…' : ''}` : ' — OCR'}
+            </button>
+          ))}
         </div>
       )}
 
