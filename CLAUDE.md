@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 8 avril 2026_
+_Dernière mise à jour : 8 avril 2026 (soir)_
 
 ---
 
@@ -315,11 +315,17 @@ Coupons auto-appliqués au checkout (priorité) :
 
 | Page | Clé | Stockage | Raison |
 |------|-----|----------|--------|
-| Scan | `arvis_scan_step`, `_panel`, `_mode`, `_limitReached` | `sessionStorage` | UI temporaire — ne doit pas persister entre sessions |
-| Scan | `arvis_scan_aiHtml`, `_ocrText`, `_imgData` | `sessionStorage` | PHI — DSGVO Art. 9 |
+| Scan | `arvis_scan_step`, `_panel`, `_mode`, `_limitReached` | `sessionStorage` | Restauré au retour sur l'onglet (navigation SPA) |
+| Scan | `arvis_scan_aiHtml`, `_ocrText`, `_imgData` | `sessionStorage` | PHI — DSGVO Art. 9, restauré au retour |
+| Scan | `arvis_scan_history` | `sessionStorage` | Historique 5 derniers scans (aiHtml + ocrText + thumbnail) |
+| Scan | `arvis_scan_isAnalyzing`, `_pendingOcr` | `sessionStorage` | Flags pour auto-retry IA si onglet changé mid-scan |
 | Bausteine | `arvis_bausteine_selected_id` | `sessionStorage` | UI temporaire |
 | Bausteine | `arvis_bausteine_migrated_v1` | `localStorage` | Flag migration one-shot |
 | Uebersetzung | `arvis_ueb_search`, `_cat`, `_langs`, `_selected` | `sessionStorage` | UI temporaire |
+
+**Restauration Scan** : tous les states Scan sont initialisés depuis sessionStorage au montage (pas de clear au mount). Si `arvis_scan_isAnalyzing=true` au remontage ET `arvis_scan_pendingOcr` existe → l'IA repart automatiquement avec le texte OCR sauvegardé.
+
+**Onglets AI/OCR indépendants** : en mode AI, `ocrText` est aussi sauvegardé (le texte OCR est de toute façon calculé). Switching entre onglets affiche le résultat correspondant sans rescanner.
 
 **Piège restauration** : l'effet `[selected]` avec `removeItem` s'exécute au premier rendu avant la restauration. Solutions : `restoredRef` (Uebersetzung) ou `_pendingSelectedId` state initialisé depuis sessionStorage (Bausteine).
 
@@ -406,17 +412,41 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Température** : `0.2` (déterministe, évite les oublis)
 - **Modèle** : `gpt-4o`, `max_tokens: 4000`
 - **Tableau médication** : 3 colonnes `| Medikament (Dosis) | Schema | ggf. Dauer |` — médicament et dose dans la même colonne. Le renderer `markdownToHtml()` supporte les lignes `|...|` (header skippé, données en colonnes alignées)
+- **Diagnosen** : reprise **verbatim** du document — aucune numérotation, aucune abréviation, aucune omission. Toutes les Diagnosen présentes doivent figurer, groupées en "Hauptdiagnose(n)" et "Weitere Diagnose(n)". Une par ligne, sans tiret ni bullet.
+- **Médication** : exhaustive — chaque médicament du document doit apparaître dans le tableau, même si incomplet ou lisible partiellement.
+
+## Scan — Historique de session
+
+- **Stocké dans** `arvis_scan_history` (sessionStorage, max 5 entrées)
+- **Structure** : `{ id, time, label, aiHtml, ocrText, mode, thumb }` — `thumb` = miniature JPEG 300px wide du document scanné
+- **UI** : chips horizontaux au-dessus des scan-steps, visibles dès le 2e scan
+- **Au clic** : restaure aiHtml + ocrText + miniature dans le panneau preview → pas de rescan nécessaire
+- **Effacé** à la fermeture de l'onglet (sessionStorage)
+
+## Scan — OCR cleanOcrText
+
+Post-traitement Tesseract dans `cleanOcrText()` :
+- Pipes et antislashs supprimés (bruit de bordure)
+- Symboles isolés en début de ligne supprimés
+- **Puces mal reconnues** : `e `, `A `, `o ` isolés en début de ligne → convertis en `- ` (Tesseract lit souvent `•` comme `e` ou `A`)
 
 ## BriefSchreiber — Korrektur Prompt
 
 Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mode `korrektur`). Règles clés :
 - **Prose** pour Anamnese, Befunde, Bildgebung, Procedere — phrases complètes et connectées, pas de fragments
-- **Liste** pour Medikation (toujours schema 1-0-1) et Diagnosen
+- **Liste** pour Medikation et Diagnosen
+- **Medikation** : format `Wirkstoff Dosis – Schema` — pas de Darreichungsform (pas de "Tabletten", "retard", etc.), ligne vide entre chaque médicament pour l'espacement
 - **Laborwerte** compacts en 1–2 phrases, valeurs + unités, **aucune interprétation**
 - **Dates** gardées en format original (`02.04.` pas `02. April`)
 - **Abréviations** : `KI` après médicament + dose = Kurzinfusion (pas Kontraindikation)
 - **Ton** : Facharzt — concis, sachlich, pas de sur-explication (le lecteur est médecin)
 - Constructions-types fournies dans le prompt : Anamnese ("stellte sich vor… berichtet über…"), Befunde ("Die Untersuchung ergab…"), Procedere ("Es erfolgte… Der Patient erhielt…")
+
+## MobileScan — UX
+
+- Flow : QR code → scan photo(s) → **"Weiter zur Anonymisierung"** (bouton noir `#1C1C1E`) → transfert → anonymisation sur le PC → analyse
+- Le bouton "Weiter" a été renommé et mis en noir pour clarifier que l'anonymisation intervient AVANT l'envoi (évite la confusion "ça va uploader directement")
+- Tant que aucune photo n'est prise : bouton label caméra orange "Foto aufnehmen" → après 1+ photos : label orange outline "Weitere Seite aufnehmen" + bouton noir "Weiter zur Anonymisierung"
 
 ## Bausteine — Placeholders éditables
 
