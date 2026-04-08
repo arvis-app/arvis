@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom/client';
 import * as Sentry from '@sentry/react'
 import App from './App';
 
+// Chunk introuvable après un déploiement (vieux cache index.html) → rechargement
+window.addEventListener('vite:preloadError', () => { window.location.reload() })
+
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   enabled: !!import.meta.env.VITE_SENTRY_DSN,
