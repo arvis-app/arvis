@@ -394,8 +394,8 @@ export default function MobileScan() {
           <input type="file" accept="image/jpeg, image/png, image/webp" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} disabled={addingPhoto} />
         </label>
         {photos.length > 0 && (
-          <button onClick={handleFinish} disabled={addingPhoto} style={{ width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '14px 0', background: addingPhoto ? '#E5E5EA' : '#D94B0A', color: addingPhoto ? '#8E8E93' : 'white', border: '2px solid transparent', borderRadius: 10, fontSize: 18, fontWeight: 600, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer' }}>
-            Weiter
+          <button onClick={handleFinish} disabled={addingPhoto} style={{ width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '14px 0', background: addingPhoto ? '#E5E5EA' : '#1C1C1E', color: addingPhoto ? '#8E8E93' : 'white', border: '2px solid transparent', borderRadius: 10, fontSize: 18, fontWeight: 600, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer' }}>
+            Weiter zur Anonymisierung
           </button>
         )}
         {!photos.length && <div style={{ fontSize: 15, color: '#8E8E93', textAlign: 'center' }}>Das Foto wird nach dem Schwärzen auf Ihren Computer übertragen</div>}
