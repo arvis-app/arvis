@@ -225,6 +225,26 @@ export default function Scan() {
   useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
   useEffect(() => { sessionStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
 
+  // ── Auto-retry AI si scan interrompu par changement d'onglet ─────────────
+  useEffect(() => {
+    const wasAnalyzing = sessionStorage.getItem('arvis_scan_isAnalyzing') === 'true'
+    const pendingOcr = sessionStorage.getItem('arvis_scan_pendingOcr')
+    if (!wasAnalyzing) return
+    sessionStorage.removeItem('arvis_scan_isAnalyzing')
+    if (!pendingOcr) return // mid-OCR, impossible à récupérer
+    sessionStorage.removeItem('arvis_scan_pendingOcr')
+    setIsAnalyzing(true)
+    setLoadingText('KI analysiert Dokument...')
+    runAIAnalysis(pendingOcr)
+      .then(analysis => { setAiHtml(markdownToHtml(analysis)); goStep(4) })
+      .catch(err => {
+        if (err.message === '__limit_reached__') { setLimitReached(true); setErrorMsg('Ihr monatliches KI-Kontingent wurde erreicht.') }
+        else setErrorMsg(err.message)
+        goStep(2)
+      })
+      .finally(() => setIsAnalyzing(false))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Pan ───────────────────────────────────────────────────────────────────
   function startPan(e) {
     e.preventDefault()
@@ -574,6 +594,7 @@ export default function Scan() {
     if (pdfDocRef.current) blackoutsByPageRef.current[pdfPageRef.current] = blackouts.map(b => ({ ...b }))
     goStep(3)
     setIsAnalyzing(true)
+    sessionStorage.setItem('arvis_scan_isAnalyzing', 'true')
     setErrorMsg('')
     if (window.innerWidth <= 785) setTimeout(() => rightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     try {
@@ -607,6 +628,7 @@ export default function Scan() {
         setOcrText(fullOcrText || 'Kein Text erkannt.')
       } else {
         if (!fullOcrText || fullOcrText.length < 10) throw new Error('Kein Text erkannt')
+        sessionStorage.setItem('arvis_scan_pendingOcr', fullOcrText)
         const analysis = await runAIAnalysis(fullOcrText)
         setAiHtml(markdownToHtml(analysis))
       }
@@ -622,6 +644,8 @@ export default function Scan() {
       }
     } finally {
       setIsAnalyzing(false)
+      sessionStorage.removeItem('arvis_scan_isAnalyzing')
+      sessionStorage.removeItem('arvis_scan_pendingOcr')
     }
   }
 
