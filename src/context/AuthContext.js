@@ -125,7 +125,8 @@ export function AuthProvider({ children }) {
         // Charger le profil uniquement sur SIGNED_IN/USER_UPDATED — INITIAL_SESSION est déjà
         // couvert par getSession() ci-dessus, TOKEN_REFRESHED ne nécessite pas de rechargement
         if (!onResetPage && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
-          loadProfile(session.user.id)
+          setLoading(true)
+          loadProfile(session.user.id).finally(() => setLoading(false))
           setIsResettingPassword(false)
         }
       } else {
