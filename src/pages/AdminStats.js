@@ -112,7 +112,7 @@ export default function AdminStats() {
           navigate('/dashboard', { replace: true })
         } else {
           logError('AdminStats.load', e)
-          setError('Impossible de charger les statistiques.')
+          setError('Statistiken konnten nicht geladen werden.')
         }
       } finally {
         setLoading(false)
