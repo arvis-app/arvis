@@ -112,7 +112,7 @@ export default function AdminStats() {
           navigate('/dashboard', { replace: true })
         } else {
           logError('AdminStats.load', e)
-          setError('Statistiken konnten nicht geladen werden.')
+          setError(`Fehler: ${e?.message || 'Unbekannt'}`)
         }
       } finally {
         setLoading(false)
