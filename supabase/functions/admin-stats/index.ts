@@ -10,7 +10,7 @@ serve(async (req) => {
   const origin = req.headers.get('Origin') ?? ''
   const CORS = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : 'https://arvis-app.de',
-    'Access-Control-Allow-Headers': 'authorization, content-type',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   }
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: CORS })
@@ -85,7 +85,7 @@ serve(async (req) => {
 
     const rows = aiData || []
     const totalTokens = rows.reduce((sum: number, u: any) => sum + (u.ai_tokens_used || 0), 0)
-    const totalCost = totalTokens * 0.000002
+    const totalCost = totalTokens * 0.00000263
 
     return new Response(JSON.stringify({
       stats: { total, byPlan, conversionRate, newThisWeek, converted },

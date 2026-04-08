@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 8 avril 2026 (soir)_
+_Dernière mise à jour : 8 avril 2026 (nuit)_
 
 ---
 
@@ -394,6 +394,7 @@ Bouton "Jetzt upgraden" :
 14. **config.toml vs Supabase Dashboard** : `supabase/config.toml` configure les templates email en local uniquement. Pour la prod, configurer aussi dans Supabase Dashboard > Authentication > Email Templates. Templates actifs : `confirm-signup.html`, `recovery.html`, `email-change.html`.
 15. **Chunk Vite introuvable sur mobile (Safari)** : après un déploiement, un téléphone avec `index.html` en cache tente de charger des chunks avec d'anciens hash → Vercel renvoie `index.html` (`text/html`) → Safari throw `TypeError: 'text/html' is not a valid JavaScript MIME type`. Fix : `window.addEventListener('vite:preloadError', () => window.location.reload())` dans `src/index.js` — rechargement automatique qui récupère le bon `index.html`.
 16. **Redirect après login (PublicRoute race condition)** : `handleLogin` appelait `navigate(savedRedirect)` puis `PublicRoute` re-rendait avec `<Navigate to="/dashboard">` qui l'écrasait. Fix : la logique de redirection post-login est entièrement dans `PublicRoute` — il lit `redirectAfterLogin` depuis sessionStorage et redirige là, sinon `/dashboard`. `handleLogin` ne navigate plus du tout. Critique pour le flux QR MobileScan : scan sans auth → login → retour vers `/mobile-scan/:token`.
+17. **CORS "Load failed" dans le navigateur** : si une Edge Function renvoie "Load failed" dans le navigateur mais répond correctement via curl, c'est un problème CORS — curl ignore CORS, le navigateur non. Cause typique : `apikey` manquant dans `Access-Control-Allow-Headers`. Le header correct pour toutes les fonctions est `'authorization, x-client-info, apikey, content-type'` (comme dans `get-plan-status`). Ne jamais utiliser seulement `'authorization, content-type'`.
 
 ---
 

@@ -222,7 +222,7 @@ export default function AdminStats() {
         {aiStats && (
           <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px 24px', marginTop: 24 }}>
             <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>KI-Kosten (geschätzt)</div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Top 10 Nutzer · aktueller Monat · GPT-4o-mini</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Top 10 Nutzer · aktueller Monat · GPT-5.4-mini</div>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -238,7 +238,7 @@ export default function AdminStats() {
                     <tr key={i} style={{ borderBottom: '1px solid var(--border)', background: isHighUsage ? 'rgba(217, 75, 10, 0.06)' : 'transparent' }}>
                       <td style={{ padding: '10px 0', color: isHighUsage ? '#D94B0A' : 'var(--text)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</td>
                       <td style={{ padding: '10px 0', textAlign: 'right', color: isHighUsage ? '#D94B0A' : 'var(--text)', fontWeight: isHighUsage ? 600 : 400 }}>{(u.ai_tokens_used || 0).toLocaleString('de-DE')}</td>
-                      <td style={{ padding: '10px 0', textAlign: 'right', color: isHighUsage ? '#D94B0A' : 'var(--text)' }}>{((u.ai_tokens_used || 0) * 0.000002).toFixed(4)} €</td>
+                      <td style={{ padding: '10px 0', textAlign: 'right', color: isHighUsage ? '#D94B0A' : 'var(--text)' }}>{((u.ai_tokens_used || 0) * 0.00000263).toFixed(4)} €</td>
                     </tr>
                   )
                 })}

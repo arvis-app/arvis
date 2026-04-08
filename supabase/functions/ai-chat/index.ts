@@ -107,9 +107,9 @@ serve(async (req) => {
       )
     }
 
-    const ALLOWED_MODELS = new Set(['gpt-4o', 'gpt-4o-mini'])
-    const { model: requestedModel = 'gpt-4o', max_tokens: requestedTokens = 4000, temperature: requestedTemp, messages } = await req.json()
-    const model = ALLOWED_MODELS.has(requestedModel) ? requestedModel : 'gpt-4o'
+    const ALLOWED_MODELS = new Set(['gpt-5.4-mini', 'gpt-5.4', 'gpt-4o', 'gpt-4o-mini'])
+    const { model: requestedModel = 'gpt-5.4-mini', max_tokens: requestedTokens = 4000, temperature: requestedTemp, messages } = await req.json()
+    const model = ALLOWED_MODELS.has(requestedModel) ? requestedModel : 'gpt-5.4-mini'
     const max_tokens = Math.min(requestedTokens, 4000) // plafond serveur : jamais plus de 4000
     const temperature = (typeof requestedTemp === 'number' && requestedTemp >= 0 && requestedTemp <= 2) ? requestedTemp : undefined
 
