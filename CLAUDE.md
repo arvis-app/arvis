@@ -47,7 +47,7 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 
 **Public cible :** Médecins hospitaliers en Allemagne (Assistenzärzte, Fachärzte).
 
-**Modèle économique :** Trial 14 jours gratuit → abonnement 19€/mois ou 249€/an.
+**Modèle économique :** Trial 14 jours gratuit → abonnement 29€/mois (19€/mois pour les 3 premiers mois) ou 249€/an.
 
 **Langue de l'interface :** Allemand uniquement (les médecins allemands sont les utilisateurs finaux).
 
@@ -184,7 +184,7 @@ Le routing `/` est géré par `vercel.json` (routes) avant React.
 | `canceled_pending` | ✅ | Annulé, accès jusqu'à `subscription_end_date` |
 | `canceled` | ❌ | Annulé → Paywall |
 
-Prix : **19€/mois** (`price_1TFjM6FPxR7QFABJwnMbND3B`) / **249€/an** (`price_1TFjM7FPxR7QFABJk5I1uBaC`)
+Prix : **29€/mois** (19€/mois pour les 3 premiers mois) (`price_1TFjM6FPxR7QFABJwnMbND3B`) / **249€/an** (`price_1TFjM7FPxR7QFABJk5I1uBaC`)
 
 ---
 

@@ -229,25 +229,11 @@ export default function Scan() {
   useEffect(() => { sessionStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
   useEffect(() => { sessionStorage.setItem('arvis_scan_history', JSON.stringify(scanHistory)) }, [scanHistory])
 
-  // ── Auto-retry AI si scan interrompu par changement d'onglet ─────────────
+  // Nettoyage des flags d'analyse interrompue (les images ne sont pas sauvegardées en sessionStorage)
   useEffect(() => {
-    const wasAnalyzing = sessionStorage.getItem('arvis_scan_isAnalyzing') === 'true'
-    const pendingOcr = sessionStorage.getItem('arvis_scan_pendingOcr')
-    if (!wasAnalyzing) return
     sessionStorage.removeItem('arvis_scan_isAnalyzing')
-    if (!pendingOcr) return // mid-OCR, impossible à récupérer
     sessionStorage.removeItem('arvis_scan_pendingOcr')
-    setIsAnalyzing(true)
-    setLoadingText('KI analysiert Dokument...')
-    runAIAnalysis(pendingOcr)
-      .then(analysis => { setAiHtml(markdownToHtml(analysis)); goStep(4) })
-      .catch(err => {
-        if (err.message === '__limit_reached__') { setLimitReached(true); setErrorMsg('Ihr monatliches KI-Kontingent wurde erreicht.') }
-        else setErrorMsg(err.message)
-        goStep(2)
-      })
-      .finally(() => setIsAnalyzing(false))
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Pan ───────────────────────────────────────────────────────────────────
   function startPan(e) {
@@ -526,57 +512,22 @@ export default function Scan() {
     return canvas.toDataURL('image/jpeg', 0.92)
   }
 
-  // ── OCR ────────────────────────────────────────────────────────────────────
-  function cleanOcrText(text) {
-    let t = text;
-    // Supprime les pipes et antislashs (bruit typique des bordures de page physiques)
-    t = t.replace(/[|\\]/g, ' ');
-
-    // Supprime les symboles purs en début de ligne suivis d'un espace (ex: "} ", "! ", "" ", "%* ")
-    // On exclut le tiret "-" car c'est une puce de liste valide.
-    t = t.replace(/^[ \t]*[\]{}!_~^"""''`%*#|<>/]+[ \t]+/gm, '');
-
-    // Supprime les combinaisons symbole+chiffre/lettre en début de ligne (ex: "{8 ", "1] ", "!] ")
-    t = t.replace(/^[ \t]*([a-zA-Z0-9][\]{}!_~^"""''`%*#|<>/]+|[\]{}!_~^"""''`%*#|<>/]+[a-zA-Z0-9])[ \t]+/gm, '');
-
-    // Supprime les lettres "fantômes" isolées créées par l'ombre (ex: "f ", "l ", "I ")
-    t = t.replace(/^[ \t]*(f|l|I|i)[ \t]+/gm, '');
-
-    // Nettoie la fin des lignes de la même façon (bruit ou espaces inutiles)
-    t = t.replace(/[ \t]+([\]{}!_~^"""''`%*#|<>/]+|l|I|i)[ \t]*$/gm, '');
-
-    // Supprime les lignes entièrement composées de symboles/tirets répétés (bordures, séparateurs)
-    t = t.replace(/^[ \t]*[-=_*~.]{3,}[ \t]*$/gm, '');
-
-    // Supprime les lignes de 1 ou 2 caractères (bruit isolé — trop court pour être du texte réel)
-    t = t.replace(/^[ \t]*[\S]{1,2}[ \t]*$/gm, '');
-
-    // Supprime les lignes qui ne contiennent aucune lettre (chiffres/symboles seuls sans contexte)
-    t = t.replace(/^[ \t]*[^a-zA-ZäöüÄÖÜß\n]*[ \t]*$/gm, '');
-
-    // Puces de liste mal reconnues par Tesseract (• → "e", "A" ou "o" isolés en début de ligne)
-    t = t.replace(/^([ \t]*)[eAo][ \t]+(?=\S)/gm, '$1- ')
-
-    // Réduit les sauts de lignes multiples à un seul saut de ligne (efface le "double espacement" causé par le bruit)
-    t = t.replace(/\n(?:[ \t]*\n)+/g, '\n');
-
-    // Compresse les espaces multiples au sein des phrases
-    t = t.replace(/[ \t]{2,}/g, ' ');
-
-    return t.trim();
-  }
-
-  async function runTesseract(imageDataUrl, pageInfo) {
-    setLoadingText(pageInfo ? `Seite ${pageInfo} — OCR wird gestartet...` : 'OCR wird gestartet...')
-    const worker = await window.Tesseract.createWorker('deu', 1, {
-      logger: m => {
-        if (m.status === 'recognizing text')
-          setLoadingText(`${pageInfo ? 'Seite ' + pageInfo + ' — ' : ''}Text wird erkannt... ${Math.round(m.progress * 100)}%`)
+  // ── Vision : compresser l'image pour GPT-4o (max 1200px wide, JPEG 0.85) ──
+  function compressForVision(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        const maxW = 1200
+        const w = Math.min(maxW, img.naturalWidth)
+        const h = Math.round(img.naturalHeight * (w / img.naturalWidth))
+        const canvas = document.createElement('canvas')
+        canvas.width = w; canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', 0.85))
       }
+      img.onerror = () => reject(new Error('Bildkompression fehlgeschlagen'))
+      img.src = dataUrl
     })
-    const { data: { text } } = await worker.recognize(imageDataUrl)
-    await worker.terminate()
-    return cleanOcrText(text)
   }
 
   // ── Thumbnail compressé pour l'historique (300px wide, JPEG 0.7) ────────────
@@ -608,16 +559,38 @@ export default function Scan() {
     return 'Analyse'
   }
 
-  // ── AI Analysis ────────────────────────────────────────────────────────────
-  async function runAIAnalysis(ocrText) {
+  // ── Vision OCR : extraction de texte brut via GPT-4o Vision ────────────────
+  async function runVisionOCR(imageDataUrls) {
+    setLoadingText('Text wird extrahiert...')
+    const content = [
+      { type: 'text', text: 'Extrahiere den vollständigen Text aus diesem medizinischen Dokument. Gib den Text originalgetreu wieder — Struktur, Absätze, Tabellen und Aufzählungen beibehalten. Bei Tabellen: Spaltenstruktur als Markdown-Tabelle wiedergeben. Keine Zusammenfassung, keine Interpretation — nur den reinen Text. Wasserzeichen und Seitenfußzeilen ignorieren.' },
+      ...imageDataUrls.map(url => ({ type: 'image_url', image_url: { url } }))
+    ]
+    const data = await invokeEdgeFunction('ai-chat', {
+      model: 'gpt-5.4-mini',
+      max_completion_tokens: 4000,
+      temperature: 0.1,
+      messages: [{ role: 'user', content }]
+    })
+    if (data?.error === 'limit_reached') throw new Error('__limit_reached__')
+    if (!data?.content) throw new Error('Kein Text erkannt.')
+    return data.content
+  }
+
+  // ── AI Analysis via Vision : analyse clinique directe depuis l'image ───────
+  async function runAIAnalysis(imageDataUrls) {
     setLoadingText('KI analysiert Dokument...')
+    const content = [
+      { type: 'text', text: 'Analysiere dieses medizinische Dokument.' },
+      ...imageDataUrls.map(url => ({ type: 'image_url', image_url: { url } }))
+    ]
     const data = await invokeEdgeFunction('ai-chat', {
       model: 'gpt-5.4-mini',
       max_completion_tokens: 4000,
       temperature: 0.2,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: 'Anonymisierter Dokumententext:\n\n' + ocrText }
+        { role: 'user', content }
       ]
     })
     if (data?.error === 'limit_reached') throw new Error('__limit_reached__')
@@ -634,10 +607,11 @@ export default function Scan() {
     setErrorMsg('')
     if (window.innerWidth <= 785) setTimeout(() => rightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     try {
-      let fullOcrText = ''
+      // ── Collecter les images anonymisées (avec blackouts) ──────────────
+      const imageDataUrls = []
       if (pdfDocRef.current && pdfTotalRef.current > 1) {
         for (let p = 1; p <= pdfTotalRef.current; p++) {
-          setLoadingText(`Seite ${p}/${pdfTotalRef.current} - OCR läuft...`)
+          setLoadingText(`Seite ${p}/${pdfTotalRef.current} wird vorbereitet...`)
           const page = await pdfDocRef.current.getPage(p)
           const viewport = page.getViewport({ scale: 1.6 })
           const canvas = document.createElement('canvas')
@@ -653,27 +627,25 @@ export default function Scan() {
             ctx.fillStyle = '#000'
             pageBlackouts.forEach(box => ctx.fillRect((box.x - (ir.left - cr.left)) * scaleX, (box.y - (ir.top - cr.top)) * scaleY, box.w * scaleX, box.h * scaleY))
           }
-          const pageText = await runTesseract(canvas.toDataURL('image/jpeg', 0.92), `${p}/${pdfTotalRef.current}`)
-          if (pageText) fullOcrText += `[Seite ${p}]\n${pageText}\n\n`
+          imageDataUrls.push(await compressForVision(canvas.toDataURL('image/jpeg', 0.92)))
         }
       } else {
-        fullOcrText = await runTesseract(getAnonymizedDataUrl())
+        imageDataUrls.push(await compressForVision(getAnonymizedDataUrl()))
       }
 
       const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
       const thumb = await createThumbnail(imgDataRef.current)
       if (mode === 'ocr') {
-        const txt = fullOcrText || 'Kein Text erkannt.'
+        const txt = await runVisionOCR(imageDataUrls)
         setOcrText(txt)
         setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: 'OCR Text', aiHtml: '', ocrText: txt, mode: 'ocr', thumb }, ...prev].slice(0, 5))
       } else {
-        if (!fullOcrText || fullOcrText.length < 10) throw new Error('Kein Text erkannt')
-        setOcrText(fullOcrText)
-        sessionStorage.setItem('arvis_scan_pendingOcr', fullOcrText)
-        const analysis = await runAIAnalysis(fullOcrText)
+        const analysis = await runAIAnalysis(imageDataUrls)
         const html = markdownToHtml(analysis)
         setAiHtml(html)
-        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: extractScanLabel(analysis), aiHtml: html, ocrText: fullOcrText, mode: 'ai', thumb }, ...prev].slice(0, 5))
+        // Pas de texte OCR séparé en mode Vision — le texte est intégré dans l'analyse
+        setOcrText('')
+        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: extractScanLabel(analysis), aiHtml: html, ocrText: '', mode: 'ai', thumb }, ...prev].slice(0, 5))
       }
       goStep(4)
     } catch (err) {
@@ -682,6 +654,7 @@ export default function Scan() {
         setErrorMsg('Ihr monatliches KI-Kontingent wurde erreicht.')
         goStep(2)
       } else {
+        logError('Scan.proceedToAnalysis', err)
         setErrorMsg(err.message)
         goStep(2)
       }

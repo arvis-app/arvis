@@ -116,9 +116,27 @@ serve(async (req) => {
     if (!Array.isArray(messages) || messages.length > 20) {
       return new Response(JSON.stringify({ error: 'Invalid messages' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
-    const totalLength = messages.reduce((s: number, m: any) => s + (typeof m?.content === 'string' ? m.content.length : 0), 0)
+    // Calculer la taille totale : texte brut + texte dans les content arrays (Vision)
+    const totalLength = messages.reduce((s: number, m: any) => {
+      if (typeof m?.content === 'string') return s + m.content.length
+      if (Array.isArray(m?.content)) return s + m.content.reduce((a: number, p: any) => a + (p?.type === 'text' ? (p.text?.length ?? 0) : 0), 0)
+      return s
+    }, 0)
+    // Calculer la taille des images base64 (pour limiter l'abus)
+    const totalImageSize = messages.reduce((s: number, m: any) => {
+      if (!Array.isArray(m?.content)) return s
+      return s + m.content.reduce((a: number, p: any) => {
+        if (p?.type === 'image_url' && typeof p.image_url?.url === 'string' && p.image_url.url.startsWith('data:'))
+          return a + p.image_url.url.length
+        return a
+      }, 0)
+    }, 0)
     if (totalLength > 60000) {
       return new Response(JSON.stringify({ error: 'Input zu groß' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    // Max ~5 MB de base64 images (≈ 4 pages haute résolution)
+    if (totalImageSize > 5_000_000) {
+      return new Response(JSON.stringify({ error: 'Bilder zu groß' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const apiKey = Deno.env.get('OPENAI_API_KEY')
