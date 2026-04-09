@@ -687,7 +687,25 @@ export default function Scan() {
 
   // ── Copy / Download ────────────────────────────────────────────────────────
   function copyResult() {
-    const text = mode === 'ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
+    let text
+    if (mode === 'ai') {
+      const el = document.getElementById('aiSummaryDiv')
+      if (!el) return
+      // Convertir les tables HTML en texte tabulé pour l'alignement dans ORBIS/KIS
+      const clone = el.cloneNode(true)
+      clone.querySelectorAll('table').forEach(table => {
+        const rows = []
+        table.querySelectorAll('tr').forEach(tr => {
+          rows.push(Array.from(tr.querySelectorAll('td')).map(td => td.textContent.trim()).join('\t'))
+        })
+        const pre = document.createElement('pre')
+        pre.textContent = rows.join('\n')
+        table.parentNode.replaceChild(pre, table)
+      })
+      text = clone.innerText
+    } else {
+      text = ocrText
+    }
     if (text) { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500) }
   }
   async function downloadResult() {
