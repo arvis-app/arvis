@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase, invokeEdgeFunction } from '../supabaseClient'
 
 const AuthContext = createContext(null)
@@ -9,6 +9,10 @@ export function AuthProvider({ children }) {
   const [isPro, setIsPro]                 = useState(false) // false par défaut — sécurisé
   const [loading, setLoading]             = useState(true)
   const [isResettingPassword, setIsResettingPassword] = useState(false)
+  // Tracks current user ID in a ref to avoid stale closures in the auth listener.
+  // Used to detect SIGNED_IN from Supabase _recoverAndRefresh() on tab switch
+  // (fires SIGNED_IN even for already-authenticated sessions) vs a genuine new sign-in.
+  const currentUserIdRef = useRef(null)
 
   function computeLocalIsPro(profile) {
     if (!profile) return false
@@ -78,6 +82,7 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user)
+        currentUserIdRef.current = session.user.id
         if (isRecovery) {
           setLoading(false) // ne pas charger le profil, on reste sur le form reset
         } else {
@@ -121,12 +126,23 @@ export function AuthProvider({ children }) {
         }
       }
       if (session) {
+        // Vérifier AVANT de mettre à jour la ref si l'utilisateur était déjà connecté
+        const alreadyLoggedIn = currentUserIdRef.current === session.user.id
         setUser(session.user)
+        currentUserIdRef.current = session.user.id
         // Charger le profil uniquement sur SIGNED_IN/USER_UPDATED — INITIAL_SESSION est déjà
-        // couvert par getSession() ci-dessus, TOKEN_REFRESHED ne nécessite pas de rechargement
+        // couvert par getSession() ci-dessus, TOKEN_REFRESHED ne nécessite pas de rechargement.
+        // Si alreadyLoggedIn + SIGNED_IN → c'est Supabase _recoverAndRefresh() au retour d'onglet
+        // qui émet SIGNED_IN même pour une session déjà valide. Ne pas afficher le spinner
+        // (setLoading true démonterait Scan/MobileScan et perdrait tout le contenu en cours).
         if (!onResetPage && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
-          setLoading(true)
-          loadProfile(session.user.id).finally(() => setLoading(false))
+          if (!alreadyLoggedIn || event === 'USER_UPDATED') {
+            setLoading(true)
+            loadProfile(session.user.id).finally(() => setLoading(false))
+          } else {
+            // Retour d'onglet : rafraîchissement silencieux, sans spinner
+            loadProfile(session.user.id)
+          }
           setIsResettingPassword(false)
         }
       } else {
@@ -134,6 +150,7 @@ export function AuthProvider({ children }) {
         setProfile(null)
         setIsPro(false)
         setIsResettingPassword(false) // Toujours réinitialiser au signOut
+        currentUserIdRef.current = null
       }
     })
 
