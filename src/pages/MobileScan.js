@@ -175,8 +175,10 @@ export default function MobileScan() {
     const oy = (touch.clientY - cr.top) / zoom - box.y
     const onMove = (ev) => {
       const t = ev.touches ? ev.touches[0] : ev
-      box.x = (t.clientX - cr.left) / zoom - ox
-      box.y = (t.clientY - cr.top) / zoom - oy
+      const cw = cr.width / zoom
+      const ch = cr.height / zoom
+      box.x = Math.max(0, Math.min(cw - box.w, (t.clientX - cr.left) / zoom - ox))
+      box.y = Math.max(0, Math.min(ch - box.h, (t.clientY - cr.top) / zoom - oy))
       setBlackouts(prev => prev.map(b => b.id === box.id ? { ...box } : b))
     }
     const onUp = () => {
@@ -193,10 +195,13 @@ export default function MobileScan() {
     e.stopPropagation(); e.preventDefault()
     const touch = e.touches ? e.touches[0] : e
     const sx = touch.clientX, sy = touch.clientY, sw = box.w, sh = box.h
+    const cr = cropInnerRef.current.getBoundingClientRect()
     const onMove = (ev) => {
       const t = ev.touches ? ev.touches[0] : ev
-      box.w = Math.max(20, sw + (t.clientX - sx) / zoom)
-      box.h = Math.max(10, sh + (t.clientY - sy) / zoom)
+      const cw = cr.width / zoom
+      const ch = cr.height / zoom
+      box.w = Math.max(20, Math.min(cw - box.x, sw + (t.clientX - sx) / zoom))
+      box.h = Math.max(10, Math.min(ch - box.y, sh + (t.clientY - sy) / zoom))
       setBlackouts(prev => prev.map(b => b.id === box.id ? { ...box } : b))
     }
     const onUp = () => {
