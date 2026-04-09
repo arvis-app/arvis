@@ -140,8 +140,11 @@ export function AuthProvider({ children }) {
             setLoading(true)
             loadProfile(session.user.id).finally(() => setLoading(false))
           } else {
-            // Retour d'onglet : rafraîchissement silencieux, sans spinner
-            loadProfile(session.user.id)
+            // Retour d'onglet : rafraîchissement silencieux, sans spinner.
+            // On appelle quand même setLoading(false) en finally — défensif contre la race
+            // condition mobile (visibilityChange pendant le chargement initial : loading peut
+            // être encore à true alors qu'aucun autre chemin n'appellera setLoading(false)).
+            loadProfile(session.user.id).finally(() => setLoading(false))
           }
           setIsResettingPassword(false)
         }
