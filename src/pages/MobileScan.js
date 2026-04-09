@@ -279,6 +279,11 @@ export default function MobileScan() {
       // Outer: natural height, scrollable if photo is very tall
       <div style={{ minHeight: '100vh', background: 'var(--bg, #F6F4F1)', overflowY: 'auto', padding: '12px 16px 16px' }}>
 
+        {/* Back link — outside the card */}
+        <button onClick={handleBack} onTouchEnd={e => e.currentTarget.blur()} style={{ background: 'none', border: 'none', padding: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: 4, fontSize: 15, fontWeight: 600, color: 'var(--text-2, #3A3A3C)', cursor: 'pointer' }}>
+          ← Zurück
+        </button>
+
         {/* Card: height = banner + toolbar + photo */}
         <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
@@ -317,9 +322,6 @@ export default function MobileScan() {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
               </button>
             </div>
-            <button className="btn-secondary" onClick={handleBack} onTouchEnd={e => e.currentTarget.blur()} style={{ height: 32, padding: '0 10px', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
-              ← Zurück
-            </button>
             <button className="btn-action scan-toolbar-weiter" onClick={handleSend} onTouchEnd={e => e.currentTarget.blur()} style={{ marginLeft: 'auto' }}>
               Senden
             </button>
@@ -332,7 +334,7 @@ export default function MobileScan() {
             onTouchStart={startPan}
             onClick={(e) => { if (e.target === viewerRef.current || e.target === imgRef.current) setSelectedBk(null) }}
             style={{
-              overflow: zoom > 1 ? 'hidden' : 'visible',
+              overflow: 'hidden',
               cursor: isDragging ? 'grabbing' : zoom > 1 ? 'grab' : 'default',
               touchAction: zoom > 1 ? 'none' : 'pan-y'
             }}
@@ -364,7 +366,7 @@ export default function MobileScan() {
                 >
                   {selectedBk === box.id && (<>
                     <div onMouseDown={e => e.stopPropagation()} onTouchStart={e => { e.stopPropagation(); e.preventDefault() }} onClick={() => deleteBlackout(box.id)}
-                      style={{ position: 'absolute', ...(box.y < 20 ? { bottom: -10, top: 'auto' } : { top: -10 }), right: -10, width: 20, height: 20, borderRadius: '50%', background: '#EF4444', color: 'white', fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>×</div>
+                      style={{ position: 'absolute', top: -10, right: -10, width: 20, height: 20, borderRadius: '50%', background: '#EF4444', color: 'white', fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>×</div>
                     <div onMouseDown={e => startResizeBlackout(e, box)} onTouchStart={e => startResizeBlackout(e, box)}
                       style={{ position: 'absolute', bottom: -9, right: -9, width: 18, height: 18, background: '#EF4444', borderRadius: '50%', cursor: 'se-resize', zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'none' }}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'scaleY(-1)' }}><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
