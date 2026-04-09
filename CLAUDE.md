@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 8 avril 2026 (nuit)_
+_Dernière mise à jour : 9 avril 2026 (nuit)_
 
 ---
 
@@ -37,11 +37,11 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 
 | Fonctionnalité | Description |
 |----------------|-------------|
-| **Scan / OCR + KI-Analyse** | Scanne un document médical (ordonnance, compte-rendu, résultats), extrait le texte via OCR, puis l'IA l'analyse et génère un résumé structuré en allemand |
+| **Scan / OCR + KI-Analyse** | Scanne un document médical via GPT-4o Vision (pas de Tesseract) — extraction texte OCR et analyse IA structurée en allemand |
 | **BriefSchreiber** | Rédige ou corrige des courriers médicaux professionnels en allemand via IA (arztbrief, Überweisung, etc.) |
 | **Bausteine** | Bibliothèque de 1 550 blocs de texte médicaux réutilisables, organisés par spécialité — permet d'assembler rapidement des comptes-rendus standardisés |
 | **Übersetzung** | Dictionnaire médical multilingue de 1 585 termes traduits en 6 langues (DE, FR, EN, AR, TR, RU) — pour communiquer avec des patients allophones |
-| **Dateien** | Gestionnaire de fichiers PDF/images — stockage, organisation, accès rapide aux documents patients |
+| **Dateien** | Gestionnaire de fichiers PDF/images — stockage Supabase Storage (bucket `user-files`, privé), organisation, accès rapide aux documents patients |
 | **Dashboard** | Vue d'ensemble : météo, agenda, gestion des patients |
 | **MobileScan** | Permet de scanner depuis le téléphone via QR code, en envoyant le document au PC |
 
@@ -318,14 +318,14 @@ Coupons auto-appliqués au checkout (priorité) :
 | Scan | `arvis_scan_step`, `_panel`, `_mode`, `_limitReached` | `sessionStorage` | Restauré au retour sur l'onglet (navigation SPA) |
 | Scan | `arvis_scan_aiHtml`, `_ocrText`, `_imgData` | `sessionStorage` | PHI — DSGVO Art. 9, restauré au retour |
 | Scan | `arvis_scan_history` | `sessionStorage` | Historique 5 derniers scans (aiHtml + ocrText + thumbnail) |
-| Scan | `arvis_scan_isAnalyzing`, `_pendingOcr` | `sessionStorage` | Flags pour auto-retry IA si onglet changé mid-scan |
+| Scan | `arvis_scan_isAnalyzing` | `sessionStorage` | Flag analyse en cours (supprimé : auto-retry Tesseract n'existe plus) |
 | Bausteine | `arvis_bausteine_selected_id` | `sessionStorage` | UI temporaire |
 | Bausteine | `arvis_bausteine_migrated_v1` | `localStorage` | Flag migration one-shot |
 | Uebersetzung | `arvis_ueb_search`, `_cat`, `_langs`, `_selected` | `sessionStorage` | UI temporaire |
 
-**Restauration Scan** : tous les states Scan sont initialisés depuis sessionStorage au montage (pas de clear au mount). Si `arvis_scan_isAnalyzing=true` au remontage ET `arvis_scan_pendingOcr` existe → l'IA repart automatiquement avec le texte OCR sauvegardé.
+**Restauration Scan** : tous les states Scan sont initialisés depuis sessionStorage au montage (pas de clear au mount).
 
-**Onglets AI/OCR indépendants** : en mode AI, `ocrText` est aussi sauvegardé (le texte OCR est de toute façon calculé). Switching entre onglets affiche le résultat correspondant sans rescanner.
+**Onglets AI/OCR indépendants** : les deux modes utilisent GPT-4o Vision. Switching entre onglets affiche le résultat correspondant sans rescanner.
 
 **Piège restauration** : l'effet `[selected]` avec `removeItem` s'exécute au premier rendu avant la restauration. Solutions : `restoredRef` (Uebersetzung) ou `_pendingSelectedId` state initialisé depuis sessionStorage (Bausteine).
 
@@ -340,7 +340,7 @@ Coupons auto-appliqués au checkout (priorité) :
 5. **Edge Functions** : CORS conditionnel (localhost seulement si `ALLOW_LOCALHOST=true`), erreurs censurées (`{ error: 'Internal server error' }`), JWT validé en interne
 6. **Rate limiting IA** : 1M tokens/mois + 100k tokens/heure par user (colonnes `ai_tokens_used`, `ai_hourly_tokens`)
 7. **Emails** : `escapeHtml()` sur tout contenu dynamique (`firstName`, `message`, `photoUrls`)
-8. **CSP** : `unsafe-inline` retiré de `script-src` (gardé dans `style-src`), SRI sur Tesseract.js et PDF.js
+8. **CSP** : `unsafe-inline` retiré de `script-src` (gardé dans `style-src`), `frame-src` inclut `blob:` (PDFs Dateien), SRI sur PDF.js
 9. **Erreurs** : toujours `logError(context, error)` dans les catch — jamais `console.error` seul
 10. **Konto löschen** : edge function `delete-user-account` (Stripe + Storage + DB + Auth) — modale confirmation "LÖSCHEN" dans Profil.js
 
@@ -395,6 +395,9 @@ Bouton "Jetzt upgraden" :
 15. **Chunk Vite introuvable sur mobile (Safari)** : après un déploiement, un téléphone avec `index.html` en cache tente de charger des chunks avec d'anciens hash → Vercel renvoie `index.html` (`text/html`) → Safari throw `TypeError: 'text/html' is not a valid JavaScript MIME type`. Fix : `window.addEventListener('vite:preloadError', () => window.location.reload())` dans `src/index.js` — rechargement automatique qui récupère le bon `index.html`.
 16. **Redirect après login (PublicRoute race condition)** : `handleLogin` appelait `navigate(savedRedirect)` puis `PublicRoute` re-rendait avec `<Navigate to="/dashboard">` qui l'écrasait. Fix : la logique de redirection post-login est entièrement dans `PublicRoute` — il lit `redirectAfterLogin` depuis sessionStorage et redirige là, sinon `/dashboard`. `handleLogin` ne navigate plus du tout. Critique pour le flux QR MobileScan : scan sans auth → login → retour vers `/mobile-scan/:token`.
 17. **CORS "Load failed" dans le navigateur** : si une Edge Function renvoie "Load failed" dans le navigateur mais répond correctement via curl, c'est un problème CORS — curl ignore CORS, le navigateur non. Cause typique : `apikey` manquant dans `Access-Control-Allow-Headers`. Le header correct pour toutes les fonctions est `'authorization, x-client-info, apikey, content-type'` (comme dans `get-plan-status`). Ne jamais utiliser seulement `'authorization, content-type'`.
+18. **Profil "Kein Titel"** : `profile.title` est `""` (empty string) quand l'utilisateur choisit "Kein Titel". Utiliser `??` (nullish coalescing) et non `||` pour le fallback — `||` traite `""` comme falsy et remet "Dr.".
+19. **Dateien preview blanc** : le bucket `user-files` est **privé** — les public URLs (`getPublicUrl`) retournent 400. Les signed URLs (`createSignedUrl`) fonctionnent côté serveur mais ont des problèmes de timing React. Solution : `supabase.storage.download()` → `URL.createObjectURL(blob)` (blob URLs locales). Ne jamais revenir sur signed URLs ou public URLs.
+20. **Scan bouton direct (sans QR)** : le bouton "Weiter" dans Scan mobile direct (pas MobileScan QR) doit être noir `#1C1C1E` avec label "Weiter zur Anonymisierung" — même style que le scan via QR code.
 
 ---
 
@@ -408,6 +411,17 @@ Bouton "Jetzt upgraden" :
 
 ---
 
+## Scan — Architecture Vision (GPT-4o)
+
+**Tesseract.js a été supprimé.** Tout passe par GPT-4o Vision (images envoyées en base64).
+
+- **Deux modes** : KI-Analyse (analyse structurée) et OCR seul (extraction texte brut)
+- **Compression** : `compressForVision(dataUrl)` — redimensionne à max 1200px wide, JPEG 0.85
+- **Multi-page** : toutes les images envoyées dans un seul message `content` array (text + image_url)
+- **Modèle OCR** : `gpt-4.5-flash` (rapide, bon marché) — **Modèle KI-Analyse** : `gpt-4o`, `temperature: 0.2`
+- **Edge function** : `ai-chat` accepte les content arrays avec `image_url` (base64 data URLs, max 5 MB total)
+- **Coût** : ~2100 tokens/page en high-detail
+
 ## Scan KI-Analyse — System Prompt
 
 Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
@@ -416,9 +430,10 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Format Nicht übersehen** : `🔴 **Problemstelle** Mécanisme → Handlungsempfehlung` (2–4 phrases par item, alternatives concrètes)
 - **Température** : `0.2` (déterministe, évite les oublis)
 - **Modèle** : `gpt-4o`, `max_tokens: 4000`
-- **Tableau médication** : 3 colonnes `| Medikament (Dosis) | Schema | ggf. Dauer |` — médicament et dose dans la même colonne. Le renderer `markdownToHtml()` supporte les lignes `|...|` (header skippé, données en colonnes alignées)
+- **Tableau médication** : 3 colonnes `| Medikament (Dosis) | morgens-mittags-abends | ggf. Dauer |` — pas de colonne nachts si 0, pas de Darreichungsform (pas de "Tabletten", "retard", etc.)
 - **Diagnosen** : reprise **verbatim** du document — aucune numérotation, aucune abréviation, aucune omission. Toutes les Diagnosen présentes doivent figurer, groupées en "Hauptdiagnose(n)" et "Weitere Diagnose(n)". Une par ligne, sans tiret ni bullet.
 - **Médication** : exhaustive — chaque médicament du document doit apparaître dans le tableau, même si incomplet ou lisible partiellement.
+- **Copie ORBIS** : `copyResult()` convertit les tableaux HTML en texte tab-separated (colonnes alignées dans les systèmes hospitaliers)
 
 ## Scan — Historique de session
 
@@ -427,13 +442,7 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **UI** : chips horizontaux au-dessus des scan-steps, visibles dès le 2e scan
 - **Au clic** : restaure aiHtml + ocrText + miniature dans le panneau preview → pas de rescan nécessaire
 - **Effacé** à la fermeture de l'onglet (sessionStorage)
-
-## Scan — OCR cleanOcrText
-
-Post-traitement Tesseract dans `cleanOcrText()` :
-- Pipes et antislashs supprimés (bruit de bordure)
-- Symboles isolés en début de ligne supprimés
-- **Puces mal reconnues** : `e `, `A `, `o ` isolés en début de ligne → convertis en `- ` (Tesseract lit souvent `•` comme `e` ou `A`)
+- **Min-height résultat** : `minHeight: 900` sur le panneau résultat quand affiché (évite résultat trop court en paysage)
 
 ## BriefSchreiber — Korrektur Prompt
 
@@ -452,6 +461,18 @@ Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mod
 - Flow : QR code → scan photo(s) → **"Weiter zur Anonymisierung"** (bouton noir `#1C1C1E`) → transfert → anonymisation sur le PC → analyse
 - Le bouton "Weiter" a été renommé et mis en noir pour clarifier que l'anonymisation intervient AVANT l'envoi (évite la confusion "ça va uploader directement")
 - Tant que aucune photo n'est prise : bouton label caméra orange "Foto aufnehmen" → après 1+ photos : label orange outline "Weitere Seite aufnehmen" + bouton noir "Weiter zur Anonymisierung"
+
+## Dateien — Storage & Preview
+
+- **Bucket** : `user-files` (Supabase Storage, **privé**, RLS `auth.uid()::text = split_part(name, '/', 1)`)
+- **Structure fichiers** : `userId/timestamp_filename` (ex: `4a35.../1775766728648_IMG_4303.PNG`)
+- **Upload** : `supabase.storage.from('user-files').upload()` → si succès : `storage_path` + public URL en `content` ; si échec : fallback base64 en `content`
+- **Preview** : `supabase.storage.download()` → `URL.createObjectURL(blob)` → blob URLs locales (`blob:...`). Signed URLs et public URLs ne fonctionnent PAS (bucket privé, timing React).
+- **Pré-chargement** : `refresh()` télécharge tous les fichiers avec `storage_path` en blob URLs au chargement de la page
+- **Table `notes`** : colonnes `file_type` (text: 'image'/'pdf'/'note'/'text'/'other'), `storage_path` (text, chemin Storage), `content` (text, URL publique ou base64 fallback)
+- **HEIC/HEIF** : reconnu comme image dans `getNoteType()` et `handleUpload()` — fonctionne nativement sur Safari/iOS uniquement
+- **CSP** : `frame-src` inclut `blob:` pour les previews PDF en iframe
+- **Suppression compte** : bucket `user-files` nettoyé par `delete-user-account`
 
 ## Bausteine — Placeholders éditables
 
