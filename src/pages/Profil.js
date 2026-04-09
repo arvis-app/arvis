@@ -147,7 +147,7 @@ export default function Profil() {
 
   useEffect(() => {
     if (!profile) return
-    setTitel(profile.title || 'Dr.')
+    setTitel(profile.title ?? 'Dr.')
     setVorname(profile.first_name || '')
     setNachname(profile.last_name || '')
     setEmail(profile.email || '')
