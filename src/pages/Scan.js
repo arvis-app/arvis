@@ -930,7 +930,7 @@ export default function Scan() {
         </div>
 
         {/* RIGHT */}
-        <div className="scan-right" ref={rightRef} style={!isAnalyzing && (aiHtml || ocrText) && leftH > 0 ? { height: leftH } : panel !== 'upload' && frozenRightH > 0 ? { height: frozenRightH } : { alignSelf: 'stretch' }}>
+        <div className="scan-right" ref={rightRef} style={!isAnalyzing && (aiHtml || ocrText) && leftH > 0 ? { height: leftH, minHeight: 900 } : panel !== 'upload' && frozenRightH > 0 ? { height: frozenRightH } : { alignSelf: 'stretch' }}>
           {/* Mode selector */}
           <div className="scan-mode-card">
             <div className="scan-mode-title">Analysemodus</div>
