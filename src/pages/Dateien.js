@@ -201,6 +201,16 @@ export default function Dateien() {
     if (!user) return
     const d = await fetchData(user.id)
     setData(d)
+    // Pré-charger les signed URLs pour les images (thumbnails)
+    const imageNotes = d.notes.filter(n => getNoteType(n) === 'image' && n.storage_path)
+    if (imageNotes.length > 0) {
+      const urls = {}
+      await Promise.all(imageNotes.map(async n => {
+        const { data } = await supabase.storage.from('user-files').createSignedUrl(n.storage_path, 3600)
+        if (data?.signedUrl) urls[n.storage_path] = data.signedUrl
+      }))
+      if (Object.keys(urls).length > 0) setSignedUrls(prev => ({ ...prev, ...urls }))
+    }
   }
   function showToast(msg) { setToast(msg); setTimeout(()=>setToast(''),2200) }
 
@@ -348,16 +358,25 @@ export default function Dateien() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  function openNote(note) {
+  async function openNote(note) {
     const t = getNoteType(note)
+    if ((t==='image'||t==='pdf') && note.storage_path) await getSignedUrl(note.storage_path)
     if (t==='image'||t==='pdf') setDetail({type:t, note})
     else setDetail({type:'note', note})
   }
 
+  const [signedUrls, setSignedUrls] = useState({})
+  async function getSignedUrl(storagePath) {
+    if (signedUrls[storagePath]) return signedUrls[storagePath]
+    const { data, error } = await supabase.storage.from('user-files').createSignedUrl(storagePath, 3600)
+    if (error || !data?.signedUrl) return ''
+    setSignedUrls(prev => ({ ...prev, [storagePath]: data.signedUrl }))
+    return data.signedUrl
+  }
+
   function getFileUrl(note) {
     if (note?.storage_path) {
-      const { data } = supabase.storage.from('user-files').getPublicUrl(note.storage_path)
-      return data?.publicUrl || note.content || ''
+      return signedUrls[note.storage_path] || note?.content || ''
     }
     return note?.dataUrl || note?.content || ''
   }
