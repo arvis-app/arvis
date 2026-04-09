@@ -613,7 +613,7 @@ export default function Scan() {
     setLoadingText('KI analysiert Dokument...')
     const data = await invokeEdgeFunction('ai-chat', {
       model: 'gpt-5.4-mini',
-      max_tokens: 4000,
+      max_completion_tokens: 4000,
       temperature: 0.2,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },

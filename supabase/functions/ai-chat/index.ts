@@ -108,9 +108,9 @@ serve(async (req) => {
     }
 
     const ALLOWED_MODELS = new Set(['gpt-5.4-mini', 'gpt-5.4', 'gpt-4o', 'gpt-4o-mini'])
-    const { model: requestedModel = 'gpt-5.4-mini', max_tokens: requestedTokens = 4000, temperature: requestedTemp, messages } = await req.json()
+    const { model: requestedModel = 'gpt-5.4-mini', max_tokens: requestedTokens, max_completion_tokens: requestedCompletionTokens, temperature: requestedTemp, messages } = await req.json()
     const model = ALLOWED_MODELS.has(requestedModel) ? requestedModel : 'gpt-5.4-mini'
-    const max_tokens = Math.min(requestedTokens, 4000) // plafond serveur : jamais plus de 4000
+    const max_completion_tokens = Math.min(requestedCompletionTokens ?? requestedTokens ?? 4000, 4000) // plafond serveur : jamais plus de 4000
     const temperature = (typeof requestedTemp === 'number' && requestedTemp >= 0 && requestedTemp <= 2) ? requestedTemp : undefined
 
     if (!Array.isArray(messages) || messages.length > 20) {
@@ -130,7 +130,7 @@ serve(async (req) => {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-      body: JSON.stringify({ model, max_tokens, messages, ...(temperature !== undefined && { temperature }) }),
+      body: JSON.stringify({ model, max_completion_tokens, messages, ...(temperature !== undefined && { temperature }) }),
     })
 
     const data = await response.json()

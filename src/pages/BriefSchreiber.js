@@ -327,7 +327,7 @@ export default function BriefSchreiber() {
     setOrig(input); setState('loading')
     try {
       const data = await invokeEdgeFunction('ai-chat', {
-        model: 'gpt-5.4-mini', max_tokens: 3000,
+        model: 'gpt-5.4-mini', max_completion_tokens: 3000,
         messages: [{ role: 'system', content: SYS }, { role: 'user', content: buildPrompt(mode, style, length, input) }]
       })
       if (data?.error === 'limit_reached') { setState('empty'); setLimitReached(true); return }
