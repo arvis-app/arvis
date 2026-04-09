@@ -60,7 +60,7 @@ function getNoteType(note) {
   if (note.dataUrl?.startsWith('data:image')) return 'image'
   if (note.dataUrl?.startsWith('data:application/pdf')) return 'pdf'
   const ext = (note.title||'').match(/\.([^.]+)$/)?.[1]?.toLowerCase() || ''
-  if (/^(jpg|jpeg|png|gif|webp|bmp|svg)$/.test(ext)) return 'image'
+  if (/^(jpg|jpeg|png|gif|webp|bmp|svg|heic|heif)$/.test(ext)) return 'image'
   if (ext==='pdf') return 'pdf'
   return 'note'
 }
@@ -310,7 +310,7 @@ export default function Dateien() {
     let done = 0; const total = files.length
     Array.from(files).forEach(async file => {
       const ext = (file.name.match(/\.([^.]+)$/)||['',''])[1].toLowerCase()
-      const isImage = /^(jpg|jpeg|png|gif|webp|bmp)$/.test(ext)||(file.type.startsWith('image/')&&file.type!=='image/svg+xml')
+      const isImage = /^(jpg|jpeg|png|gif|webp|bmp|heic|heif)$/.test(ext)||(file.type.startsWith('image/')&&file.type!=='image/svg+xml')
       const isPDF   = ext==='pdf'||file.type==='application/pdf'
       const isText  = /^(txt|md|csv|json|xml|html|htm|js|css|py)$/.test(ext)||(!isImage&&!isPDF&&file.type.startsWith('text/'))
 
@@ -458,7 +458,7 @@ export default function Dateien() {
                     style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,padding:'16px 12px',cursor:'pointer',display:'grid',gridTemplateRows:'44px auto',justifyItems:'center',alignItems:'center',gap:8,position:'relative',transition:'border-color 0.15s'}}
                     onMouseEnter={e=>e.currentTarget.style.borderColor='var(--orange)'}
                     onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}>
-                    {getNoteType(n)==='image'&&n.dataUrl ? <img src={n.dataUrl} style={{width:44,height:44,objectFit:'cover',borderRadius:6}} alt=""/> : getNoteType(n)==='pdf' ? ICO.pdf : ICO.note}
+                    {getNoteType(n)==='image' ? <img src={getFileUrl(n)} style={{width:44,height:44,objectFit:'cover',borderRadius:6}} alt=""/> : getNoteType(n)==='pdf' ? ICO.pdf : ICO.note}
                     <div style={{fontSize:14,fontWeight:600,color:'var(--text)',textAlign:'center',lineHeight:1.3,alignSelf:'start',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',wordBreak:'break-all'}}>{n.title||'Ohne Titel'}</div>
                     <div style={{position:'absolute',top:6,right:6,opacity:0}} className="dateien-item-actions">
                       <button onClick={e=>{e.stopPropagation();deleteItem(n.id,'note')}} style={{width:22,height:22,borderRadius:4,border:'1px solid var(--border)',background:'var(--bg)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#dc2626'}}>{ICO.del}</button>
@@ -522,11 +522,11 @@ export default function Dateien() {
                 )}
                 {detail.type==='image' && (
                   <div style={{flex:1,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',padding:16,touchAction:'none'}} onTouchStart={handleImgTouch}>
-                    <img src={detail.note.dataUrl} style={{maxWidth:'100%',maxHeight:'100%',borderRadius:8,objectFit:'contain',transform:`translate(${imgPanX}px,${imgPanY}px) scale(${imgZoom})`,transformOrigin:'center center',userSelect:'none',pointerEvents:'none'}} alt=""/>
+                    <img src={getFileUrl(detail.note)} style={{maxWidth:'100%',maxHeight:'100%',borderRadius:8,objectFit:'contain',transform:`translate(${imgPanX}px,${imgPanY}px) scale(${imgZoom})`,transformOrigin:'center center',userSelect:'none',pointerEvents:'none'}} alt=""/>
                   </div>
                 )}
                 {detail.type==='pdf' && (
-                  <iframe src={detail.note.dataUrl} style={{flex:1,width:'100%',border:'none'}} title="PDF"/>
+                  <iframe src={getFileUrl(detail.note)} style={{flex:1,width:'100%',border:'none'}} title="PDF"/>
                 )}
               </div>
             </div>
