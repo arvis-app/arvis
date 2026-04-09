@@ -1096,7 +1096,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .result-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
 .result-badge { display:inline-flex; align-items:center; gap:5px; font-size: 16px; font-weight:800; padding:4px 10px; border-radius:999px; }
-.result-badge.ai { background:var(--orange-ghost); color:var(--orange-dark); }
+.result-badge.ai { background:var(--orange-ghost); color:var(--orange); }
 .result-badge.ocr { background:var(--bg-3); color:var(--text-2); }
 .result-actions { display:flex; gap:6px; }
 .result-action-btn { width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text-2); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
