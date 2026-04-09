@@ -56,9 +56,9 @@ const ICO = {
 }
 
 function getNoteType(note) {
-  if (note.fileType) return note.fileType
-  if (note.dataUrl?.startsWith('data:image')) return 'image'
-  if (note.dataUrl?.startsWith('data:application/pdf')) return 'pdf'
+  if (note.file_type && note.file_type !== 'other') return note.file_type
+  if (note.content?.startsWith('data:image')) return 'image'
+  if (note.content?.startsWith('data:application/pdf')) return 'pdf'
   const ext = (note.title||'').match(/\.([^.]+)$/)?.[1]?.toLowerCase() || ''
   if (/^(jpg|jpeg|png|gif|webp|bmp|svg|heic|heif)$/.test(ext)) return 'image'
   if (ext==='pdf') return 'pdf'
@@ -201,11 +201,11 @@ export default function Dateien() {
     if (!user) return
     const d = await fetchData(user.id)
     setData(d)
-    // Pré-charger les signed URLs pour les images (thumbnails)
-    const imageNotes = d.notes.filter(n => getNoteType(n) === 'image' && n.storage_path)
-    if (imageNotes.length > 0) {
+    // Pré-charger les signed URLs pour images + PDFs
+    const fileNotes = d.notes.filter(n => n.storage_path)
+    if (fileNotes.length > 0) {
       const urls = {}
-      await Promise.all(imageNotes.map(async n => {
+      await Promise.all(fileNotes.map(async n => {
         const { data } = await supabase.storage.from('user-files').createSignedUrl(n.storage_path, 3600)
         if (data?.signedUrl) urls[n.storage_path] = data.signedUrl
       }))
@@ -376,9 +376,9 @@ export default function Dateien() {
 
   function getFileUrl(note) {
     if (note?.storage_path) {
-      return signedUrls[note.storage_path] || note?.content || ''
+      return signedUrls[note.storage_path] || ''
     }
-    return note?.dataUrl || note?.content || ''
+    return note?.content || ''
   }
 
   function downloadFile(note) {

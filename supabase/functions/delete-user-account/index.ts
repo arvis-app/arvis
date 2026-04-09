@@ -54,7 +54,7 @@ serve(async (req) => {
     }
 
     // 3. Supprimer les fichiers Storage de l'utilisateur
-    const buckets = ['avatars', 'dateien', 'bug-reports', 'scan-images']
+    const buckets = ['avatars', 'user-files', 'bug-reports', 'scan-images']
     for (const bucket of buckets) {
       try {
         const { data: files } = await supabaseAdmin.storage
