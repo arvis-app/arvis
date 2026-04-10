@@ -566,6 +566,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   .btn-action:hover { background: var(--orange) !important; }
   .btn-action-secondary:hover { background: transparent !important; }
   .btn-danger:hover { background: transparent !important; }
+  .patient-row:hover { background: transparent !important; border-color: transparent !important; }
 }
 
 /* ═══════ DASHBOARD ═══════ */
