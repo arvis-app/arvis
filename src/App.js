@@ -14,6 +14,7 @@ const Scan           = lazy(() => import('./pages/Scan'))
 const BriefSchreiber = lazy(() => import('./pages/BriefSchreiber'))
 const Bausteine      = lazy(() => import('./pages/Bausteine'))
 const Uebersetzung   = lazy(() => import('./pages/Uebersetzung'))
+const Chat           = lazy(() => import('./pages/Chat'))
 const Dateien        = lazy(() => import('./pages/Dateien'))
 const Profil         = lazy(() => import('./pages/Profil'))
 const MobileScan     = lazy(() => import('./pages/MobileScan'))
@@ -69,6 +70,7 @@ function AppRoutes() {
         <Route path="briefschreiber" element={<Paywall><ErrorBoundary><BriefSchreiber /></ErrorBoundary></Paywall>} />
         <Route path="bausteine"      element={<Paywall><ErrorBoundary><Bausteine /></ErrorBoundary></Paywall>} />
         <Route path="uebersetzung"   element={<Paywall><ErrorBoundary><Uebersetzung /></ErrorBoundary></Paywall>} />
+        <Route path="chat"           element={<Paywall><ErrorBoundary><Chat /></ErrorBoundary></Paywall>} />
         <Route path="dateien"        element={<Paywall><ErrorBoundary><Dateien /></ErrorBoundary></Paywall>} />
         <Route path="profil"         element={<ErrorBoundary><Profil /></ErrorBoundary>} />
         <Route path="mobile-scan/:token" element={<ErrorBoundary><MobileScan /></ErrorBoundary>} />
