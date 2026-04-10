@@ -308,7 +308,7 @@ export default function Chat() {
             <div style={{
               position: 'relative',
               maxWidth: '85%',
-              padding: '12px 16px',
+              padding: '12px 44px 12px 16px',
               borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
               background: msg.role === 'user' ? 'var(--orange)' : 'var(--card)',
               color: msg.role === 'user' ? 'white' : 'var(--text)',
