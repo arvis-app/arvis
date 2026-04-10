@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase, invokeEdgeFunction } from '../supabaseClient'
+import { preloadPage } from '../App'
 
 const navItems = [
   {
@@ -216,7 +217,7 @@ export default function AppLayout() {
       <aside className="sidebar">
         <div className="sidebar-section-title">Hauptmenü</div>
         {navItems.map(item => (
-          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
+          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)} onMouseEnter={() => preloadPage(item.to)}>
             <span className="nav-item-icon">{item.icon}</span>
             {item.label}
           </NavLink>
@@ -224,7 +225,7 @@ export default function AppLayout() {
 
         <div className="sidebar-section-title">Persönlich</div>
         {personalItems.map(item => (
-          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
+          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)} onMouseEnter={() => preloadPage(item.to)}>
             <span className="nav-item-icon">{item.icon}</span>
             {item.label}
           </NavLink>

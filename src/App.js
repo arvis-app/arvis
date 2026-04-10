@@ -10,19 +10,35 @@ import NotFound    from './pages/NotFound'
 import './App.css'
 
 // Code splitting : pages premium chargées à la demande
-const Scan           = lazy(() => import('./pages/Scan'))
-const BriefSchreiber = lazy(() => import('./pages/BriefSchreiber'))
-const Bausteine      = lazy(() => import('./pages/Bausteine'))
-const Uebersetzung   = lazy(() => import('./pages/Uebersetzung'))
-const Chat           = lazy(() => import('./pages/Chat'))
-const Dateien        = lazy(() => import('./pages/Dateien'))
-const Profil         = lazy(() => import('./pages/Profil'))
+// Preload map pour précharger au hover dans la sidebar
+const pageImports = {
+  '/scan':           () => import('./pages/Scan'),
+  '/briefschreiber': () => import('./pages/BriefSchreiber'),
+  '/bausteine':      () => import('./pages/Bausteine'),
+  '/uebersetzung':   () => import('./pages/Uebersetzung'),
+  '/chat':           () => import('./pages/Chat'),
+  '/dateien':        () => import('./pages/Dateien'),
+  '/profil':         () => import('./pages/Profil'),
+}
+const Scan           = lazy(pageImports['/scan'])
+const BriefSchreiber = lazy(pageImports['/briefschreiber'])
+const Bausteine      = lazy(pageImports['/bausteine'])
+const Uebersetzung   = lazy(pageImports['/uebersetzung'])
+const Chat           = lazy(pageImports['/chat'])
+const Dateien        = lazy(pageImports['/dateien'])
+const Profil         = lazy(pageImports['/profil'])
 const MobileScan     = lazy(() => import('./pages/MobileScan'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const Impressum      = lazy(() => import('./pages/Impressum'))
 const Datenschutz    = lazy(() => import('./pages/Datenschutz'))
 const AGB            = lazy(() => import('./pages/AGB'))
 const AdminStats     = lazy(() => import('./pages/AdminStats'))
+
+// Preload une page au hover sidebar — le chunk est mis en cache par le browser
+export function preloadPage(path) {
+  const loader = pageImports[path]
+  if (loader) loader()
+}
 
 function PrivateRoute({ children }) {
   const { user, loading, isResettingPassword } = useAuth()
