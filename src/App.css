@@ -35,6 +35,7 @@ body {
   background: var(--bg);
   color: var(--text);
 }
+strong, b { font-weight: 800; }
 
 /* ═══════════════════════════════════
    LOGIN PAGE
