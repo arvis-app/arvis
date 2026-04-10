@@ -285,7 +285,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
           <textarea className="mini-input" placeholder="Notiz..." rows={1} value={detailNote} onChange={e => setDetailNote(e.target.value)} style={{ resize: 'none', lineHeight: 1.5, margin: 0, overflow: 'hidden', fontSize: 16 }} ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <button className="btn-action" onClick={handleSave} style={{ fontSize: 16, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Speichern</button>
-            <button className="btn-danger" onClick={() => setConfirmDel(selected)} style={{ fontSize: 16, height: 40, justifyContent: 'center' }}>Löschen</button>
+            <button className="btn-danger" onClick={() => setConfirmDel(selected)} style={{ fontSize: 16, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3V6zm2 3h14l-1.5 13a2 2 0 0 1-2 1.5h-7A2 2 0 0 1 6.5 22L5 9zm3-5h8v2H8V4z"/></svg></button>
           </div>
         </div>
       )}
