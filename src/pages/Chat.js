@@ -1,54 +1,56 @@
-import { useState, useRef, useEffect } from 'react'
-import { invokeEdgeFunction } from '../supabaseClient'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { supabase, invokeEdgeFunction } from '../supabaseClient'
+import { useAuth } from '../context/AuthContext'
 import { logError } from '../utils/logger'
 import DOMPurify from 'dompurify'
 
 const SYSTEM_PROMPT = 'Du bist ein erfahrener Arzt und medizinischer Wissenschaftler. Du sprichst mit einem Arzt — Fachsprache ist erwünscht. Wenn der Nutzer explizit nach einer Erklärung fragt (z.B. "Was ist X?"), erkläre vollständig inklusive Abkürzungen. Antworte auf hohem medizinischen und wissenschaftlichen Niveau, aber prägnant und strukturiert. Beantworte genau das, was gefragt wird — nicht mehr. Bei offenen Fragen (z.B. nur ein Wirkstoffname) gib eine kompakte Übersicht in maximal 300 Wörtern. Längere Antworten nur wenn die Frage es erfordert. STIL: Vermeide übermäßige Abkürzungen — schreibe z.B. "zweimal täglich" statt "bid", "nicht-valvuläres Vorhofflimmern" statt "NVAF" bei der ersten Nennung. Gängige Abkürzungen wie eGFR, CKD, TVT sind erlaubt, aber nicht jedes zweite Wort abkürzen. WICHTIG: Keine Vorschläge, Angebote oder Fragen am Ende der Antwort wie "Falls Sie möchten, kann ich..." oder "Soll ich auch...". Antworte nur auf die gestellte Frage und höre dann auf. Keine Wiederholung der Antwort in anderer Form (z.B. keine "Kurz:"-Zusammenfassung wenn die Antwort bereits kurz ist).'
 
-const STORAGE_KEY = 'arvis_chat_history'
-const MAX_MESSAGES = 18 // + 1 system + 1 user = 20 (limite edge function)
+const MAX_MESSAGES = 18
 
 function markdownToHtml(text) {
   return text.split('\n').map(line => {
-    // Escape HTML
     let h = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    // Horizontal rule
     if (/^---+$/.test(h.trim())) return '<hr style="border:none;border-top:1px solid var(--border);margin:12px 0">'
-    // Headers
     if (/^#{3,}\s/.test(h)) return `<div style="font-weight:700;font-size:14px;margin-top:12px;margin-bottom:4px">${h.replace(/^#{3,}\s*/, '')}</div>`
     if (/^##\s/.test(h)) return `<div style="font-weight:700;font-size:15px;margin-top:14px;margin-bottom:4px">${h.replace(/^##\s*/, '')}</div>`
     if (/^#\s/.test(h)) return `<div style="font-weight:800;font-size:16px;margin-top:16px;margin-bottom:6px">${h.replace(/^#\s*/, '')}</div>`
-    // Bold
     h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // Italic
     h = h.replace(/\*(.+?)\*/g, '<em>$1</em>')
-    // Inline code
     h = h.replace(/`([^`]+)`/g, '<code style="background:var(--bg);padding:2px 5px;border-radius:4px;font-size:13px">$1</code>')
-    // Bullet list
     if (/^\s*[-•]\s/.test(h)) return `<div style="padding-left:16px">${h.replace(/^\s*[-•]\s*/, '• ')}</div>`
-    // Empty line
     if (!h.trim()) return '<div style="height:8px"></div>'
     return h + '<br>'
   }).join('')
 }
 
 export default function Chat() {
-  const [messages, setMessages] = useState(() => {
-    try {
-      const saved = sessionStorage.getItem(STORAGE_KEY)
-      return saved ? JSON.parse(saved) : []
-    } catch { return [] }
-  })
+  const { user } = useAuth()
+  const [conversations, setConversations] = useState([])
+  const [activeId, setActiveId] = useState(null)
+  const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [listLoading, setListLoading] = useState(true)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+  const saveTimer = useRef(null)
 
-  // Persist to sessionStorage
+  // Load conversation list on mount
   useEffect(() => {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
-  }, [messages])
+    if (!user) return
+    supabase.from('chat_conversations')
+      .select('id, title, updated_at')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(50)
+      .then(({ data, error: err }) => {
+        if (err) { logError('Chat:loadList', err); setListLoading(false); return }
+        setConversations(data || [])
+        setListLoading(false)
+      })
+  }, [user])
 
   // Auto-scroll
   useEffect(() => {
@@ -57,6 +59,44 @@ export default function Chat() {
 
   // Focus input on mount
   useEffect(() => { inputRef.current?.focus() }, [])
+
+  // Save conversation to Supabase (debounced)
+  const saveConversation = useCallback((id, msgs) => {
+    if (!user || !id || msgs.length === 0) return
+    clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(async () => {
+      try {
+        const title = msgs.find(m => m.role === 'user')?.content?.slice(0, 60) || 'Chat'
+        await supabase.from('chat_conversations')
+          .update({ messages: msgs, title, updated_at: new Date().toISOString() })
+          .eq('id', id).eq('user_id', user.id)
+        setConversations(prev => {
+          const exists = prev.find(c => c.id === id)
+          if (exists) return prev.map(c => c.id === id ? { ...c, title, updated_at: new Date().toISOString() } : c)
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+          return [{ id, title, updated_at: new Date().toISOString() }, ...prev]
+        })
+      } catch (err) { logError('Chat:save', err) }
+    }, 800)
+  }, [user])
+
+  async function loadConversation(id) {
+    setActiveId(id)
+    setMessages([])
+    setError('')
+    const { data, error: err } = await supabase.from('chat_conversations')
+      .select('messages').eq('id', id).eq('user_id', user.id).single()
+    if (err) { logError('Chat:load', err); return }
+    setMessages(data?.messages || [])
+    inputRef.current?.focus()
+  }
+
+  async function startNewChat() {
+    setActiveId(null)
+    setMessages([])
+    setError('')
+    inputRef.current?.focus()
+  }
 
   async function handleSend() {
     const text = input.trim()
@@ -69,15 +109,25 @@ export default function Chat() {
     setMessages(updated)
     setLoading(true)
 
+    // Create conversation if new
+    let convId = activeId
+    if (!convId) {
+      try {
+        const { data, error: err } = await supabase.from('chat_conversations')
+          .insert({ user_id: user.id, title: text.slice(0, 60), messages: updated })
+          .select('id').single()
+        if (err) throw err
+        convId = data.id
+        setActiveId(convId)
+        setConversations(prev => [{ id: convId, title: text.slice(0, 60), updated_at: new Date().toISOString() }, ...prev])
+      } catch (err) {
+        logError('Chat:create', err)
+      }
+    }
+
     try {
-      // Build messages array: system + conversation (truncated to fit limit)
-      const history = updated.length > MAX_MESSAGES
-        ? updated.slice(-MAX_MESSAGES)
-        : updated
-      const apiMessages = [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...history
-      ]
+      const history = updated.length > MAX_MESSAGES ? updated.slice(-MAX_MESSAGES) : updated
+      const apiMessages = [{ role: 'system', content: SYSTEM_PROMPT }, ...history]
 
       const data = await invokeEdgeFunction('ai-chat', {
         model: 'gpt-5.4',
@@ -86,7 +136,9 @@ export default function Chat() {
       })
 
       const assistantMsg = { role: 'assistant', content: data.content || '' }
-      setMessages(prev => [...prev, assistantMsg])
+      const final = [...updated, assistantMsg]
+      setMessages(final)
+      if (convId) saveConversation(convId, final)
     } catch (err) {
       logError('Chat', err)
       const msg = err.message || ''
@@ -99,6 +151,8 @@ export default function Chat() {
       } else {
         setError(msg || 'Fehler bei der Verbindung. Bitte erneut versuchen.')
       }
+      // Still save what we have
+      if (convId) saveConversation(convId, updated)
     } finally {
       setLoading(false)
       inputRef.current?.focus()
@@ -112,11 +166,11 @@ export default function Chat() {
     }
   }
 
-  function handleClear() {
-    setMessages([])
-    sessionStorage.removeItem(STORAGE_KEY)
-    setError('')
-    inputRef.current?.focus()
+  async function handleDelete(id, e) {
+    e.stopPropagation()
+    await supabase.from('chat_conversations').delete().eq('id', id).eq('user_id', user.id)
+    setConversations(prev => prev.filter(c => c.id !== id))
+    if (activeId === id) { setActiveId(null); setMessages([]) }
   }
 
   return (
@@ -129,14 +183,39 @@ export default function Chat() {
           <h1 style={{ fontSize: 26, fontWeight: 800, fontFamily: "'Bricolage Grotesque', sans-serif", color: 'var(--text)', margin: 0 }}>Chat</h1>
           <p style={{ fontSize: 14, color: 'var(--text-3)', margin: '4px 0 0' }}>Medizinischer KI-Assistent</p>
         </div>
-        {messages.length > 0 && (
-          <button onClick={handleClear}
-            style={{ padding: '7px 14px', fontSize: 13, fontWeight: 600, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-            Neuer Chat
-          </button>
-        )}
+        <button onClick={startNewChat}
+          style={{ padding: '7px 14px', fontSize: 13, fontWeight: 600, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Neuer Chat
+        </button>
       </div>
+
+      {/* Conversation chips */}
+      {conversations.length > 0 && (
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0, paddingBottom: 10, scrollbarWidth: 'none' }}>
+          {conversations.map(c => (
+            <div key={c.id} onClick={() => loadConversation(c.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 10px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+                whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0,
+                background: activeId === c.id ? 'var(--orange-ghost)' : 'var(--card)',
+                color: activeId === c.id ? 'var(--orange)' : 'var(--text-2)',
+                border: `1px solid ${activeId === c.id ? 'var(--orange)' : 'var(--border)'}`,
+                transition: 'all 0.15s',
+                maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis'
+              }}>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title || 'Chat'}</span>
+              <svg onClick={(e) => handleDelete(c.id, e)} width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ flexShrink: 0, opacity: 0.4, cursor: 'pointer' }}
+                onMouseOver={e => e.currentTarget.style.opacity = 1} onMouseOut={e => e.currentTarget.style.opacity = 0.4}>
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Messages area */}
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 16, paddingRight: 12 }}>
