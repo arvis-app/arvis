@@ -711,7 +711,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   background: var(--orange); color: white;
 }
 .patient-name { font-size: 17px; font-weight: 600; color: var(--text); }
-.patient-note { font-size: 16px; color: var(--text-3); white-space: pre-line; overflow-wrap: break-word; }
+.patient-note { font-size: 16px; color: var(--text); white-space: pre-line; overflow-wrap: break-word; }
 
 /* Patient detail panel */
 .patient-detail {
@@ -935,7 +935,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   }
   .patient-room { grid-area: room; }
   .patient-name { grid-area: name; }
-  .patient-note { grid-area: note; padding-left: 0 !important; font-size: 15px; border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; color: var(--text-3); }
+  .patient-note { grid-area: note; padding-left: 0 !important; font-size: 15px; border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; color: var(--text); }
   /* Mobile-only + patient button */
   .patient-add-mobile { display: flex !important; }
   /* Force full width on dashboard cards */
