@@ -139,7 +139,7 @@ export default function Chat() {
       </div>
 
       {/* Messages area */}
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 16 }}>
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 16, paddingRight: 12 }}>
 
         {/* Empty state */}
         {messages.length === 0 && !loading && (
