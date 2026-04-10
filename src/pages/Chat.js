@@ -118,7 +118,8 @@ export default function Chat() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxWidth: 820, margin: '0 auto', padding: '0 16px' }}>
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, maxWidth: 820, width: '100%', margin: '0 auto', padding: '0 16px', overflow: 'hidden' }}>
 
       {/* Header */}
       <div style={{ padding: '24px 0 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -246,6 +247,7 @@ export default function Chat() {
           KI-Antworten können Fehler enthalten — kein Ersatz für klinische Entscheidungen.
         </div>
       </div>
+    </div>
     </div>
   )
 }
