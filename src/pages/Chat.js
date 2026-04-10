@@ -3,23 +3,31 @@ import { invokeEdgeFunction } from '../supabaseClient'
 import { logError } from '../utils/logger'
 import DOMPurify from 'dompurify'
 
-const SYSTEM_PROMPT = 'Du bist ein erfahrener Arzt und medizinischer Wissenschaftler. Du sprichst mit einem Arzt — Fachsprache ist erwünscht, Grundlagen müssen nicht erklärt werden. Antworte auf hohem medizinischen und wissenschaftlichen Niveau, aber prägnant und strukturiert. Beantworte genau das, was gefragt wird — nicht mehr. Bei offenen Fragen (z.B. nur ein Wirkstoffname) gib eine kompakte Übersicht (Wirkmechanismus, Indikationen, Dosierung, wichtigste Interaktionen/KI) in maximal 300 Wörtern. Längere Antworten nur wenn die Frage es erfordert.'
+const SYSTEM_PROMPT = 'Du bist ein erfahrener Arzt und medizinischer Wissenschaftler. Du sprichst mit einem Arzt — Fachsprache ist erwünscht, Grundlagen müssen nicht erklärt werden. Antworte auf hohem medizinischen und wissenschaftlichen Niveau, aber prägnant und strukturiert. Beantworte genau das, was gefragt wird — nicht mehr. Bei offenen Fragen (z.B. nur ein Wirkstoffname) gib eine kompakte Übersicht in maximal 300 Wörtern. Längere Antworten nur wenn die Frage es erfordert. STIL: Schreibe bevorzugt in Fließtext und kurzen Absätzen statt in Aufzählungen. Vermeide übermäßige Abkürzungen — schreibe z.B. "zweimal täglich" statt "bid", "nicht-valvuläres Vorhofflimmern" statt "NVAF" bei der ersten Nennung. Gängige Abkürzungen wie eGFR, CKD, TVT sind erlaubt, aber nicht jedes zweite Wort abkürzen.'
 
 const STORAGE_KEY = 'arvis_chat_history'
 const MAX_MESSAGES = 18 // + 1 system + 1 user = 20 (limite edge function)
 
 function markdownToHtml(text) {
-  let h = text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return text.split('\n').map(line => {
+    // Escape HTML
+    let h = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    // Headers
+    if (/^#{3,}\s/.test(h)) return `<div style="font-weight:700;font-size:14px;margin-top:12px;margin-bottom:4px">${h.replace(/^#{3,}\s*/, '')}</div>`
+    if (/^##\s/.test(h)) return `<div style="font-weight:700;font-size:15px;margin-top:14px;margin-bottom:4px">${h.replace(/^##\s*/, '')}</div>`
+    if (/^#\s/.test(h)) return `<div style="font-weight:800;font-size:16px;margin-top:16px;margin-bottom:6px">${h.replace(/^#\s*/, '')}</div>`
     // Bold
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     // Italic
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    h = h.replace(/\*(.+?)\*/g, '<em>$1</em>')
     // Inline code
-    .replace(/`([^`]+)`/g, '<code style="background:var(--bg);padding:2px 5px;border-radius:4px;font-size:13px">$1</code>')
-    // Line breaks
-    .replace(/\n/g, '<br>')
-  return h
+    h = h.replace(/`([^`]+)`/g, '<code style="background:var(--bg);padding:2px 5px;border-radius:4px;font-size:13px">$1</code>')
+    // Bullet list
+    if (/^\s*[-•]\s/.test(h)) return `<div style="padding-left:16px">${h.replace(/^\s*[-•]\s*/, '• ')}</div>`
+    // Empty line
+    if (!h.trim()) return '<div style="height:8px"></div>'
+    return h + '<br>'
+  }).join('')
 }
 
 export default function Chat() {
