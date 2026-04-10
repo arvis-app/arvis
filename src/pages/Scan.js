@@ -687,11 +687,11 @@ export default function Scan() {
 
   // ── Copy / Download ────────────────────────────────────────────────────────
   function copyResult() {
-    let text
     if (mode === 'ai') {
       const el = document.getElementById('aiSummaryDiv')
       if (!el) return
-      // Convertir les tables HTML en texte tabulé pour l'alignement dans ORBIS/KIS
+      const html = el.innerHTML
+      // Texte brut avec tableaux tabulés pour ORBIS/KIS
       const clone = el.cloneNode(true)
       clone.querySelectorAll('table').forEach(table => {
         const rows = []
@@ -702,11 +702,18 @@ export default function Scan() {
         pre.textContent = rows.join('\n')
         table.parentNode.replaceChild(pre, table)
       })
-      text = clone.innerText
+      const plainText = clone.innerText
+      // Copier en HTML + texte brut — Word/ORBIS reçoit le formatage
+      try {
+        navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([plainText], { type: 'text/plain' }),
+        })])
+      } catch { navigator.clipboard.writeText(plainText) }
     } else {
-      text = ocrText
+      if (ocrText) navigator.clipboard.writeText(ocrText)
     }
-    if (text) { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500) }
+    setCopied(true); setTimeout(() => setCopied(false), 1500)
   }
   async function downloadResult() {
     const text = mode === 'ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
