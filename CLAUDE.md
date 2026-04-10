@@ -348,6 +348,7 @@ Coupons auto-appliqués au checkout (priorité) :
 8. **CSP** : `unsafe-inline` retiré de `script-src` (gardé dans `style-src`), `frame-src` inclut `blob:` (PDFs Dateien), SRI sur PDF.js
 9. **Erreurs** : toujours `logError(context, error)` dans les catch — jamais `console.error` seul
 10. **Konto löschen** : edge function `delete-user-account` (Stripe + Storage + DB + Auth) — modale confirmation "LÖSCHEN" dans Profil.js
+11. **Blocklist emails jetables** : `src/utils/disposable-domains.js` — 300+ domaines temp mail bloqués à l'inscription (`isDisposableEmail()` appelé dans `register()` avant `signUp`). Erreur affichée dans le formulaire LoginPage. Pour ajouter un domaine : l'ajouter au `Set` dans le fichier
 
 ---
 
