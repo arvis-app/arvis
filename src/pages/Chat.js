@@ -36,6 +36,12 @@ export default function Chat() {
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const saveTimer = useRef(null)
+  const chipsRef = useRef(null)
+  const [showLeftArrow, setShowLeftArrow] = useState(false)
+  const [showRightArrow, setShowRightArrow] = useState(false)
+  const isDragging = useRef(false)
+  const dragStartX = useRef(0)
+  const dragScrollLeft = useRef(0)
 
   // Load conversation list on mount
   useEffect(() => {
@@ -173,6 +179,55 @@ export default function Chat() {
     if (activeId === id) { setActiveId(null); setMessages([]) }
   }
 
+  // Check if arrows should show
+  function updateArrows() {
+    const el = chipsRef.current
+    if (!el) return
+    setShowLeftArrow(el.scrollLeft > 4)
+    setShowRightArrow(el.scrollLeft < el.scrollWidth - el.clientWidth - 4)
+  }
+
+  useEffect(() => { updateArrows() }, [conversations, activeId])
+
+  function scrollChips(dir) {
+    chipsRef.current?.scrollBy({ left: dir * 200, behavior: 'smooth' })
+  }
+
+  // Drag-to-scroll handlers
+  function onDragStart(e) {
+    const el = chipsRef.current
+    if (!el) return
+    isDragging.current = true
+    dragStartX.current = e.clientX || e.touches?.[0]?.clientX || 0
+    dragScrollLeft.current = el.scrollLeft
+    el.style.cursor = 'grabbing'
+    el.style.userSelect = 'none'
+  }
+
+  function onDragMove(e) {
+    if (!isDragging.current) return
+    const x = e.clientX || e.touches?.[0]?.clientX || 0
+    chipsRef.current.scrollLeft = dragScrollLeft.current - (x - dragStartX.current)
+  }
+
+  function onDragEnd() {
+    if (!isDragging.current) return
+    isDragging.current = false
+    if (chipsRef.current) {
+      chipsRef.current.style.cursor = 'grab'
+      chipsRef.current.style.userSelect = ''
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener('mouseup', onDragEnd)
+    document.addEventListener('mousemove', onDragMove)
+    return () => {
+      document.removeEventListener('mouseup', onDragEnd)
+      document.removeEventListener('mousemove', onDragMove)
+    }
+  }, [])
+
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '0 28px 20px' }}>
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, maxWidth: 820, width: '100%', margin: '0 auto', padding: '0 16px', overflow: 'hidden' }}>
@@ -192,28 +247,43 @@ export default function Chat() {
 
       {/* Conversation chips */}
       {conversations.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0, paddingBottom: 10, scrollbarWidth: 'none' }}>
-          {conversations.map(c => (
-            <div key={c.id} onClick={() => loadConversation(c.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '6px 10px', borderRadius: 8, fontSize: 13, fontWeight: 500,
-                whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0,
-                background: activeId === c.id ? 'var(--orange-ghost)' : 'var(--card)',
-                color: activeId === c.id ? 'var(--orange)' : 'var(--text-2)',
-                border: `1px solid ${activeId === c.id ? 'var(--orange)' : 'var(--border)'}`,
-                transition: 'all 0.15s',
-                maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis'
-              }}>
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title || 'Chat'}</span>
-              <svg onClick={(e) => handleDelete(c.id, e)} width="12" height="12" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                style={{ flexShrink: 0, opacity: 0.4, cursor: 'pointer' }}
-                onMouseOver={e => e.currentTarget.style.opacity = 1} onMouseOut={e => e.currentTarget.style.opacity = 0.4}>
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </div>
-          ))}
+        <div style={{ position: 'relative', flexShrink: 0, paddingBottom: 10 }}>
+          {showLeftArrow && (
+            <button onClick={() => scrollChips(-1)} aria-label="Zurück"
+              style={{ position: 'absolute', left: 0, top: 0, bottom: 10, width: 28, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to right, var(--bg) 60%, transparent)', borderRadius: 0, padding: 0 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+          )}
+          {showRightArrow && (
+            <button onClick={() => scrollChips(1)} aria-label="Weiter"
+              style={{ position: 'absolute', right: 0, top: 0, bottom: 10, width: 28, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to left, var(--bg) 60%, transparent)', borderRadius: 0, padding: 0 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          )}
+          <div ref={chipsRef} onScroll={updateArrows} onMouseDown={onDragStart}
+            style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', cursor: 'grab', padding: '0 2px' }}>
+            {conversations.map(c => (
+              <div key={c.id} onClick={() => { if (!isDragging.current) loadConversation(c.id) }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '6px 10px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+                  whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0,
+                  background: activeId === c.id ? 'var(--orange-ghost)' : 'var(--card)',
+                  color: activeId === c.id ? 'var(--orange)' : 'var(--text-2)',
+                  border: `1px solid ${activeId === c.id ? 'var(--orange)' : 'var(--border)'}`,
+                  transition: 'all 0.15s',
+                  maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis'
+                }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title || 'Chat'}</span>
+                <svg onClick={(e) => handleDelete(c.id, e)} width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ flexShrink: 0, opacity: 0.4, cursor: 'pointer' }}
+                  onMouseOver={e => e.currentTarget.style.opacity = 1} onMouseOut={e => e.currentTarget.style.opacity = 0.4}>
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
