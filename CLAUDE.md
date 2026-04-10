@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 9 avril 2026 (nuit)_
+_Dernière mise à jour : 10 avril 2026_
 
 ---
 
@@ -41,6 +41,7 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 | **BriefSchreiber** | Rédige ou corrige des courriers médicaux professionnels en allemand via IA (arztbrief, Überweisung, etc.) |
 | **Bausteine** | Bibliothèque de 1 550 blocs de texte médicaux réutilisables, organisés par spécialité — permet d'assembler rapidement des comptes-rendus standardisés |
 | **Übersetzung** | Dictionnaire médical multilingue de 1 585 termes traduits en 6 langues (DE, FR, EN, AR, TR, RU) — pour communiquer avec des patients allophones |
+| **Chat** | Chat IA médical (GPT-5.4) — assistant Facharztniveau, historique persisté en Supabase, system prompt invisible |
 | **Dateien** | Gestionnaire de fichiers PDF/images — stockage Supabase Storage (bucket `user-files`, privé), organisation, accès rapide aux documents patients |
 | **Dashboard** | Vue d'ensemble : météo, agenda, gestion des patients |
 | **MobileScan** | Permet de scanner depuis le téléphone via QR code, en envoyant le document au PC |
@@ -132,6 +133,7 @@ arvis/
 │       ├── BriefSchreiber.js         ← Rédaction/correction IA courriers (Paywall)
 │       ├── Bausteine.js              ← 1550 blocs médicaux (Paywall)
 │       ├── Uebersetzung.js           ← 1585 termes 6 langues (Paywall)
+│       ├── Chat.js                   ← Chat IA médical GPT-5.4 (Paywall)
 │       ├── Dateien.js                ← Gestionnaire fichiers (Paywall)
 │       ├── Profil.js                 ← Profil + abonnement Stripe
 │       ├── AdminStats.js             ← KPIs admin (accès UUID-protégé)
@@ -165,6 +167,7 @@ arvis-app.de/scan           → Scan.js (PrivateRoute + Paywall)
 arvis-app.de/briefschreiber → BriefSchreiber.js (PrivateRoute + Paywall)
 arvis-app.de/bausteine      → Bausteine.js (PrivateRoute + Paywall)
 arvis-app.de/uebersetzung   → Uebersetzung.js (PrivateRoute + Paywall)
+arvis-app.de/chat           → Chat.js (PrivateRoute + Paywall)
 arvis-app.de/dateien        → Dateien.js (PrivateRoute + Paywall)
 arvis-app.de/profil         → Profil.js (PrivateRoute)
 arvis-app.de/impressum / /datenschutz / /agb → public
@@ -210,7 +213,9 @@ Prix : **29€/mois** (19€/mois pour les 3 premiers mois) (`price_1TFjM6FPxR7Q
 
 ### Autres tables (RLS activé sur toutes)
 
-`bausteine`, `user_bausteine_favs`, `folders`, `notes`, `events`, `patients`, `scan_sessions`, `stripe_events_failed`, `stripe_events_processed`, `bug_reports`
+`bausteine`, `user_bausteine_favs`, `chat_conversations`, `folders`, `notes`, `events`, `patients`, `scan_sessions`, `stripe_events_failed`, `stripe_events_processed`, `bug_reports`
+
+**`chat_conversations`** — historique des conversations chat IA. Colonnes : `id` (uuid PK), `user_id` (uuid FK auth.users ON DELETE CASCADE), `title` (text, 60 premiers caractères du 1er message), `messages` (jsonb, array de `{role, content}`), `created_at`, `updated_at`. RLS : `auth.uid() = user_id`. Index : `(user_id)`, `(user_id, updated_at desc)`.
 
 **`user_bausteine_favs`** — favoris Bausteine (standards ET custom). Colonnes : `user_id` (uuid), `baustein_id` (text, ex: `"auf_001"` ou UUID custom). Clé primaire composite `(user_id, baustein_id)`. RLS : `auth.uid() = user_id`.
 
@@ -406,7 +411,7 @@ Bouton "Jetzt upgraden" :
 - **Fichier init** : `src/index.js` — DSN via `VITE_SENTRY_DSN`, `environment: import.meta.env.MODE`
 - **Intégrations** : `browserTracingIntegration()` (perf, 20% sample) + `replayIntegration()` (replay vidéo sur erreur, 100%)
 - **Helper** : `src/utils/logger.js` → `logError(context, error, extra)` — à utiliser dans tous les `catch`
-- **Branché dans** : `supabaseClient.invokeEdgeFunction`, `Dashboard`, `Scan`, `AdminStats`, `Dateien`, `Bausteine`, `MobileScan`, `Paywall`, `ErrorBoundary`
+- **Branché dans** : `supabaseClient.invokeEdgeFunction`, `Dashboard`, `Scan`, `AdminStats`, `Dateien`, `Bausteine`, `MobileScan`, `Chat`, `Paywall`, `ErrorBoundary`
 - **Ne pas utiliser** `console.error` seul dans les catch — toujours passer par `logError()`
 
 ---
@@ -455,6 +460,21 @@ Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mod
 - **Abréviations** : `KI` après médicament + dose = Kurzinfusion (pas Kontraindikation)
 - **Ton** : Facharzt — concis, sachlich, pas de sur-explication (le lecteur est médecin)
 - Constructions-types fournies dans le prompt : Anamnese ("stellte sich vor… berichtet über…"), Befunde ("Die Untersuchung ergab…"), Procedere ("Es erfolgte… Der Patient erhielt…")
+
+## Chat — KI-Assistent
+
+- **Modèle** : `gpt-5.4` via edge function `ai-chat`, `max_tokens: 4000`
+- **System prompt** : invisible, prépendé à chaque requête — rôle Facharzt, Fachsprache, pas de suggestions/offres en fin de réponse, max 300 mots pour questions ouvertes, abréviations courantes OK mais pas excessives
+- **Historique** : persisté dans table `chat_conversations` (Supabase), max 18 derniers messages envoyés à l'API (limite edge function = 20 msgs)
+- **Sauvegarde** : debounced 800ms après chaque réponse IA, conversation créée au 1er message
+- **Conversation chips** : bandeau horizontal scrollable (flèches + drag-to-scroll pour souris), max 50 conversations chargées
+- **Bouton copier** : à côté de chaque bulle (gauche pour user, droite pour assistant), visible au hover desktop, toujours visible sur mobile (`@media (hover: none)`)
+- **Markdown** : `markdownToHtml()` gère #/##/###, bold, italic, inline code, bullet lists, `---` (hr), lignes vides
+- **HTML** : `DOMPurify.sanitize()` sur toutes les réponses assistant
+- **Layout** : `position: absolute; inset: 0` pour éviter conflit scroll avec `.main-content`
+- **CSS** : classes `chat-dot`, `chat-copy-btn`, `chat-msg-row`, `chat-new-btn` dans `App.css`
+- **Erreurs** : gestion spécifique limit_reached, rate_limited, session expirée dans le catch
+- **Suppression conversation** : icône × sur chaque chip, supprime en Supabase avec `.eq('user_id', user.id)`
 
 ## MobileScan — UX
 
