@@ -33,6 +33,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [listLoading, setListLoading] = useState(true)
+  const [copiedIdx, setCopiedIdx] = useState(null)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const saveTimer = useRef(null)
@@ -305,6 +306,7 @@ export default function Chat() {
         {messages.map((msg, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
             <div style={{
+              position: 'relative',
               maxWidth: '85%',
               padding: '12px 16px',
               borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
@@ -317,6 +319,24 @@ export default function Chat() {
               boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.04)' : 'none',
               wordBreak: 'break-word',
             }}>
+              <button onClick={() => { navigator.clipboard.writeText(msg.content); setCopiedIdx(i); setTimeout(() => setCopiedIdx(null), 1500) }}
+                title="Kopieren"
+                style={{
+                  position: 'absolute', top: 6, right: 6,
+                  width: 26, height: 26, borderRadius: 6, border: 'none',
+                  background: copiedIdx === i ? (msg.role === 'user' ? 'rgba(255,255,255,0.3)' : 'var(--bg-3)') : 'transparent',
+                  color: msg.role === 'user' ? 'rgba(255,255,255,0.7)' : 'var(--text-3)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  opacity: copiedIdx === i ? 1 : 0, transition: 'opacity 0.15s',
+                  padding: 0
+                }}
+                className="chat-copy-btn"
+              >
+                {copiedIdx === i
+                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                }
+              </button>
               {msg.role === 'user'
                 ? msg.content
                 : <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(markdownToHtml(msg.content)) }} />
