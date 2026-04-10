@@ -439,7 +439,8 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Tableau médication** : 3 colonnes `| Medikament (Dosis) | morgens-mittags-abends | ggf. Dauer |` — pas de colonne nachts si 0, pas de Darreichungsform (pas de "Tabletten", "retard", etc.)
 - **Diagnosen** : reprise **verbatim** du document — aucune numérotation, aucune abréviation, aucune omission. Toutes les Diagnosen présentes doivent figurer, groupées en "Hauptdiagnose(n)" et "Weitere Diagnose(n)". Une par ligne, sans tiret ni bullet.
 - **Médication** : exhaustive — chaque médicament du document doit apparaître dans le tableau, même si incomplet ou lisible partiellement.
-- **Copie ORBIS** : `copyResult()` convertit les tableaux HTML en texte tab-separated (colonnes alignées dans les systèmes hospitaliers)
+- **Copie** : `copyResult()` utilise `ClipboardItem` avec `text/html` + `text/plain` — collage dans Word conserve gras, titres, tableaux, espacement. Collage dans ORBIS/KIS reçoit le texte brut avec tableaux tab-separated. Fallback `writeText` si `ClipboardItem` non supporté
+- **Word** : `downloadAsWord()` (dans `src/utils/downloadWord.js`) parse le HTML du `aiSummaryDiv` — titres en vrais Heading Word, **bold** conservé, tableaux avec bordures, listes à puces, espacement. Mode OCR/Brief = texte brut simple
 
 ## Scan — Historique de session
 
