@@ -283,9 +283,9 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
             <input className="mini-input" type="text" placeholder="Name, Vorname" value={detailName} onChange={e => setDetailName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
           </div>
           <textarea className="mini-input" placeholder="Notiz..." rows={1} value={detailNote} onChange={e => setDetailNote(e.target.value)} style={{ resize: 'none', lineHeight: 1.5, margin: 0, overflow: 'hidden', fontSize: 16 }} ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } }} onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <button className="btn-action" onClick={handleSave} style={{ fontSize: 16, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Speichern</button>
-            <button className="btn-danger" onClick={() => setConfirmDel(selected)} style={{ fontSize: 16, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3V6zm2 3h14l-1.5 13a2 2 0 0 1-2 1.5h-7A2 2 0 0 1 6.5 22L5 9zm3-5h8v2H8V4z"/></svg></button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-action" onClick={handleSave} style={{ fontSize: 16, height: 40, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Speichern</button>
+            <button className="btn-danger" onClick={() => setConfirmDel(selected)} style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9 1a1 1 0 0 0-1 1v1H4a1 1 0 0 0 0 2h1v14a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V5h1a1 1 0 1 0 0-2h-4V2a1 1 0 0 0-1-1H9zm0 2h6v1H9V3z"/></svg></button>
           </div>
         </div>
       )}
