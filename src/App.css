@@ -704,13 +704,11 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .patient-row.selected { background: var(--orange-ghost); border-color: rgba(217,75,10,0.2); }
 
 .patient-room {
-  display: inline-flex; align-items: center; justify-content: center;
-  background: var(--bg-3); color: var(--text-2);
   font-size: 16px; font-weight: 700;
-  padding: 4px 10px; border-radius: 8px;
+  color: var(--text-2);
 }
 .patient-row.selected .patient-room {
-  background: var(--orange); color: white;
+  color: var(--orange);
 }
 .patient-name { font-size: 17px; font-weight: 600; color: var(--text); }
 .patient-note { font-size: 16px; color: var(--text); white-space: pre-line; overflow-wrap: break-word; }

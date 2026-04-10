@@ -247,7 +247,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
       <div className="patient-thead">
         <span>Zi.</span>
         <span>Name</span>
-        <span style={{ paddingLeft: 12 }}>Notiz</span>
+        <span>Notiz</span>
       </div>
       <div id="patientList">
         {patients.length === 0 && <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)', fontSize: 15, fontStyle: 'italic' }}>Keine Patienten</div>}
