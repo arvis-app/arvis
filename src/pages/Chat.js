@@ -250,13 +250,13 @@ export default function Chat() {
         <div style={{ position: 'relative', flexShrink: 0, paddingBottom: 10 }}>
           {showLeftArrow && (
             <button onClick={() => scrollChips(-1)} aria-label="Zurück"
-              style={{ position: 'absolute', left: -2, top: 0, bottom: 10, width: 64, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: 4, background: 'linear-gradient(to right, var(--bg) 60%, transparent)', borderRadius: 0 }}>
+              style={{ position: 'absolute', left: -2, top: 0, bottom: 10, width: 64, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: 4, background: 'linear-gradient(to right, var(--bg) 40%, transparent)', borderRadius: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
           )}
           {showRightArrow && (
             <button onClick={() => scrollChips(1)} aria-label="Weiter"
-              style={{ position: 'absolute', right: -2, top: 0, bottom: 10, width: 64, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 4, background: 'linear-gradient(to left, var(--bg) 60%, transparent)', borderRadius: 0 }}>
+              style={{ position: 'absolute', right: -2, top: 0, bottom: 10, width: 64, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 4, background: 'linear-gradient(to left, var(--bg) 40%, transparent)', borderRadius: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           )}
