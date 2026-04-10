@@ -89,7 +89,6 @@ export default function Chat() {
 
   async function loadConversation(id) {
     setActiveId(id)
-    setMessages([])
     setError('')
     const { data, error: err } = await supabase.from('chat_conversations')
       .select('messages').eq('id', id).eq('user_id', user.id).single()
