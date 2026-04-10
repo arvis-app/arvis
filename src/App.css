@@ -31,11 +31,10 @@
 html { height: 100%; } body { min-height: 100%; }
 body {
   font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
+  font-weight: 400;
   background: var(--bg);
   color: var(--text);
 }
-strong, b { font-weight: 800; }
 
 /* ═══════════════════════════════════
    LOGIN PAGE
