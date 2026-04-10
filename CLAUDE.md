@@ -117,11 +117,11 @@ git add <fichiers> && git commit -m "..." && git push   # deploy Vercel auto
 arvis/
 ├── public/landing_page.html          ← Landing page statique (Vercel route /) — hero : 1 seul bouton CTA "Jetzt kostenlos testen" (le bouton "Demo ansehen" a été supprimé)
 ├── src/
-│   ├── App.js                        ← Routes + PrivateRoute + PublicRoute
+│   ├── App.js                        ← Routes + PrivateRoute + PublicRoute + preloadPage()
 │   ├── supabaseClient.js             ← Client Supabase + invokeEdgeFunction()
 │   ├── context/AuthContext.js        ← Auth state, profil, isPro, refreshProfile()
 │   ├── components/
-│   │   ├── AppLayout.js              ← Sidebar + topbar + Bug melden modal
+│   │   ├── AppLayout.js              ← Sidebar (ordre : Dashboard, Scan, Brief, Chat, Bausteine, Übersetzung | Dateien) + topbar + Bug melden modal
 │   │   ├── Paywall.js                ← Bloque accès si pas Pro
 │   │   ├── ErrorBoundary.js          ← Capture les erreurs React
 │   │   └── ResetPasswordModal.js     ← Modale reset mot de passe
@@ -131,9 +131,9 @@ arvis/
 │       ├── Scan.js                   ← Scan + OCR + KI-Analyse (Paywall)
 │       ├── MobileScan.js             ← Scan via QR code (téléphone)
 │       ├── BriefSchreiber.js         ← Rédaction/correction IA courriers (Paywall)
+│       ├── Chat.js                   ← Chat IA médical GPT-5.4 (Paywall)
 │       ├── Bausteine.js              ← 1550 blocs médicaux (Paywall)
 │       ├── Uebersetzung.js           ← 1585 termes 6 langues (Paywall)
-│       ├── Chat.js                   ← Chat IA médical GPT-5.4 (Paywall)
 │       ├── Dateien.js                ← Gestionnaire fichiers (Paywall)
 │       ├── Profil.js                 ← Profil + abonnement Stripe
 │       ├── AdminStats.js             ← KPIs admin (accès UUID-protégé)
@@ -165,9 +165,9 @@ arvis-app.de/reset-password → ResetPasswordPage.js (public)
 arvis-app.de/dashboard      → Dashboard.js (PrivateRoute)
 arvis-app.de/scan           → Scan.js (PrivateRoute + Paywall)
 arvis-app.de/briefschreiber → BriefSchreiber.js (PrivateRoute + Paywall)
+arvis-app.de/chat           → Chat.js (PrivateRoute + Paywall)
 arvis-app.de/bausteine      → Bausteine.js (PrivateRoute + Paywall)
 arvis-app.de/uebersetzung   → Uebersetzung.js (PrivateRoute + Paywall)
-arvis-app.de/chat           → Chat.js (PrivateRoute + Paywall)
 arvis-app.de/dateien        → Dateien.js (PrivateRoute + Paywall)
 arvis-app.de/profil         → Profil.js (PrivateRoute)
 arvis-app.de/impressum / /datenschutz / /agb → public
@@ -375,7 +375,7 @@ Bouton "Jetzt upgraden" :
 4. **Aucun médicament ni dose** dans les bausteine — classes thérapeutiques uniquement
 5. Placeholders dans les bausteine : `[_]`
 6. Deploy : `git push` → Vercel auto-deploy
-7. **Code splitting** : `React.lazy()` sur toutes les pages sauf Dashboard et LoginPage — `ErrorBoundary` sur les routes sensibles
+7. **Code splitting** : `React.lazy()` sur toutes les pages sauf Dashboard et LoginPage — `ErrorBoundary` sur les routes sensibles. **Preload au hover** : `preloadPage(path)` exporté depuis `App.js`, appelé `onMouseEnter` sur les NavLinks sidebar → le chunk est téléchargé avant le clic
 8. **Offline** : bannière "Keine Internetverbindung" dans AppLayout.js
 9. **Tests** : `npm test` → Vitest (jsdom), 40+ tests unitaires — CI via `.github/workflows/ci.yml`
 
