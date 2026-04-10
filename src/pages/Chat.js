@@ -250,14 +250,14 @@ export default function Chat() {
         <div style={{ position: 'relative', flexShrink: 0, paddingBottom: 10 }}>
           {showLeftArrow && (
             <button onClick={() => scrollChips(-1)} aria-label="Zurück"
-              style={{ position: 'absolute', left: 0, top: 0, bottom: 10, width: 28, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to right, var(--bg) 60%, transparent)', borderRadius: 0, padding: 0 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              style={{ position: 'absolute', left: 0, top: 0, bottom: 10, width: 44, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to right, var(--bg) 70%, transparent)', borderRadius: 0, padding: 0 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
           )}
           {showRightArrow && (
             <button onClick={() => scrollChips(1)} aria-label="Weiter"
-              style={{ position: 'absolute', right: 0, top: 0, bottom: 10, width: 28, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to left, var(--bg) 60%, transparent)', borderRadius: 0, padding: 0 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              style={{ position: 'absolute', right: 0, top: 0, bottom: 10, width: 44, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to left, var(--bg) 70%, transparent)', borderRadius: 0, padding: 0 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           )}
           <div ref={chipsRef} onScroll={updateArrows} onMouseDown={onDragStart}
