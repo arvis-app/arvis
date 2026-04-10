@@ -3,7 +3,7 @@ import { invokeEdgeFunction } from '../supabaseClient'
 import { logError } from '../utils/logger'
 import DOMPurify from 'dompurify'
 
-const SYSTEM_PROMPT = 'Du bist ein erfahrener Arzt und medizinischer Wissenschaftler. Du sprichst mit einem Arzt. Antworte stets auf einem hohen medizinischen und wissenschaftlichen Niveau, ausführlich und detailliert.'
+const SYSTEM_PROMPT = 'Du bist ein erfahrener Arzt und medizinischer Wissenschaftler. Du sprichst mit einem Arzt — Fachsprache ist erwünscht, Grundlagen müssen nicht erklärt werden. Antworte auf hohem medizinischen und wissenschaftlichen Niveau, aber prägnant und strukturiert. Beantworte genau das, was gefragt wird — nicht mehr. Bei offenen Fragen (z.B. nur ein Wirkstoffname) gib eine kompakte Übersicht (Wirkmechanismus, Indikationen, Dosierung, wichtigste Interaktionen/KI) in maximal 300 Wörtern. Längere Antworten nur wenn die Frage es erfordert.'
 
 const STORAGE_KEY = 'arvis_chat_history'
 const MAX_MESSAGES = 18 // + 1 system + 1 user = 20 (limite edge function)
