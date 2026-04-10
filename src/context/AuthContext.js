@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase, invokeEdgeFunction } from '../supabaseClient'
+import { isDisposableEmail } from '../utils/disposable-domains'
 
 const AuthContext = createContext(null)
 
@@ -167,6 +168,9 @@ export function AuthProvider({ children }) {
   }
 
   async function register(email, password, firstName, lastName) {
+    if (isDisposableEmail(email)) {
+      throw new Error('Bitte verwenden Sie eine permanente E-Mail-Adresse. Wegwerf-E-Mails sind nicht erlaubt.')
+    }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
