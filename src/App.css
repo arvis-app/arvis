@@ -481,6 +481,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 
 /* Main content */
 .main-content {
+  position: relative;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 28px;
