@@ -322,7 +322,7 @@ export default function Chat() {
               <button onClick={() => { navigator.clipboard.writeText(msg.content); setCopiedIdx(i); setTimeout(() => setCopiedIdx(null), 1500) }}
                 title="Kopieren"
                 style={{
-                  position: 'absolute', top: 10, right: 8,
+                  position: 'absolute', top: 10, right: 10,
                   width: 30, height: 30, borderRadius: 7, border: 'none',
                   background: copiedIdx === i ? (msg.role === 'user' ? 'rgba(255,255,255,0.3)' : 'var(--bg-3)') : 'transparent',
                   color: msg.role === 'user' ? 'rgba(255,255,255,0.7)' : 'var(--text-3)',
