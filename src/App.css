@@ -509,11 +509,6 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   background: var(--bg);
   box-sizing: border-box;
 }
-.main-content::after {
-  content: '';
-  display: block;
-  height: 20px;
-}
 
 .page { display: block; }
 .page.active { display: block; }
@@ -1533,9 +1528,8 @@ a.nav-item:hover { background: var(--bg-3); color: var(--text); }
 /* Scan layout padding */
 .scan-steps { width: 100%; box-sizing: border-box; }
 .scan-layout { margin: 0; }
-.main-content:has(.scan-layout)::after { display: none; }
 
-.brief-layout { margin: 0 0 28px; }
+.brief-layout { margin: 0; }
 
 /* Sidebar collapse */
 .app-layout.sidebar-collapsed {
