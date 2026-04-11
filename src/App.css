@@ -286,7 +286,6 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   display: grid;
   grid-template-columns: 240px 1fr;
   grid-template-rows: 60px 1fr;
-  min-height: 100vh;
   transition: grid-template-columns 0.25s ease;
 }
 .app-layout.sidebar-collapsed {
@@ -412,8 +411,22 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 
 /* Sidebar */
 .sidebar-col {
+  position: relative;
+}
+.sidebar-col::before {
+  content: '';
+  position: fixed;
+  left: 0;
+  top: 60px;
+  bottom: 0;
+  width: 240px;
   background: var(--bg-2);
   border-right: 1px solid var(--border);
+  z-index: -1;
+  pointer-events: none;
+}
+.app-layout.sidebar-collapsed .sidebar-col::before {
+  display: none;
 }
 .sidebar {
   padding: 20px 0;
@@ -852,6 +865,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
     height: auto; min-height: 100vh;
     overflow: visible;
   }
+  .sidebar-col::before { display: none; }
 
   /* Topbar */
   .topbar, .app-layout.sidebar-collapsed .topbar { position: sticky; top: 0; z-index: 100; padding: 0 16px; gap: 10px; }
