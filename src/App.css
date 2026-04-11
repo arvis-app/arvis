@@ -416,6 +416,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   position: sticky;
   top: 60px;
   height: calc(100vh - 60px);
+  min-height: 400px;
   align-self: start;
 }
 
