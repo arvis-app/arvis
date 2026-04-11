@@ -214,6 +214,7 @@ export default function AppLayout() {
       {mobileOpen && <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />}
 
       {/* Sidebar */}
+      <div className="sidebar-col">
       <aside className="sidebar">
         <div className="sidebar-section-title">Hauptmenü</div>
         {navItems.map(item => (
@@ -265,6 +266,7 @@ export default function AppLayout() {
           </div>
         </div>
       </aside>
+      </div>
 
       {/* Main content */}
       <main className="main-content">
