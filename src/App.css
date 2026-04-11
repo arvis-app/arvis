@@ -35,7 +35,6 @@ body {
   font-weight: 400;
   background: var(--bg);
   color: var(--text);
-  overflow: clip;
 }
 
 /* ═══════════════════════════════════
