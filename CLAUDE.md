@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 10 avril 2026_
+_Dernière mise à jour : 11 avril 2026_
 
 ---
 
@@ -39,7 +39,7 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 |----------------|-------------|
 | **Scan / OCR + KI-Analyse** | Scanne un document médical via GPT-4o Vision (pas de Tesseract) — extraction texte OCR et analyse IA structurée en allemand |
 | **BriefSchreiber** | Rédige ou corrige des courriers médicaux professionnels en allemand via IA (arztbrief, Überweisung, etc.) |
-| **Bausteine** | Bibliothèque de 1 550 blocs de texte médicaux réutilisables, organisés par spécialité — permet d'assembler rapidement des comptes-rendus standardisés |
+| **Bausteine** | Bibliothèque de 1 564 blocs de texte médicaux réutilisables, organisés par spécialité — permet d'assembler rapidement des comptes-rendus standardisés |
 | **Übersetzung** | Dictionnaire médical multilingue de 1 585 termes traduits en 6 langues (DE, FR, EN, AR, TR, RU) — pour communiquer avec des patients allophones |
 | **Chat** | Chat IA médical (GPT-5.4) — assistant Facharztniveau, historique persisté en Supabase, system prompt invisible |
 | **Dateien** | Gestionnaire de fichiers PDF/images — stockage Supabase Storage (bucket `user-files`, privé), organisation, accès rapide aux documents patients |
@@ -132,7 +132,7 @@ arvis/
 │       ├── MobileScan.js             ← Scan via QR code (téléphone)
 │       ├── BriefSchreiber.js         ← Rédaction/correction IA courriers (Paywall)
 │       ├── Chat.js                   ← Chat IA médical GPT-5.4 (Paywall)
-│       ├── Bausteine.js              ← 1550 blocs médicaux (Paywall)
+│       ├── Bausteine.js              ← 1564 blocs médicaux (Paywall)
 │       ├── Uebersetzung.js           ← 1585 termes 6 langues (Paywall)
 │       ├── Dateien.js                ← Gestionnaire fichiers (Paywall)
 │       ├── Profil.js                 ← Profil + abonnement Stripe
