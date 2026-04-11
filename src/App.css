@@ -288,7 +288,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .app-layout {
   display: grid;
   grid-template-columns: 240px 1fr;
-  grid-template-rows: 60px minmax(0, 1fr);
+  grid-template-rows: 60px 1fr;
   min-height: 100vh;
   transition: grid-template-columns 0.25s ease;
 }
