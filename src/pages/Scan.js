@@ -923,7 +923,7 @@ export default function Scan() {
                   </button>
                 </div>
                 <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} style={{ background: '#1C1C1E', color: 'white', border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>
-                  Weiter zur Anonymisierung
+                  Analysieren
                 </button>
               </div>
               {/* Document viewer */}
@@ -1095,8 +1095,8 @@ export default function Scan() {
             </button>
             {/* Fertig */}
             <button onClick={handleMobileFinish}
-              style={{ padding: '14px', borderRadius: 12, border: 'none', background: '#D94B0A', color: 'white', fontSize: 17, fontWeight: 600, cursor: 'pointer' }}>
-              Fertig — {mobilePhotos.length} Seite{mobilePhotos.length > 1 ? 'n' : ''} analysieren
+              style={{ padding: '14px', borderRadius: 12, border: 'none', background: '#1C1C1E', color: 'white', fontSize: 17, fontWeight: 600, cursor: 'pointer' }}>
+              Weiter zur Anonymisierung
             </button>
             {/* Abbrechen */}
             <button onClick={() => { setShowMobileMultiUI(false); setMobilePhotos([]) }}
