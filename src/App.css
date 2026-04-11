@@ -288,6 +288,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   grid-template-rows: 60px 1fr;
   min-height: 100vh;
   transition: grid-template-columns 0.25s ease;
+  overflow-x: clip;
 }
 .app-layout.sidebar-collapsed {
   grid-template-columns: 0px 1fr;
