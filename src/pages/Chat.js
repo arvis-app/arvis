@@ -239,7 +239,7 @@ export default function Chat() {
           <p style={{ fontSize: 14, color: 'var(--text-3)', margin: '4px 0 0' }}>Medizinischer KI-Assistent</p>
         </div>
         <button onClick={startNewChat} className="chat-new-btn"
-          style={{ padding: '7px 14px', fontSize: 13, fontWeight: 600, border: '1px solid var(--text-3)', borderRadius: 8, background: 'var(--bg)', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'border-color 0.15s, background 0.15s' }}>
+          style={{ padding: '7px 14px', fontSize: 13, fontWeight: 600, border: 'none', borderRadius: 8, background: 'var(--bg)', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Neuer Chat
         </button>
