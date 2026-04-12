@@ -28,7 +28,7 @@
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
-html { height: 100%; } body { height: 100%; overflow: hidden; }
+html { height: 100%; overflow: clip; } body { height: 100%; overflow: clip; }
 body {
   font-family: 'DM Sans', sans-serif;
   font-weight: 400;
