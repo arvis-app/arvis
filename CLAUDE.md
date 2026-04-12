@@ -404,7 +404,9 @@ Bouton "Jetzt upgraden" :
 18. **Profil "Kein Titel"** : `profile.title` est `""` (empty string) quand l'utilisateur choisit "Kein Titel". Utiliser `??` (nullish coalescing) et non `||` pour le fallback — `||` traite `""` comme falsy et remet "Dr.".
 19. **Dateien preview blanc** : le bucket `user-files` est **privé** — les public URLs (`getPublicUrl`) retournent 400. Les signed URLs (`createSignedUrl`) fonctionnent côté serveur mais ont des problèmes de timing React. Solution : `supabase.storage.download()` → `URL.createObjectURL(blob)` (blob URLs locales). Ne jamais revenir sur signed URLs ou public URLs.
 20. **Scan bouton direct (sans QR)** : le bouton "Weiter" dans Scan mobile direct (pas MobileScan QR) doit être noir `#1C1C1E` avec label "Weiter zur Anonymisierung" — même style que le scan via QR code.
-21. **Screenshots propres pour vidéo promo** : utiliser **Chrome DevTools** (pas Safari — Safari étend les scroll containers et produit des captures trop longues). Méthode : clic droit sur l'élément → "Capture node screenshot". Le CSS critique est sur `.app-layout` : `min-height: 100vh` (le contenu s'étend naturellement) + `overflow-x: clip` (empêche le débordement horizontal des tableaux IA). `.result-text` a aussi `overflow-x: auto; max-width: 100%` pour contenir les tableaux de médication générés par l'IA (`white-space: nowrap` sur les `<td>`). Ne jamais mettre `height: 100vh` sur `.app-layout` — ça coupe le contenu. Ne jamais mettre `overflow: hidden/clip` sur `html`/`body` — ça casse le scroll mobile.
+21. **Screenshots propres pour vidéo promo** : utiliser **Chrome DevTools** (pas Safari — Safari étend les scroll containers et produit des captures trop longues). Méthode : clic droit sur l'élément → "Capture node screenshot". CSS critique : `.app-layout { min-height: 100vh; overflow-x: clip }` + `.result-text { overflow-x: auto; max-width: 100% }`. Ne jamais mettre `height: 100vh` sur `.app-layout` ni `overflow: hidden/clip` sur `html`/`body`.
+22. **Scan — barre d'étapes supprimée** : la barre horizontale "Dokument laden → Anonymisieren → Analysieren → Ergebnis" a été supprimée — redondante (le contenu montre l'étape active). Le flow est intuitif sans elle. Ne pas la remettre.
+23. **Alignement vertical des panneaux** : les panneaux de toutes les pages doivent avoir leur **bordure basse au même niveau**. BriefSchreiber : `.brief-panel { height: calc(100vh - 280px) }`. Scan : `#panelUpload { height: calc(100vh - 222px) }` (58px de moins car pas de `.brief-modes`). `.scan-layout { align-items: stretch }` pour que la colonne droite s'étire. Si on ajoute/supprime un élément au-dessus des panneaux → ajuster le `calc()` pour réaligner les bas.
 
 ---
 
@@ -447,7 +449,7 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 
 - **Stocké dans** `arvis_scan_history` (sessionStorage, max 5 entrées)
 - **Structure** : `{ id, time, label, aiHtml, ocrText, mode, thumb }` — `thumb` = miniature JPEG 300px wide du document scanné
-- **UI** : chips horizontaux au-dessus des scan-steps, visibles dès le 2e scan
+- **UI** : chips horizontaux au-dessus du scan-layout, visibles dès le 2e scan
 - **Au clic** : restaure aiHtml + ocrText + miniature dans le panneau preview → pas de rescan nécessaire
 - **Effacé** à la fermeture de l'onglet (sessionStorage)
 - **Min-height résultat** : `minHeight: 900` sur le panneau résultat quand affiché (évite résultat trop court en paysage)
