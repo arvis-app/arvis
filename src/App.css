@@ -286,9 +286,9 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   display: grid;
   grid-template-columns: 240px 1fr;
   grid-template-rows: 60px 1fr;
-  height: 100vh;
+  min-height: 100vh;
   transition: grid-template-columns 0.25s ease;
-  overflow: clip;
+  overflow-x: clip;
 }
 .app-layout.sidebar-collapsed {
   grid-template-columns: 0px 1fr;
