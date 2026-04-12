@@ -188,6 +188,8 @@ export default function Scan() {
   const [qrUrl, setQrUrl] = useState('')
   const [scanChannel, setScanChannel] = useState(null)
   const [mobileTransferring, setMobileTransferring] = useState(false)
+  const [qrExpired, setQrExpired] = useState(false)
+  const qrTimeoutRef = useRef(null)
 
   // PDF state
   const pdfDocRef = useRef(null)
@@ -279,7 +281,14 @@ export default function Scan() {
     const mobileUrl = `${window.location.origin}/mobile-scan/${scanToken}`
     setQrUrl(mobileUrl)
     setShowDesktopScanOptions(false)
+    setQrExpired(false)
     setShowQrModal(true)
+
+    // Timeout = même durée que l'expiration du token (10 min)
+    if (qrTimeoutRef.current) clearTimeout(qrTimeoutRef.current)
+    qrTimeoutRef.current = setTimeout(() => {
+      setQrExpired(true)
+    }, 10 * 60 * 1000)
 
     const channel = supabase
       .channel(`scan_${scanToken}`)
@@ -290,6 +299,7 @@ export default function Scan() {
         filter: `token=eq.${scanToken}`
       }, async (payload) => {
         if (payload.new.status === 'completed' && payload.new.image_url) {
+          clearTimeout(qrTimeoutRef.current)
           setShowQrModal(false)
           setMobileTransferring(true)
           channel.unsubscribe()
@@ -1143,13 +1153,30 @@ export default function Scan() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: 'white', borderRadius: 16, padding: 32, width: 340, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
             <div style={{ fontSize: 19, fontWeight: 700, color: '#1C1C1E' }}>Mit Handy fotografieren</div>
-            <div style={{ fontSize: 15, color: '#8E8E93' }}>QR-Code mit Ihrem Handy scannen</div>
-            <QRCodeSVG value={qrUrl} size={200} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, color: '#D94B0A', fontWeight: 600 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#D94B0A', animation: 'pulse 1.5s infinite' }} />
-              Warte auf Foto…
-            </div>
-            <button onClick={() => { setShowQrModal(false); scanChannel?.unsubscribe() }}
+            {qrExpired ? (
+              <>
+                <div style={{ fontSize: 15, color: '#FF3B30', fontWeight: 600 }}>
+                  QR-Code abgelaufen
+                </div>
+                <div style={{ fontSize: 14, color: '#8E8E93', lineHeight: 1.4 }}>
+                  Die Sitzung ist nach 10 Minuten abgelaufen. Bitte erneut versuchen.
+                </div>
+                <button onClick={() => { scanChannel?.unsubscribe(); startMobileScan() }}
+                  style={{ padding: '12px 24px', borderRadius: 10, border: 'none', background: '#D94B0A', color: 'white', fontSize: 16, fontWeight: 600, cursor: 'pointer', width: '100%' }}>
+                  Neuen QR-Code erstellen
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 15, color: '#8E8E93' }}>QR-Code mit Ihrem Handy scannen</div>
+                <QRCodeSVG value={qrUrl} size={200} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, color: '#D94B0A', fontWeight: 600 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#D94B0A', animation: 'pulse 1.5s infinite' }} />
+                  Warte auf Foto…
+                </div>
+              </>
+            )}
+            <button onClick={() => { setShowQrModal(false); scanChannel?.unsubscribe(); clearTimeout(qrTimeoutRef.current) }}
               className="scan-options-cancel">
               Abbrechen
             </button>
