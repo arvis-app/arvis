@@ -28,7 +28,7 @@
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
-html { height: 100%; overflow: clip; } body { height: 100%; overflow: clip; }
+html { height: 100%; } body { min-height: 100%; }
 body {
   font-family: 'DM Sans', sans-serif;
   font-weight: 400;
@@ -288,7 +288,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   grid-template-rows: 60px 1fr;
   height: 100vh;
   transition: grid-template-columns 0.25s ease;
-  overflow-x: clip;
+  overflow: clip;
 }
 .app-layout.sidebar-collapsed {
   grid-template-columns: 0px 1fr;
