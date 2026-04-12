@@ -806,19 +806,6 @@ export default function Scan() {
         </div>
       )}
 
-      {/* Steps */}
-      <div className="scan-steps">
-        {['Dokument laden', 'Anonymisieren', 'Analysieren', 'Ergebnis'].flatMap((label, i) => {
-          const el = (
-            <div key={`s${i}`} className={`scan-step${step === i + 1 ? ' active' : step > i + 1 ? ' done' : ''}`} id={`step${i + 1}`}>
-              <div className="scan-step-num">{step > i + 1 ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="square" strokeLinejoin="miter"><polyline points="20 6 9 17 4 12" /></svg> : i + 1}</div>
-              <div className="scan-step-label">{label}</div>
-            </div>
-          )
-          return i < 3 ? [el, <div key={`l${i}`} className="scan-step-line" />] : [el]
-        })}
-      </div>
-
       {/* Main layout */}
       <div className="scan-layout">
 
