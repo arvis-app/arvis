@@ -253,7 +253,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
         {patients.length === 0 && <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)', fontSize: 15, fontStyle: 'italic' }}>Keine Patienten</div>}
         {patients.map((p, i) => [
           i > 0 && p.room !== patients[i - 1].room && (
-            <div key={`sep-${i}`} style={{ borderTop: '1px solid var(--border)', margin: '2px 0', opacity: 0.5 }} />
+            <div key={`sep-${i}`} style={{ borderTop: '2px solid var(--border)', margin: '2px 0', opacity: 0.5 }} />
           ),
           <div key={i} className={`patient-row${selected === i ? ' selected' : ''}`} onClick={() => handleSel(i)}>
             <span className="patient-room">{p.room}</span>
