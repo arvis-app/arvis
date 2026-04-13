@@ -1217,6 +1217,10 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .brief-submit-btn:hover { background:var(--orange-dark); }
 .brief-submit-btn:disabled { opacity:0.5; cursor:not-allowed; }
 @keyframes diktPulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+/* Prevent page scroll when Chat is active — chat manages its own internal scroll */
+html:has(.chat-layout-outer),
+body:has(.chat-layout-outer) { overflow: hidden; }
+
 @keyframes chatDotBounce { 0%,60%,100% { transform:translateY(0); } 30% { transform:translateY(-6px); } }
 .chat-dot { width:8px; height:8px; border-radius:50%; background:var(--text-3); display:inline-block; animation:chatDotBounce 1.2s ease-in-out infinite; }
 .chat-copy-btn { opacity:0 !important; transition:opacity 0.15s !important; }
