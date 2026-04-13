@@ -48,7 +48,8 @@ function markdownToHtml(md) {
   let html = '', inList = false, inTable = false
   // Tracks the current colored sub-section (🔴/🟡/🟢 header lines)
   let secBg = 'transparent', secColor = 'var(--text-2)', secBorder = 'var(--border)', secActive = false
-  for (const line of lines) {
+  let i = 0; while (i < lines.length) {
+    const line = lines[i]
     if (inTable && !/^\|/.test(line.trim())) { html += '</tbody></table></div>'; inTable = false }
     if (/^#{1,3} /.test(line)) {
       if (inList) { html += '</div>'; inList = false }
@@ -95,13 +96,12 @@ function markdownToHtml(md) {
         }).join('') + '</tr>'
       }
     } else if (/^\* /.test(line)) {
-      if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:4px;margin-top:2px;">'; inList = true }
+      if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">'; inList = true }
       const rawText2 = escHtml(line.replace(/^\* /, '').trim()).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1')
-      html += `<div style="font-size:12.5px;color:var(--text-2);background:transparent;border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;margin-left:16px;">${rawText2}</div>`
+      html += `<div style="font-size:12px;color:var(--text-3);background:transparent;border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:3px 12px;line-height:1.5;margin-left:16px;">${rawText2}</div>`
     } else if (/^[-–] /.test(line)) {
-      if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:4px;margin-top:2px;">'; inList = true }
+      if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">'; inList = true }
       let rawText = escHtml(line.replace(/^[-–] /, '').trim())
-      // Check if item has its own emoji override
       const emojiMatch = rawText.match(/🔴|🟡|🟢/)
       let bg = secActive ? secBg : 'transparent'
       let color = secActive ? secColor : 'var(--text-2)'
@@ -114,7 +114,17 @@ function markdownToHtml(md) {
         rawText = rawText.replace(em, '').trim()
       }
       let text = rawText.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1')
-      html += `<div style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;">${text}</div>`
+      const subs = []
+      while (i + 1 < lines.length && /^\* /.test(lines[i + 1])) {
+        i++
+        subs.push(escHtml(lines[i].replace(/^\* /, '').trim()).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1'))
+      }
+      if (subs.length > 0) {
+        const subsHtml = subs.map(s => `<div style="margin-left:12px;">${s}</div>`).join('')
+        html += `<div style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 12px;line-height:1.6;">${text}<div style="margin-top:3px;font-size:12px;color:var(--text-3);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subsHtml}</div></div>`
+      } else {
+        html += `<div style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 12px;line-height:1.6;">${text}</div>`
+      }
     } else if (line.trim() === '') {
       if (inList) { html += '</div>'; inList = false }
     } else if (/^[A-ZÄÖÜ][A-Za-zäöüÄÖÜß\s\-/]+:\s*$/.test(line.trim())) {
@@ -127,6 +137,7 @@ function markdownToHtml(md) {
       const text = escHtml(line).replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text);font-weight:700;">$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/:(\S)/g, ': $1').replace(/\b([A-ZÄÖÜ][^:<]{1,40}):/g, '<strong style="color:var(--text);font-weight:700;">$1:</strong>')
       html += `<div style="font-size:12.5px;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;margin-top:4px;">${text}</div>`
     }
+    i++
   }
   if (inList) html += '</div>'
   if (inTable) html += '</tbody></table></div>'

@@ -88,6 +88,18 @@ function htmlToDocx(el) {
       // Flex-column wrapper (list container from markdownToHtml) — recurse into children
       if (node.style?.display === 'flex' && node.style?.flexDirection === 'column') {
         paragraphs.push(...htmlToDocx(node))
+      } else if ([...node.childNodes].some(n => n.nodeType === 1 && n.tagName?.toLowerCase() === 'div')) {
+        // Mixed content: main text + child sub-items div — grouped diagnosis block
+        const mainText = [...node.childNodes].filter(n => !(n.nodeType === 1 && n.tagName?.toLowerCase() === 'div')).map(n => n.textContent).join('').trim()
+        if (mainText) {
+          const isBold = node.style?.fontWeight >= 700 || node.style?.fontWeight === 'bold'
+          const fontSize = parseInt(node.style?.fontSize) || 11
+          const isTitle = isBold && fontSize >= 14
+          paragraphs.push(new Paragraph({ children: parseInline(mainText, { size: isTitle ? 26 : 22, font: 'Arial', bold: isBold }), spacing: { before: isTitle ? 200 : 0, after: 40 } }))
+        }
+        for (const child of node.childNodes) {
+          if (child.nodeType === 1 && child.tagName?.toLowerCase() === 'div') paragraphs.push(...htmlToDocx(child))
+        }
       } else {
         const text = node.textContent.trim()
         if (!text) {
