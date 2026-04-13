@@ -584,6 +584,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   .btn-action-secondary:hover { background: transparent !important; }
   .btn-danger:hover { background: transparent !important; }
   .patient-row:hover { background: transparent !important; border-color: transparent !important; }
+  .patient-row.room-sep:hover { border-top-color: #999 !important; }
 }
 
 /* ═══════ DASHBOARD ═══════ */
@@ -719,6 +720,8 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 }
 .patient-row:hover { background: var(--bg); border-color: var(--border); }
 .patient-row.selected { background: var(--orange-ghost); border-color: rgba(217,75,10,0.2); }
+.patient-row.room-sep { border-top: 1px solid #999 !important; }
+.patient-row.room-sep:hover { border-top-color: #999 !important; }
 
 .patient-room {
   font-size: 16px; font-weight: 700;
@@ -949,7 +952,6 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
     grid-template-areas: "room name" "note note";
     gap: 8px 10px; padding: 12px 14px;
     align-items: center;
-    border-bottom: 1px solid var(--border) !important;
     border-radius: 0 !important;
     margin-bottom: 0 !important;
   }
