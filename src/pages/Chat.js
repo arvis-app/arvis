@@ -229,7 +229,7 @@ export default function Chat() {
   }, [])
 
   return (
-    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '0 28px 20px' }}>
+    <div className="chat-layout-outer" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '0 28px 20px' }}>
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, maxWidth: 820, width: '100%', margin: '0 auto', padding: '0 16px', overflow: 'hidden' }}>
 
       {/* Header */}

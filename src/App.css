@@ -894,6 +894,9 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
     height: auto; max-height: none;
     padding: 20px; overflow-y: visible; min-height: 0;
   }
+  .main-content:has(.chat-layout-outer) {
+    height: calc(100dvh - 60px); overflow: hidden; padding: 0;
+  }
   
   /* Permettre à la page header d'être flexible */
   .page-header {
