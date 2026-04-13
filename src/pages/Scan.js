@@ -94,6 +94,10 @@ function markdownToHtml(md) {
           return `<td style="${s}">${val}</td>`
         }).join('') + '</tr>'
       }
+    } else if (/^\s{1,4}[-–] /.test(line)) {
+      if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:4px;margin-top:2px;">'; inList = true }
+      const rawText2 = escHtml(line.replace(/^\s{1,4}[-–] /, '').trim()).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1')
+      html += `<div style="font-size:12px;color:var(--text-2);background:transparent;border-left:2px solid var(--border);border-radius:0 4px 4px 0;padding:4px 10px;line-height:1.5;margin-left:16px;">${rawText2}</div>`
     } else if (/^[-–] /.test(line)) {
       if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:4px;margin-top:2px;">'; inList = true }
       let rawText = escHtml(line.replace(/^[-–] /, '').trim())
