@@ -45,23 +45,29 @@ function markdownToHtml(md) {
     }
   }
 
-  let html = '', inList = false, inTable = false
+  let html = '', inList = false, inTable = false, secIdx = 0, inSectionBody = false
   // Tracks the current colored sub-section (🔴/🟡/🟢 header lines)
   let secBg = 'transparent', secColor = 'var(--text-2)', secBorder = 'var(--border)', secActive = false
   let i = 0; while (i < lines.length) {
     const line = lines[i]
     if (inTable && !/^\|/.test(line.trim())) { html += '</tbody></table></div>'; inTable = false }
     if (/^#{1,3} /.test(line)) {
+      if (inSectionBody) { html += '</div>'; inSectionBody = false }
       if (inList) { html += '</div>'; inList = false }
       secActive = false; secBg = 'transparent'; secColor = 'var(--text-2)'; secBorder = 'var(--border)'
       let text = escHtml(line.replace(/^#{1,3} /, '')).replace(/\*\*(.+?)\*\*/g, '$1')
       const mt = html === '' ? '0' : '22px'
+      secIdx++
+      const sid = `s${secIdx}`
+      const copyBtn = `<button data-copy-sec="${sid}" title="Abschnitt kopieren" style="flex-shrink:0;background:none;border:none;padding:3px 4px;cursor:pointer;color:var(--text-3);border-radius:4px;display:flex;align-items:center;opacity:0.6;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`
       if (/nicht.übersehen/i.test(text)) {
         text = text.replace(/^[⚠️\s]+/, '')
-        html += `<div style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#FEF08A;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>${text}</div>`
+        html += `<div data-sec="${sid}" style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;display:flex;align-items:center;justify-content:space-between;gap:8px;"><span style="display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#FEF08A;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>${text}</span>${copyBtn}</div>`
       } else {
-        html += `<div style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;">${text}</div>`
+        html += `<div data-sec="${sid}" style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;display:flex;align-items:center;justify-content:space-between;"><span>${text}</span>${copyBtn}</div>`
       }
+      html += `<div data-sec-body="${sid}">`
+      inSectionBody = true
     } else if (/^\*\*[^*]+\*\*:?\s*$/.test(line.trim())) {
       if (inList) { html += '</div>'; inList = false }
       secActive = false; secBg = 'transparent'; secColor = 'var(--text-2)'; secBorder = 'var(--border)'
@@ -98,7 +104,7 @@ function markdownToHtml(md) {
     } else if (/^\* /.test(line)) {
       if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">'; inList = true }
       const rawText2 = escHtml(line.replace(/^\* /, '').trim()).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1')
-      html += `<div style="font-size:12px;color:var(--text-3);background:transparent;border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:3px 12px;line-height:1.5;margin-left:16px;">${rawText2}</div>`
+      html += `<div data-subitem="1" style="font-size:12px;color:var(--text-3);padding:2px 0 2px 12px;line-height:1.5;">${rawText2}</div>`
     } else if (/^[-–] /.test(line)) {
       if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">'; inList = true }
       let rawText = escHtml(line.replace(/^[-–] /, '').trim())
@@ -120,8 +126,8 @@ function markdownToHtml(md) {
         subs.push(escHtml(lines[i].replace(/^\* /, '').trim()).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1'))
       }
       if (subs.length > 0) {
-        const subsHtml = subs.map(s => `<div style="margin-left:12px;">${s}</div>`).join('')
-        html += `<div style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 12px;line-height:1.6;">${text}<div style="margin-top:3px;font-size:12px;color:var(--text-3);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subsHtml}</div></div>`
+        const subsHtml = subs.map(s => `<div data-subitem="1" style="margin-left:12px;">${s}</div>`).join('')
+        html += `<div data-type="item" style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 12px;line-height:1.6;">${text}<div data-type="subs" style="margin-top:3px;font-size:12px;color:var(--text-3);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subsHtml}</div></div>`
       } else {
         html += `<div style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 12px;line-height:1.6;">${text}</div>`
       }
@@ -140,6 +146,7 @@ function markdownToHtml(md) {
     i++
   }
   if (inList) html += '</div>'
+  if (inSectionBody) html += '</div>'
   if (inTable) html += '</tbody></table></div>'
   return html
 }
@@ -727,6 +734,7 @@ export default function Scan() {
         pre.textContent = rows.join('\n')
         table.parentNode.replaceChild(pre, table)
       })
+      clone.querySelectorAll('[data-subitem]').forEach(sub => { sub.textContent = '- ' + sub.textContent.trim() })
       const plainText = clone.innerText
       // Copier en HTML + texte brut — Word/ORBIS reçoit le formatage
       try {
@@ -740,6 +748,21 @@ export default function Scan() {
     }
     setCopied(true); setTimeout(() => setCopied(false), 1500)
   }
+  function handleSectionCopy(e) {
+    const btn = e.target.closest('[data-copy-sec]')
+    if (!btn) return
+    e.stopPropagation()
+    const sid = btn.getAttribute('data-copy-sec')
+    const body = document.querySelector(`[data-sec-body="${sid}"]`)
+    if (!body) return
+    const clone = body.cloneNode(true)
+    clone.querySelectorAll('[data-subitem]').forEach(sub => { sub.textContent = '- ' + sub.textContent.trim() })
+    navigator.clipboard.writeText(clone.innerText.trim()).catch(() => {})
+    btn.style.color = 'var(--orange)'
+    btn.style.opacity = '1'
+    setTimeout(() => { btn.style.color = ''; btn.style.opacity = '' }, 1500)
+  }
+
   async function downloadResult() {
     const text = mode === 'ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
     if (!text) return
@@ -1041,7 +1064,7 @@ export default function Scan() {
                     </div>
                   </div>
                   <div className="result-section" style={{ marginBottom: 0 }}>
-                    <div className="result-text" id="aiSummaryDiv" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(aiHtml) }} />
+                    <div className="result-text" id="aiSummaryDiv" onClick={handleSectionCopy} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(aiHtml) }} />
                   </div>
                 </div>
                 <button className="btn-send-briefschreiber" onClick={sendToBrief} style={{ marginTop: 16, flexShrink: 0 }}>
