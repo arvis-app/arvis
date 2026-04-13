@@ -720,6 +720,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 }
 .patient-row:hover { background: var(--bg); border-color: var(--border); }
 .patient-row.selected { background: var(--orange-ghost); border-color: rgba(217,75,10,0.2); }
+.patient-row:has(+ .patient-row.room-sep) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .patient-row.room-sep { border-top: 1px solid #999 !important; border-radius: 0 !important; }
 .patient-row.room-sep:hover { border-top-color: #999 !important; }
 
