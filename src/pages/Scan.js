@@ -45,7 +45,7 @@ function markdownToHtml(md) {
     }
   }
 
-  let html = '', inList = false, inTable = false, secIdx = 0, inSectionBody = false
+  let html = '', inList = false, inTable = false, sectionCounter = 0, inSectionBody = false
   // Tracks the current colored sub-section (🔴/🟡/🟢 header lines)
   let secBg = 'transparent', secColor = 'var(--text-2)', secBorder = 'var(--border)', secActive = false
   let i = 0; while (i < lines.length) {
@@ -57,8 +57,8 @@ function markdownToHtml(md) {
       secActive = false; secBg = 'transparent'; secColor = 'var(--text-2)'; secBorder = 'var(--border)'
       let text = escHtml(line.replace(/^#{1,3} /, '')).replace(/\*\*(.+?)\*\*/g, '$1')
       const mt = html === '' ? '0' : '22px'
-      secIdx++
-      const sid = `s${secIdx}`
+      sectionCounter++
+      const sid = `s${sectionCounter}`
       const copyBtn = `<button data-copy-sec="${sid}" title="Abschnitt kopieren" style="flex-shrink:0;background:none;border:none;padding:3px 4px;cursor:pointer;color:var(--text-3);border-radius:4px;display:flex;align-items:center;opacity:0.6;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`
       if (/nicht.übersehen/i.test(text)) {
         text = text.replace(/^[⚠️\s]+/, '')
