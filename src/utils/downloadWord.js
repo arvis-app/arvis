@@ -93,9 +93,11 @@ function htmlToDocx(el) {
         const isBold = node.style?.fontWeight >= 700 || node.style?.fontWeight === 'bold' || tag === 'strong'
         const fontSize = parseInt(node.style?.fontSize) || 11
         const isTitle = isBold && fontSize >= 14
+        const isIndented = parseInt(node.style?.marginLeft) > 0
         paragraphs.push(new Paragraph({
           children: parseInline(text, { size: isTitle ? 26 : 22, font: 'Arial', bold: isBold }),
-          spacing: { before: isTitle ? 200 : 0, after: isTitle ? 100 : 60 }
+          spacing: { before: isTitle ? 200 : 0, after: isTitle ? 100 : 60 },
+          ...(isIndented ? { indent: { left: 360 } } : {})
         }))
       }
     }
