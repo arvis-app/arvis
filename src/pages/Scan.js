@@ -59,7 +59,7 @@ function markdownToHtml(md) {
       const mt = html === '' ? '0' : '22px'
       sectionCounter++
       const sid = `s${sectionCounter}`
-      const copyBtn = `<button data-copy-sec="${sid}" title="Abschnitt kopieren" style="flex-shrink:0;background:none;border:none;padding:3px 4px;cursor:pointer;color:var(--text-3);border-radius:4px;display:flex;align-items:center;opacity:0.6;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`
+      const copyBtn = `<button data-copy-sec="${sid}" title="Abschnitt kopieren" style="flex-shrink:0;background:none;border:none;padding:3px 4px;cursor:pointer;color:var(--text-3);border-radius:4px;display:flex;align-items:center;opacity:0.6;margin-right:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`
       if (/nicht.übersehen/i.test(text)) {
         text = text.replace(/^[⚠️\s]+/, '')
         html += `<div data-sec="${sid}" style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;display:flex;align-items:center;justify-content:space-between;gap:8px;"><span style="display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#FEF08A;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>${text}</span>${copyBtn}</div>`
@@ -141,7 +141,17 @@ function markdownToHtml(md) {
     } else {
       if (inList) { html += '</div>'; inList = false }
       const text = escHtml(line).replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text);font-weight:700;">$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/:(\S)/g, ': $1').replace(/\b([A-ZÄÖÜ][^:<]{1,40}):/g, '<strong style="color:var(--text);font-weight:700;">$1:</strong>')
-      html += `<div style="font-size:12.5px;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;margin-top:4px;">${text}</div>`
+      const subs2 = []
+      while (i + 1 < lines.length && /^\* /.test(lines[i + 1])) {
+        i++
+        subs2.push(escHtml(lines[i].replace(/^\* /, '').trim()).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1'))
+      }
+      if (subs2.length > 0) {
+        const subs2Html = subs2.map(s => `<div data-subitem="1" style="margin-left:12px;">${s}</div>`).join('')
+        html += `<div data-type="item" style="font-size:12.5px;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;margin-top:4px;">${text}<div data-type="subs" style="margin-top:3px;font-size:12px;color:var(--text-3);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subs2Html}</div></div>`
+      } else {
+        html += `<div style="font-size:12.5px;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;margin-top:4px;">${text}</div>`
+      }
     }
     i++
   }
@@ -748,6 +758,39 @@ export default function Scan() {
     }
     setCopied(true); setTimeout(() => setCopied(false), 1500)
   }
+  function sectionBodyToText(bodyEl) {
+    const out = []
+    function walk(node) {
+      if (node.nodeType !== 1) return
+      if (node.getAttribute('data-subitem') === '1') { out.push('- ' + node.textContent.trim()); return }
+      if (node.getAttribute('data-type') === 'subs') { for (const c of node.children) walk(c); return }
+      const tableEl = node.tagName === 'TABLE' ? node : node.querySelector('table')
+      if (tableEl) {
+        const rows = []
+        tableEl.querySelectorAll('tr').forEach(tr => {
+          const r = [...tr.querySelectorAll('td,th')].map(td => td.textContent.trim()).join('\t')
+          if (r.trim()) rows.push(r)
+        })
+        if (rows.length) out.push(rows.join('\n'))
+        return
+      }
+      if (node.style && node.style.display === 'flex' && node.style.flexDirection === 'column') {
+        for (const c of node.children) walk(c)
+        return
+      }
+      const subsDiv = node.querySelector('[data-type="subs"]')
+      if (subsDiv) {
+        const mainText = [...node.childNodes].filter(n => n !== subsDiv).map(n => n.textContent).join('').trim()
+        if (mainText) out.push(mainText)
+        walk(subsDiv)
+        return
+      }
+      const t = node.textContent.trim()
+      if (t) out.push(t)
+    }
+    for (const child of bodyEl.children) walk(child)
+    return out.join('\n')
+  }
   function handleSectionCopy(e) {
     const btn = e.target.closest('[data-copy-sec]')
     if (!btn) return
@@ -755,9 +798,7 @@ export default function Scan() {
     const sid = btn.getAttribute('data-copy-sec')
     const body = document.querySelector(`[data-sec-body="${sid}"]`)
     if (!body) return
-    const clone = body.cloneNode(true)
-    clone.querySelectorAll('[data-subitem]').forEach(sub => { sub.textContent = '- ' + sub.textContent.trim() })
-    navigator.clipboard.writeText(clone.innerText.trim()).catch(() => {})
+    navigator.clipboard.writeText(sectionBodyToText(body)).catch(() => {})
     btn.style.color = 'var(--orange)'
     btn.style.opacity = '1'
     setTimeout(() => { btn.style.color = ''; btn.style.opacity = '' }, 1500)
