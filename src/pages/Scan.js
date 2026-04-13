@@ -83,7 +83,7 @@ function markdownToHtml(md) {
       html += `<div style="font-size:14px;font-weight:800;color:${secColor};margin-top:${mt3};margin-bottom:6px;display:flex;align-items:center;">${dot}<span>${label}</span></div>`
     } else if (/^\|.+\|/.test(line.trim())) {
       if (inList) { html += '</div>'; inList = false }
-      if (/^\|[\s\-:|]+\|$/.test(line.trim())) continue
+      if (/^\|[\s\-:|]+\|$/.test(line.trim())) { i++; continue }
       const cells = line.trim().replace(/^\||\|$/g, '').split('|').map(c => escHtml(c.trim()).replace(/\*\*(.+?)\*\*/g, '$1'))
       if (!inTable) {
         inTable = true
