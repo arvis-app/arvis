@@ -736,10 +736,14 @@ export default function Scan() {
       // Texte brut avec tableaux tabulés pour ORBIS/KIS
       const clone = el.cloneNode(true)
       clone.querySelectorAll('table').forEach(table => {
-        const rows = []
+        const cells = []
         table.querySelectorAll('tr').forEach(tr => {
-          rows.push(Array.from(tr.querySelectorAll('td')).map(td => td.textContent.trim()).join('\t'))
+          cells.push(Array.from(tr.querySelectorAll('td')).map(td => td.textContent.trim()))
         })
+        // Pad each column to max width for alignment in monospace (ORBIS/KIS)
+        const colCount = Math.max(...cells.map(r => r.length))
+        const colWidths = Array.from({ length: colCount }, (_, i) => Math.max(...cells.map(r => (r[i] || '').length)))
+        const rows = cells.map(r => r.map((c, i) => i < r.length - 1 ? c.padEnd(colWidths[i] + 2) : c).join(''))
         const pre = document.createElement('pre')
         pre.textContent = rows.join('\n')
         table.parentNode.replaceChild(pre, table)
@@ -766,12 +770,16 @@ export default function Scan() {
       if (node.getAttribute('data-type') === 'subs') { for (const c of node.children) walk(c); return }
       const tableEl = node.tagName === 'TABLE' ? node : node.querySelector('table')
       if (tableEl) {
-        const rows = []
+        const cells = []
         tableEl.querySelectorAll('tr').forEach(tr => {
-          const r = [...tr.querySelectorAll('td,th')].map(td => td.textContent.trim()).join('\t')
-          if (r.trim()) rows.push(r)
+          const r = [...tr.querySelectorAll('td,th')].map(td => td.textContent.trim())
+          if (r.join('').trim()) cells.push(r)
         })
-        if (rows.length) out.push(rows.join('\n'))
+        if (cells.length) {
+          const colCount = Math.max(...cells.map(r => r.length))
+          const colWidths = Array.from({ length: colCount }, (_, i) => Math.max(...cells.map(r => (r[i] || '').length)))
+          out.push(cells.map(r => r.map((c, i) => i < r.length - 1 ? c.padEnd(colWidths[i] + 2) : c).join('')).join('\n'))
+        }
         return
       }
       if (node.style && node.style.display === 'flex' && node.style.flexDirection === 'column') {
