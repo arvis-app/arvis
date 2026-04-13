@@ -85,20 +85,25 @@ function htmlToDocx(el) {
     }
     // Paragraphs, divs, strong, em, spans — recurse or inline
     else if (tag === 'p' || tag === 'div') {
-      const text = node.textContent.trim()
-      if (!text) {
-        paragraphs.push(new Paragraph({ children: [], spacing: { after: 120 } }))
+      // Flex-column wrapper (list container from markdownToHtml) — recurse into children
+      if (node.style?.display === 'flex' && node.style?.flexDirection === 'column') {
+        paragraphs.push(...htmlToDocx(node))
       } else {
-        // Check if this div has bold styling (used by Scan results for section titles)
-        const isBold = node.style?.fontWeight >= 700 || node.style?.fontWeight === 'bold' || tag === 'strong'
-        const fontSize = parseInt(node.style?.fontSize) || 11
-        const isTitle = isBold && fontSize >= 14
-        const isIndented = parseInt(node.style?.marginLeft) > 0
-        paragraphs.push(new Paragraph({
-          children: parseInline(text, { size: isTitle ? 26 : 22, font: 'Arial', bold: isBold }),
-          spacing: { before: isTitle ? 200 : 0, after: isTitle ? 100 : 60 },
-          ...(isIndented ? { indent: { left: 360 } } : {})
-        }))
+        const text = node.textContent.trim()
+        if (!text) {
+          paragraphs.push(new Paragraph({ children: [], spacing: { after: 120 } }))
+        } else {
+          // Check if this div has bold styling (used by Scan results for section titles)
+          const isBold = node.style?.fontWeight >= 700 || node.style?.fontWeight === 'bold' || tag === 'strong'
+          const fontSize = parseInt(node.style?.fontSize) || 11
+          const isTitle = isBold && fontSize >= 14
+          const isIndented = parseInt(node.style?.marginLeft) > 0
+          paragraphs.push(new Paragraph({
+            children: parseInline(text, { size: isTitle ? 26 : 22, font: 'Arial', bold: isBold }),
+            spacing: { before: isTitle ? 200 : 0, after: isTitle ? 100 : 60 },
+            ...(isIndented ? { indent: { left: 360 } } : {})
+          }))
+        }
       }
     }
     // Strong/bold at top level

@@ -655,7 +655,6 @@ export default function Scan() {
         setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: 'OCR Text', aiHtml: '', ocrText: txt, mode: 'ocr', thumb }, ...prev].slice(0, 5))
       } else {
         const analysis = await runAIAnalysis(imageDataUrls)
-        console.log('RAW_GPT:', analysis)
         const html = markdownToHtml(analysis)
         setAiHtml(html)
         // Pas de texte OCR séparé en mode Vision — le texte est intégré dans l'analyse
