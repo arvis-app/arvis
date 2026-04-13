@@ -104,7 +104,7 @@ function markdownToHtml(md) {
     } else if (/^\* /.test(line)) {
       if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">'; inList = true }
       const rawText2 = escHtml(line.replace(/^\* /, '').trim()).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1')
-      html += `<div data-subitem="1" style="font-size:12px;color:var(--text-3);padding:2px 0 2px 12px;line-height:1.5;">${rawText2}</div>`
+      html += `<div data-subitem="1" style="font-size:12px;color:var(--text-2);padding:2px 0 2px 12px;line-height:1.5;">${rawText2}</div>`
     } else if (/^[-–] /.test(line)) {
       if (!inList) { html += '<div style="display:flex;flex-direction:column;gap:2px;margin-top:2px;">'; inList = true }
       let rawText = escHtml(line.replace(/^[-–] /, '').trim())
@@ -127,7 +127,7 @@ function markdownToHtml(md) {
       }
       if (subs.length > 0) {
         const subsHtml = subs.map(s => `<div data-subitem="1" style="margin-left:12px;">${s}</div>`).join('')
-        html += `<div data-type="item" style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 12px;line-height:1.6;">${text}<div data-type="subs" style="margin-top:3px;font-size:12px;color:var(--text-3);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subsHtml}</div></div>`
+        html += `<div data-type="item" style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 12px;line-height:1.6;">${text}<div data-type="subs" style="margin-top:3px;font-size:12px;color:var(--text-2);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subsHtml}</div></div>`
       } else {
         html += `<div style="font-size:12.5px;color:${color};background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:5px 12px;line-height:1.6;">${text}</div>`
       }
@@ -148,7 +148,7 @@ function markdownToHtml(md) {
       }
       if (subs2.length > 0) {
         const subs2Html = subs2.map(s => `<div data-subitem="1" style="margin-left:12px;">${s}</div>`).join('')
-        html += `<div data-type="item" style="font-size:12.5px;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;margin-top:4px;">${text}<div data-type="subs" style="margin-top:3px;font-size:12px;color:var(--text-3);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subs2Html}</div></div>`
+        html += `<div data-type="item" style="font-size:12.5px;font-weight:600;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;margin-top:4px;">${text}<div data-type="subs" style="margin-top:3px;font-size:12px;font-weight:400;color:var(--text-2);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subs2Html}</div></div>`
       } else {
         html += `<div style="font-size:12.5px;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:7px 12px;line-height:1.6;margin-top:4px;">${text}</div>`
       }
