@@ -31,7 +31,7 @@ async function fetchPatients(userId) {
     .from('patients').select('*').eq('user_id', userId).order('created_at')
     .abortSignal(AbortSignal.timeout(8000))
   if (error) { logError('Dashboard.fetchPatients', error); return [] }
-  return data || []
+  return (data || []).sort((a, b) => (a.room || '').localeCompare(b.room || '', undefined, { numeric: true, sensitivity: 'base' }))
 }
 
 // Migration unique depuis localStorage
