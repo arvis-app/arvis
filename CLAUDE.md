@@ -70,7 +70,7 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 | IA | OpenAI — `gpt-5.4-mini` (Scan, Brief), `gpt-5.4` (Chat), `gpt-4o-realtime` (Brief vocal) |
 | Paiement | Stripe (Checkout, Billing Portal, Webhooks) |
 | Deploy | Vercel (auto-deploy sur git push `main`) + Cloudflare (DNS) |
-| Analytics | `@vercel/analytics` — injecté dans `src/index.js` via `<Analytics />` |
+| Analytics | `@vercel/analytics` + `@vercel/speed-insights` — injectés dans `src/index.js` via `<Analytics />` et `<SpeedInsights />` |
 | Monitoring | Sentry (`VITE_SENTRY_DSN`) |
 
 **Couleur** : `#D94B0A` (orange) — **Fonts** : Inter + Bricolage Grotesque (titres)
