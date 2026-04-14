@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import * as Sentry from '@sentry/react'
+import { Analytics } from '@vercel/analytics/react'
 import App from './App';
 
 // Chunk introuvable après un déploiement (vieux cache index.html) → rechargement
@@ -16,4 +17,4 @@ Sentry.init({
 })
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+root.render(<><App /><Analytics /></>);
