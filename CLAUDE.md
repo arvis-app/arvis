@@ -1,6 +1,12 @@
 # CLAUDE.md — Arvis
 _Dernière mise à jour : 14 avril 2026_
 
+> **Conventions critiques à ne pas oublier :**
+> - Toujours travailler sur `main` — pas de branches
+> - Paramètre tokens OpenAI : `max_completion_tokens` (pas `max_tokens`) — voir Règles de développement
+> - `invokeEdgeFunction()` utilise `fetch()` natif — ne jamais utiliser `supabase.functions.invoke()`
+> - `DOMPurify.sanitize()` sur tout `dangerouslySetInnerHTML` — sans exception
+
 ---
 
 ## Règles de conduite
@@ -61,8 +67,10 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 | Frontend | React 19 + React Router v7 + **Vite 6** |
 | Styles | CSS custom (variables `--bg`, `--orange` etc.), pas de framework |
 | Backend | Supabase (Auth + Postgres + Edge Functions Deno + Storage) |
+| IA | OpenAI — `gpt-5.4-mini` (Scan, Brief), `gpt-5.4` (Chat), `gpt-4o-realtime` (Brief vocal) |
 | Paiement | Stripe (Checkout, Billing Portal, Webhooks) |
-| Deploy | Vercel (auto-deploy sur git push) + Cloudflare (DNS) |
+| Deploy | Vercel (auto-deploy sur git push `main`) + Cloudflare (DNS) |
+| Analytics | `@vercel/analytics` — injecté dans `src/index.js` via `<Analytics />` |
 | Monitoring | Sentry (`VITE_SENTRY_DSN`) |
 
 **Couleur** : `#D94B0A` (orange) — **Fonts** : Inter + Bricolage Grotesque (titres)
@@ -137,6 +145,8 @@ arvis/
 │       ├── Dateien.js                ← Gestionnaire fichiers (Paywall)
 │       ├── Profil.js                 ← Profil + abonnement Stripe
 │       ├── AdminStats.js             ← KPIs admin (accès UUID-protégé)
+│       ├── Onboarding.js             ← Flow d'onboarding (créé mais pas encore intégré dans App.js)
+│       ├── NotFound.js               ← Page 404 (route `*` dans App.js)
 │       ├── Impressum.js              ← Mentions légales
 │       ├── Datenschutz.js            ← Politique de confidentialité (DSGVO)
 │       ├── AGB.js                    ← Conditions générales
@@ -289,11 +299,11 @@ RESEND_API_KEY=re_xxxxx
 
 ## Règle critique : invokeEdgeFunction()
 
-`supabase.functions.invoke()` **n'envoie PAS le JWT** et masque les vraies erreurs. Toujours :
+**Ne jamais utiliser `supabase.functions.invoke()`** — lève des `FunctionsFetchError` aléatoires depuis `@supabase/supabase-js` v2.99.x et n'envoie pas le JWT. Toujours :
 ```js
 const data = await invokeEdgeFunction('nom-fonction', { param: valeur })
 ```
-Le helper (`src/supabaseClient.js`) fait `getSession()` et passe `Authorization: Bearer <token>`. Retry automatique (max 3×, backoff exponentiel), skip sur erreurs 4xx.
+Le helper (`src/supabaseClient.js`) utilise `fetch()` natif avec `getSession()` → `Authorization: Bearer <token>` + `apikey` header. Retry automatique (max 3×, backoff exponentiel), skip sur erreurs 4xx.
 
 ---
 
@@ -375,10 +385,12 @@ Bouton "Jetzt upgraden" :
 3. Confirmations destructives → modale UI, jamais `confirm()` natif
 4. **Aucun médicament ni dose** dans les bausteine — classes thérapeutiques uniquement
 5. Placeholders dans les bausteine : `[_]`
-6. Deploy : `git push` → Vercel auto-deploy
-7. **Code splitting** : `React.lazy()` sur toutes les pages sauf Dashboard et LoginPage — `ErrorBoundary` sur les routes sensibles. **Preload au hover** : `preloadPage(path)` exporté depuis `App.js`, appelé `onMouseEnter` sur les NavLinks sidebar → le chunk est téléchargé avant le clic
-8. **Offline** : bannière "Keine Internetverbindung" dans AppLayout.js
-9. **Tests** : `npm test` → Vitest (jsdom), 40+ tests unitaires — CI via `.github/workflows/ci.yml`
+6. **Pas de branches** — toujours travailler directement sur `main`. `git push` → Vercel auto-deploy.
+7. **Paramètre tokens OpenAI** : utiliser `max_completion_tokens` (pas `max_tokens`) — l'edge function `ai-chat` accepte les deux pour rétrocompatibilité (`requestedCompletionTokens ?? requestedTokens`), mais `max_completion_tokens` est le paramètre correct pour les modèles gpt-5.x. Exception : `Chat.js` envoie encore `max_tokens` (legacy, fonctionne car l'edge function normalise).
+8. **Code splitting** : `React.lazy()` sur toutes les pages sauf Dashboard et LoginPage — `ErrorBoundary` sur les routes sensibles. **Preload au hover** : `preloadPage(path)` exporté depuis `App.js`, appelé `onMouseEnter` sur les NavLinks sidebar → le chunk est téléchargé avant le clic
+9. **Offline** : bannière "Keine Internetverbindung" dans AppLayout.js
+10. **Tests** : `npm test` → Vitest (jsdom), 40+ tests unitaires — CI via `.github/workflows/ci.yml`
+11. **DOMPurify** : `DOMPurify.sanitize()` sur TOUT `dangerouslySetInnerHTML` sans exception — protection XSS obligatoire. Présent dans Scan.js, Chat.js, BriefSchreiber.js, Bausteine.js.
 
 ---
 
@@ -409,6 +421,8 @@ Bouton "Jetzt upgraden" :
 23. **Alignement vertical des panneaux** : les panneaux de toutes les pages doivent avoir leur **bordure basse au même niveau**. BriefSchreiber : `.brief-panel { height: calc(100vh - 280px) }`. Scan : `#panelUpload { height: calc(100vh - 222px) }` (58px de moins car pas de `.brief-modes`). `.scan-layout { align-items: stretch }` pour que la colonne droite s'étire. Si on ajoute/supprime un élément au-dessus des panneaux → ajuster le `calc()` pour réaligner les bas.
 24. **Sous-items Scan — format `* ` obligatoire** : le parseur `markdownToHtml()` dans `Scan.js` détecte les sous-items via `/^\* /` (astérisque + espace), les lignes commençant par `- ` ou `– ` sont traitées comme des items de liste plate, PAS comme sous-items sous une Diagnose/Modalité. Le SYSTEM_PROMPT doit donc imposer `* ` de façon explicite et répétée (GPT-4o a tendance à revenir à `- ` naturellement). Si les sous-items n'apparaissent plus groupés sous leur parent → vérifier que le prompt n'a pas été assoupli sur ce point.
 25. **Boucle infinie dans `markdownToHtml()`** : dans la branche sous-items, toujours faire `i++` AVANT le `continue` — sinon la ligne suivante n'est jamais consommée et le parseur tourne en rond sur la même ligne jusqu'à freezer l'onglet. Bug rencontré lors de l'implémentation initiale des sous-items (commit 83b99a0).
+26. **Inline style masque CSS rule** : si un composant a `style={{ marginTop: 12 }}` inline ET que sa classe CSS a `margin-top: 16px`, la règle CSS est masquée tant que l'inline existe. Retirer l'inline peut révéler la règle CSS — ce qui donne l'illusion que le fix n'a pas marché ("j'ai retiré la marge mais elle est toujours là"). Toujours inspecter les computed styles ET la classe CSS associée, pas juste l'inline. Rencontré sur `.patient-detail` : `marginTop: 12` inline dans Dashboard.js masquait `margin-top: 16px` dans App.css — il a fallu retirer les deux.
+27. **Hover sticky sur élément sélectionné** : un simple `.patient-row:hover` dans `@media (hover: none)` ne suffit PAS à empêcher le hover de masquer l'état sélectionné — il faut aussi que `.patient-row.selected` batte le `:hover` avec `!important` (même spécificité sinon la source order décide), et ajouter `-webkit-tap-highlight-color: transparent` sur la base pour tuer le flash gris iOS. Sans les 3 couches : symptôme "fond orange n'apparaît pas tout de suite sur mobile au clic, apparaît au scroll". Voir section Dashboard — Patientenliste pour le détail des 3 règles.
 
 ---
 
@@ -425,13 +439,13 @@ Bouton "Jetzt upgraden" :
 
 ## Scan — Architecture Vision (GPT-4o)
 
-**Tesseract.js a été supprimé.** Tout passe par GPT-4o Vision (images envoyées en base64).
+**Tesseract.js a été supprimé.** Tout passe par GPT Vision (images envoyées en base64).
 
 - **Deux modes** : KI-Analyse (analyse structurée) et OCR seul (extraction texte brut)
 - **Compression** : `compressForVision(dataUrl)` — redimensionne à max 1200px wide, JPEG 0.85
 - **Multi-page** : toutes les images envoyées dans un seul message `content` array (text + image_url)
-- **Modèle OCR** : `gpt-4.5-flash` (rapide, bon marché) — **Modèle KI-Analyse** : `gpt-4o`, `temperature: 0.2`
-- **Edge function** : `ai-chat` accepte les content arrays avec `image_url` (base64 data URLs, max 5 MB total)
+- **Modèle (les deux modes)** : `gpt-5.4-mini`, `max_completion_tokens: 4000`, `temperature: 0.2` pour KI-Analyse
+- **Edge function** : `ai-chat` — modèles whitelist : `gpt-5.4-mini`, `gpt-5.4`, `gpt-4o`, `gpt-4o-mini` (défaut: `gpt-5.4-mini`). Accepte content arrays avec `image_url` (base64 data URLs, max 5 MB total)
 - **Coût** : ~2100 tokens/page en high-detail
 
 ## Scan KI-Analyse — System Prompt
@@ -441,7 +455,7 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Sortie** : Zusammenfassung (### sections 1–7, médication en tableau markdown) + ### Nicht übersehen (liste plate 🔴🟡🟢)
 - **Format Nicht übersehen** : `🔴 **Problemstelle** Mécanisme → Handlungsempfehlung` (2–4 phrases par item, alternatives concrètes)
 - **Température** : `0.2` (déterministe, évite les oublis)
-- **Modèle** : `gpt-4o`, `max_tokens: 4000`
+- **Modèle** : `gpt-5.4-mini`, `max_completion_tokens: 4000`
 - **Tableau médication** : 3 colonnes `| Medikament (Dosis) | morgens-mittags-abends | ggf. Dauer |` — pas de colonne nachts si 0, pas de Darreichungsform (pas de "Tabletten", "retard", etc.)
 - **Diagnosen** : reprise **verbatim** du document — aucune numérotation, aucune abréviation, aucune omission. Toutes les Diagnosen présentes doivent figurer, groupées en "Hauptdiagnose(n)" et "Weitere Diagnose(n)". Une Diagnose par ligne (ligne principale sans tiret ni bullet). Détails associés (OP-Datum, Prozedur, Verlauf, Symptômes) en **sous-items `* `** (Sternchen + espace, **jamais `- `**) directement sous la Diagnose. Les sous-items sont rendus avec indentation, puce `•`, couleur `var(--text-2)` et police plus petite — mais la ligne grise de gauche s'étend jusqu'au bas du dernier sous-item pour grouper visuellement Diagnose + détails en un seul bloc. La Diagnose principale est en **`font-weight:600`** (bold).
 - **Wichtige Befunde** : structuré par **modalité** — chaque modalité sur sa propre ligne **sans tiret et sans deux-points** (Labor, Sono Abdomen, CT Thorax, Röntgen Thorax, EKG, MRT, Echokardiographie, Histologie — selon ce qui est dans le document), suivie des valeurs/findings en sous-items `* `. Les valeurs labo liées peuvent être groupées par virgules sur une même ligne (ex: `* Kreatinin 1,8 mg/dl, GFR 38 ml/min`). Rendu natif : chaque modalité = bloc plain-text-else avec bordure gauche (`padding:7px 12px, margin-top:4px`), sous-items compacts en dessous (`gap:1px, line-height:1.5, font-size:12px`) → labs visuellement serrés sous Labor, espacement normal entre Labor/Sono/CT. **Ne pas ajouter de compactage CSS global** (`inBefunde` flag) — tout le serrage vient du passage "lignes plates → sous-items".
@@ -463,7 +477,14 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 
 - **Tri** : par numéro de chambre (`room`) croissant, puis par nom alphabétique comme fallback — parsing numérique tolérant (`parseInt(room, 10)`) pour gérer les chambres "12a", "12b", etc.
 - **Séparateur visuel entre chambres** : chaque ligne de patient compare son `room` au patient précédent ; si le numéro change, une fine ligne `.room-sep` est insérée au-dessus (pas de border-radius, `border-top: 1px solid var(--border)`, hover-safe — ne déclenche pas le `:hover` de la row). Aide à distinguer visuellement les patients regroupés par chambre.
-- **`.patient-row:hover`** est listé dans le bloc iOS `@media (hover: none)` de `App.css` (voir piège #13) pour éviter le sticky hover au scroll.
+- **Auto-scroll** : à la création (`addOpen`) ou sélection d'un patient (`selected !== null`), le formulaire correspondant est scrollé au centre via `useEffect` + `scrollIntoView({ behavior: 'smooth', block: 'center' })`. Refs : `addFormRef` sur le form de création, `detailFormRef` sur le form d'édition. Sans ça, sur une longue liste de patients, le form apparaît hors écran et l'utilisateur ne voit pas qu'il s'est ouvert.
+- **Hover 3 couches (anti-sticky iOS)** : trois règles interdépendantes dans `App.css` :
+  1. Base `.patient-row:hover:not(.selected)` — le hover desktop n'affecte jamais une ligne déjà sélectionnée.
+  2. `.patient-row.selected { background: var(--orange-ghost) !important; border-color: rgba(217,75,10,0.2) !important; }` — `!important` pour garantir que l'état sélectionné bat n'importe quel `:hover` résiduel (même spécificité, source order ne suffit pas sur Safari/iOS).
+  3. `.patient-row { -webkit-tap-highlight-color: transparent; }` — désactive le flash gris natif iOS au tap.
+  
+  Symptôme si une seule couche est retirée : sur mobile, cliquer un patient ne montre pas le fond orange tout de suite (il faut scroller pour "réveiller" l'état), ou le fond flash brièvement en cliquant un autre patient. Ne jamais retirer une des 3 couches sans re-tester sur iOS réel.
+- **Layout sans marge** : `.patient-row` a `margin: 0` (pas de `margin-bottom`), et le formulaire de détail/création qui suit la liste (`.patient-detail`, plus le wrapper du form de création) n'a AUCUN `margin-top` — ni en CSS, ni en inline style. Les inline `marginTop` sur les wrappers dans `Dashboard.js` ont été supprimés, et `.patient-detail { margin-top: 0 }`. L'écart entre la liste et le form vient uniquement du `gap` du parent flex. Si on réintroduit une marge quelque part, la symétrie visuelle casse (marge asymétrique haut/bas des rows).
 
 ## BriefSchreiber — Korrektur Prompt
 
@@ -477,9 +498,15 @@ Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mod
 - **Ton** : Facharzt — concis, sachlich, pas de sur-explication (le lecteur est médecin)
 - Constructions-types fournies dans le prompt : Anamnese ("stellte sich vor… berichtet über…"), Befunde ("Die Untersuchung ergab…"), Procedere ("Es erfolgte… Der Patient erhielt…")
 
+## BriefSchreiber — Modèle IA
+
+- **Modèle** : `gpt-5.4-mini` via edge function `ai-chat`
+- **Paramètres** : `max_completion_tokens: 3000` pour Korrektur/Umformulierung/Zusammenfassung
+- **Vocal (Diktat)** : WebSocket OpenAI Realtime `gpt-4o-realtime-preview-2024-12-17` via token from `realtime-token` edge function
+
 ## Chat — KI-Assistent
 
-- **Modèle** : `gpt-5.4` via edge function `ai-chat`, `max_tokens: 4000`
+- **Modèle** : `gpt-5.4` via edge function `ai-chat`, `max_tokens: 4000` (legacy — fonctionne car l'edge function normalise vers `max_completion_tokens`)
 - **System prompt** : invisible, prépendé à chaque requête — rôle Facharzt, Fachsprache, pas de suggestions/offres en fin de réponse, max 300 mots pour questions ouvertes, abréviations courantes OK mais pas excessives
 - **Historique** : persisté dans table `chat_conversations` (Supabase), max 18 derniers messages envoyés à l'API (limite edge function = 20 msgs)
 - **Sauvegarde** : debounced 800ms après chaque réponse IA, conversation créée au 1er message
