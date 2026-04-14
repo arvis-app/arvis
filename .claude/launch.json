@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "arvis",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--port", "3000"],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
       "port": 3000
     }
   ]

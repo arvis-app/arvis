@@ -274,7 +274,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
 
       {/* Add patient form */}
       {addOpen && (
-        <div ref={addFormRef} style={{ marginTop: 12, padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div ref={addFormRef} style={{ padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 8 }}>
             <input className="mini-input" type="text" placeholder="101" value={newRoom} onChange={e => setNewRoom(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
             <input className="mini-input" type="text" placeholder="Name, Vorname" value={newName} onChange={e => setNewName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
@@ -289,7 +289,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
 
       {/* Patient detail */}
       {selected !== null && (
-        <div ref={detailFormRef} className="patient-detail" id="patientDetail" style={{ marginTop: 12, padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div ref={detailFormRef} className="patient-detail" id="patientDetail" style={{ padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 8 }}>
             <input className="mini-input" type="text" placeholder="101" value={detailRoom} onChange={e => setDetailRoom(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
             <input className="mini-input" type="text" placeholder="Name, Vorname" value={detailName} onChange={e => setDetailName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />

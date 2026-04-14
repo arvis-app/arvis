@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 11 avril 2026_
+_Dernière mise à jour : 14 avril 2026_
 
 ---
 
@@ -407,6 +407,8 @@ Bouton "Jetzt upgraden" :
 21. **Screenshots propres pour vidéo promo** : utiliser **Chrome DevTools** (pas Safari — Safari étend les scroll containers et produit des captures trop longues). Méthode : clic droit sur l'élément → "Capture node screenshot". CSS critique : `.app-layout { min-height: 100vh; overflow-x: clip }` + `.result-text { overflow-x: auto; max-width: 100% }`. Ne jamais mettre `height: 100vh` sur `.app-layout` ni `overflow: hidden/clip` sur `html`/`body`.
 22. **Scan — barre d'étapes supprimée** : la barre horizontale "Dokument laden → Anonymisieren → Analysieren → Ergebnis" a été supprimée — redondante (le contenu montre l'étape active). Le flow est intuitif sans elle. Ne pas la remettre.
 23. **Alignement vertical des panneaux** : les panneaux de toutes les pages doivent avoir leur **bordure basse au même niveau**. BriefSchreiber : `.brief-panel { height: calc(100vh - 280px) }`. Scan : `#panelUpload { height: calc(100vh - 222px) }` (58px de moins car pas de `.brief-modes`). `.scan-layout { align-items: stretch }` pour que la colonne droite s'étire. Si on ajoute/supprime un élément au-dessus des panneaux → ajuster le `calc()` pour réaligner les bas.
+24. **Sous-items Scan — format `* ` obligatoire** : le parseur `markdownToHtml()` dans `Scan.js` détecte les sous-items via `/^\* /` (astérisque + espace), les lignes commençant par `- ` ou `– ` sont traitées comme des items de liste plate, PAS comme sous-items sous une Diagnose/Modalité. Le SYSTEM_PROMPT doit donc imposer `* ` de façon explicite et répétée (GPT-4o a tendance à revenir à `- ` naturellement). Si les sous-items n'apparaissent plus groupés sous leur parent → vérifier que le prompt n'a pas été assoupli sur ce point.
+25. **Boucle infinie dans `markdownToHtml()`** : dans la branche sous-items, toujours faire `i++` AVANT le `continue` — sinon la ligne suivante n'est jamais consommée et le parseur tourne en rond sur la même ligne jusqu'à freezer l'onglet. Bug rencontré lors de l'implémentation initiale des sous-items (commit 83b99a0).
 
 ---
 
@@ -417,6 +419,7 @@ Bouton "Jetzt upgraden" :
 - **Helper** : `src/utils/logger.js` → `logError(context, error, extra)` — à utiliser dans tous les `catch`
 - **Branché dans** : `supabaseClient.invokeEdgeFunction`, `Dashboard`, `Scan`, `AdminStats`, `Dateien`, `Bausteine`, `MobileScan`, `Chat`, `Paywall`, `ErrorBoundary`
 - **Ne pas utiliser** `console.error` seul dans les catch — toujours passer par `logError()`
+- **Erreurs Supabase** : les objets erreur Supabase (type `{ message, details, hint, code }`) ne se sérialisent pas avec `String(error)` → produit `"[object Object]"`. `logError()` utilise `error?.message || JSON.stringify(error)` pour extraire un message lisible. Ne jamais passer directement un objet Supabase à `Sentry.captureException()` — toujours via `logError()`.
 
 ---
 
@@ -440,10 +443,12 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Température** : `0.2` (déterministe, évite les oublis)
 - **Modèle** : `gpt-4o`, `max_tokens: 4000`
 - **Tableau médication** : 3 colonnes `| Medikament (Dosis) | morgens-mittags-abends | ggf. Dauer |` — pas de colonne nachts si 0, pas de Darreichungsform (pas de "Tabletten", "retard", etc.)
-- **Diagnosen** : reprise **verbatim** du document — aucune numérotation, aucune abréviation, aucune omission. Toutes les Diagnosen présentes doivent figurer, groupées en "Hauptdiagnose(n)" et "Weitere Diagnose(n)". Une par ligne, sans tiret ni bullet.
+- **Diagnosen** : reprise **verbatim** du document — aucune numérotation, aucune abréviation, aucune omission. Toutes les Diagnosen présentes doivent figurer, groupées en "Hauptdiagnose(n)" et "Weitere Diagnose(n)". Une Diagnose par ligne (ligne principale sans tiret ni bullet). Détails associés (OP-Datum, Prozedur, Verlauf, Symptômes) en **sous-items `* `** (Sternchen + espace, **jamais `- `**) directement sous la Diagnose. Les sous-items sont rendus avec indentation, puce `•`, couleur `var(--text-2)` et police plus petite — mais la ligne grise de gauche s'étend jusqu'au bas du dernier sous-item pour grouper visuellement Diagnose + détails en un seul bloc. La Diagnose principale est en **`font-weight:600`** (bold).
+- **Wichtige Befunde** : structuré par **modalité** — chaque modalité sur sa propre ligne **sans tiret et sans deux-points** (Labor, Sono Abdomen, CT Thorax, Röntgen Thorax, EKG, MRT, Echokardiographie, Histologie — selon ce qui est dans le document), suivie des valeurs/findings en sous-items `* `. Les valeurs labo liées peuvent être groupées par virgules sur une même ligne (ex: `* Kreatinin 1,8 mg/dl, GFR 38 ml/min`). Rendu natif : chaque modalité = bloc plain-text-else avec bordure gauche (`padding:7px 12px, margin-top:4px`), sous-items compacts en dessous (`gap:1px, line-height:1.5, font-size:12px`) → labs visuellement serrés sous Labor, espacement normal entre Labor/Sono/CT. **Ne pas ajouter de compactage CSS global** (`inBefunde` flag) — tout le serrage vient du passage "lignes plates → sous-items".
 - **Médication** : exhaustive — chaque médicament du document doit apparaître dans le tableau, même si incomplet ou lisible partiellement.
 - **Copie** : `copyResult()` utilise `ClipboardItem` avec `text/html` + `text/plain` — collage dans Word conserve gras, titres, tableaux, espacement. Collage dans ORBIS/KIS reçoit le texte brut avec tableaux tab-separated. Fallback `writeText` si `ClipboardItem` non supporté
-- **Word** : `downloadAsWord()` (dans `src/utils/downloadWord.js`) parse le HTML du `aiSummaryDiv` — titres en vrais Heading Word, **bold** conservé, tableaux avec bordures, listes à puces, espacement. Mode OCR/Brief = texte brut simple
+- **Word** : `downloadAsWord()` (dans `src/utils/downloadWord.js`) parse le HTML du `aiSummaryDiv` — titres en vrais Heading Word, **bold** conservé, tableaux avec bordures, listes à puces, espacement. Mode OCR/Brief = texte brut simple. **Récursion dans les wrappers `flex-column`** (blocs Diagnose + sous-items, Modalité + valeurs) : la fonction descend dans les children pour émettre chaque ligne plate ET chaque sous-item avec préfixe `- ` (via l'attribut `data-subitem="1"` posé dans `markdownToHtml()`). Sans cette récursion, les sous-items étaient perdus à l'export Word.
+- **Boutons copier par section** : chaque titre `###` est suivi d'un wrapper `data-sec-body` qui englobe tout le contenu de la section, et le titre porte un petit bouton copier (`data-copy-sec`). Event delegation sur `aiSummaryDiv` : `handleSectionCopy()` récupère le wrapper via `querySelector('[data-sec-body]')`, marche le DOM avec `sectionBodyToText()` (helper qui traverse récursivement et préfixe les `data-subitem` avec `- `), et copie en `text/plain`. Permet de ne copier que Diagnosen, ou Wichtige Befunde, etc. — sans toucher au reste du résultat.
 
 ## Scan — Historique de session
 
@@ -453,6 +458,12 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Au clic** : restaure aiHtml + ocrText + miniature dans le panneau preview → pas de rescan nécessaire
 - **Effacé** à la fermeture de l'onglet (sessionStorage)
 - **Min-height résultat** : `minHeight: 900` sur le panneau résultat quand affiché (évite résultat trop court en paysage)
+
+## Dashboard — Patientenliste
+
+- **Tri** : par numéro de chambre (`room`) croissant, puis par nom alphabétique comme fallback — parsing numérique tolérant (`parseInt(room, 10)`) pour gérer les chambres "12a", "12b", etc.
+- **Séparateur visuel entre chambres** : chaque ligne de patient compare son `room` au patient précédent ; si le numéro change, une fine ligne `.room-sep` est insérée au-dessus (pas de border-radius, `border-top: 1px solid var(--border)`, hover-safe — ne déclenche pas le `:hover` de la row). Aide à distinguer visuellement les patients regroupés par chambre.
+- **`.patient-row:hover`** est listé dans le bloc iOS `@media (hover: none)` de `App.css` (voir piège #13) pour éviter le sticky hover au scroll.
 
 ## BriefSchreiber — Korrektur Prompt
 

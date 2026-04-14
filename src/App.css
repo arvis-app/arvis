@@ -583,7 +583,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   .btn-action:hover { background: var(--orange) !important; }
   .btn-action-secondary:hover { background: transparent !important; }
   .btn-danger:hover { background: transparent !important; }
-  .patient-row:hover { background: transparent !important; border-color: transparent !important; }
+  .patient-row:hover:not(.selected) { background: transparent !important; border-color: transparent !important; }
   .patient-row.room-sep:hover { border-top-color: #999 !important; }
 }
 
@@ -716,10 +716,10 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   border-radius: 6px; cursor: pointer;
   transition: background 0.15s; align-items: center;
   border: 1px solid transparent;
-  margin-bottom: 4px;
+  -webkit-tap-highlight-color: transparent;
 }
-.patient-row:hover { background: var(--bg); border-color: var(--border); }
-.patient-row.selected { background: var(--orange-ghost); border-color: rgba(217,75,10,0.2); }
+.patient-row:hover:not(.selected) { background: var(--bg); border-color: var(--border); }
+.patient-row.selected { background: var(--orange-ghost) !important; border-color: rgba(217,75,10,0.2) !important; }
 .patient-row:has(+ .patient-row.room-sep) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .patient-row.room-sep { border-top: 1px solid #999 !important; border-radius: 0 !important; }
 .patient-row.room-sep:hover { border-top-color: #999 !important; }
@@ -737,7 +737,6 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 /* Patient detail panel */
 .patient-detail {
   display: block;
-  margin-top: 16px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
