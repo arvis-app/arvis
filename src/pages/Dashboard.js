@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
@@ -219,6 +219,18 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
   const [detailRoom, setDetailRoom] = useState('')
   const [detailName, setDetailName] = useState('')
   const [confirmDel, setConfirmDel] = useState(null)
+  const addFormRef = useRef(null)
+  const detailFormRef = useRef(null)
+  useEffect(() => {
+    if (addOpen && addFormRef.current) {
+      addFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [addOpen])
+  useEffect(() => {
+    if (selected !== null && detailFormRef.current) {
+      detailFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [selected])
   async function handleAdd() {
     if (!newName.trim()) return
     const { data: inserted } = await supabase.from('patients').insert({
@@ -262,7 +274,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
 
       {/* Add patient form */}
       {addOpen && (
-        <div style={{ marginTop: 12, padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div ref={addFormRef} style={{ marginTop: 12, padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 8 }}>
             <input className="mini-input" type="text" placeholder="101" value={newRoom} onChange={e => setNewRoom(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
             <input className="mini-input" type="text" placeholder="Name, Vorname" value={newName} onChange={e => setNewName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
@@ -277,7 +289,7 @@ function PatientsList({ patients, setPatients, showToast, addOpen, setAddOpen, u
 
       {/* Patient detail */}
       {selected !== null && (
-        <div className="patient-detail" id="patientDetail" style={{ marginTop: 12, padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div ref={detailFormRef} className="patient-detail" id="patientDetail" style={{ marginTop: 12, padding: 16, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 8 }}>
             <input className="mini-input" type="text" placeholder="101" value={detailRoom} onChange={e => setDetailRoom(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
             <input className="mini-input" type="text" placeholder="Name, Vorname" value={detailName} onChange={e => setDetailName(e.target.value)} style={{ margin: 0, height: 40, fontSize: 16, boxSizing: 'border-box' }} />
