@@ -874,8 +874,8 @@ export default function Scan() {
       </div>
 
       {limitReached && (
-        <div style={{ background: 'rgba(217, 75, 10, 0.08)', border: '1px solid #D94B0A', borderRadius: 8, padding: '14px 20px', marginBottom: 16 }}>
-          <span style={{ color: '#D94B0A', fontSize: 15, fontWeight: 500 }}>
+        <div style={{ background: 'var(--orange-ghost)', border: '1px solid var(--orange)', borderRadius: 5, padding: '10px 14px', marginBottom: 14 }}>
+          <span style={{ color: 'var(--orange)', fontSize: 12.5, fontWeight: 500 }}>
             Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert.
           </span>
         </div>
@@ -943,17 +943,16 @@ export default function Scan() {
                 setShowMobileMultiUI(true)
               }} />
               <div style={{ marginTop: 'auto' }}>
-                <div style={{ textAlign: 'center', marginTop: 2 }}><span style={{ fontSize: 14, color: 'var(--text-3)' }}>oder</span></div>
-                <div style={{ margin: '0 20px', position: 'relative', zIndex: 1, display: 'flex', gap: 8, marginTop: 22 }}>
+                <div style={{ textAlign: 'center', marginTop: 2 }}><span style={{ fontSize: 12, color: 'var(--text-3)' }}>oder</span></div>
+                <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 8, marginTop: 14, justifyContent: 'center' }}>
                   <button className="btn-action" onClick={() => {
                     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && !/Macintosh/.test(navigator.userAgent));
                     if (isMobile) { cameraInputRef.current.click() } else { startMobileScan() }
-                  }} style={{ flex: 1, justifyContent: 'center', display: 'flex', boxSizing: 'border-box', gap: 6 }}>
+                  }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
                     Foto aufnehmen
                   </button>
-                  <button className="btn-action-secondary" onClick={() => fileInputRef.current.click()}
-                    style={{ flex: 1, justifyContent: 'center', display: 'flex', boxSizing: 'border-box', gap: 6 }}>
+                  <button className="btn-action-secondary" onClick={() => fileInputRef.current.click()}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                     Datei wählen
                   </button>
@@ -1006,7 +1005,7 @@ export default function Scan() {
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
                   </button>
                 </div>
-                <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} style={{ background: '#D94B0A', color: 'white', border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}>
+                <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} style={{ background: 'var(--orange)', color: 'white', border: '1px solid var(--orange)', borderRadius: 5, fontWeight: 500, cursor: 'pointer' }}>
                   Analysieren
                 </button>
               </div>
@@ -1070,23 +1069,21 @@ export default function Scan() {
             {/* Empty */}
             {!isAnalyzing && !errorMsg && ((mode === 'ai' && !aiHtml) || (mode === 'ocr' && !ocrText)) && (
               <div className="scan-result-empty">
-                <img src="/arvis-icon-light.svg" width="90" height="90" alt="" style={{ display: 'block', filter: 'grayscale(1) opacity(0.35)' }} />
-                <div style={{ fontSize: 16, color: 'var(--text-3)', marginTop: 12 }}>Ergebnis erscheint hier</div>
-                <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 4 }}>Laden Sie zuerst ein Dokument</div>
+                <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Laden Sie ein Dokument, um die Analyse zu starten.</div>
               </div>
             )}
             {/* Loading */}
             {isAnalyzing && (
               <div className="scan-result-loading">
                 <div className="scan-spinner" />
-                <div style={{ fontSize: 16, color: 'var(--text-2)', marginTop: 16, fontWeight: 600 }}>{loadingText}</div>
-                <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 6 }}>KI verarbeitet den Inhalt</div>
+                <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 14, fontWeight: 500 }}>{loadingText}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 4 }}>KI verarbeitet den Inhalt</div>
               </div>
             )}
             {/* Error */}
             {!isAnalyzing && errorMsg && (
-              <div style={{ textAlign: 'center', color: 'var(--text-3)', padding: 24 }}>
-                <div style={{ fontSize: 15, marginTop: 4, color: '#DC2626' }}>{errorMsg}</div>
+              <div style={{ textAlign: 'center', color: 'var(--text-3)', padding: 20 }}>
+                <div style={{ fontSize: 12.5, marginTop: 4, color: 'var(--error)' }}>{errorMsg}</div>
               </div>
             )}
             {/* AI result */}
@@ -1167,14 +1164,14 @@ export default function Scan() {
               {mobilePhotos.map((p, i) => (
                 <div key={i} style={{ position: 'relative' }}>
                   <img src={p.preview} alt={`Seite ${i + 1}`} style={{ width: 72, height: 90, objectFit: 'cover', borderRadius: 8, border: '2px solid #E5E5EA' }} />
-                  <div style={{ position: 'absolute', top: 4, left: 4, background: '#D94B0A', color: 'white', borderRadius: 10, fontSize: 12, fontWeight: 700, padding: '1px 6px' }}>{i + 1}</div>
+                  <div style={{ position: 'absolute', top: 4, left: 4, background: 'var(--orange)', color: 'white', borderRadius: 10, fontSize: 12, fontWeight: 600, padding: '1px 6px' }}>{i + 1}</div>
                 </div>
               ))}
             </div>
             {/* Weitere Seite */}
             <button onClick={() => cameraInputRef.current.click()}
-              style={{ padding: '14px', borderRadius: 12, border: '2px solid #D94B0A', background: 'white', color: '#D94B0A', fontSize: 17, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D94B0A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              style={{ padding: '14px', borderRadius: 12, border: '2px solid var(--orange)', background: 'white', color: 'var(--orange)', fontSize: 17, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               Weitere Seite
             </button>
             {/* Fertig */}
@@ -1249,16 +1246,16 @@ export default function Scan() {
                   Die Sitzung ist nach 10 Minuten abgelaufen. Bitte erneut versuchen.
                 </div>
                 <button onClick={() => { scanChannel?.unsubscribe(); startMobileScan() }}
-                  style={{ padding: '12px 24px', borderRadius: 10, border: 'none', background: '#D94B0A', color: 'white', fontSize: 16, fontWeight: 600, cursor: 'pointer', width: '100%' }}>
+                  style={{ padding: '10px 18px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', width: '100%' }}>
                   Neuen QR-Code erstellen
                 </button>
               </>
             ) : (
               <>
-                <div style={{ fontSize: 15, color: '#8E8E93' }}>QR-Code mit Ihrem Handy scannen</div>
+                <div style={{ fontSize: 13, color: 'var(--text-3)' }}>QR-Code mit Ihrem Handy scannen</div>
                 <QRCodeSVG value={qrUrl} size={200} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, color: '#D94B0A', fontWeight: 600 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#D94B0A', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12.5, color: 'var(--orange)', fontWeight: 500 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--orange)', animation: 'pulse 1.5s infinite' }} />
                   Warte auf Foto…
                 </div>
               </>

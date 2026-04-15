@@ -514,8 +514,8 @@ export default function Profil() {
                     </div>
                   </div>
                   <button onClick={handleCheckout} disabled={checkoutLoading}
-                    style={{ width: '100%', padding: 11, borderRadius: 6, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.2s' }}
-                    onMouseOver={e => e.target.style.background = 'var(--orange-dark)'} onMouseOut={e => e.target.style.background = 'var(--orange)'}>
+                    style={{ alignSelf: 'flex-start', padding: '8px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.15s, border-color 0.15s' }}
+                    onMouseOver={e => { e.target.style.background = 'var(--orange-dark)'; e.target.style.borderColor = 'var(--orange-dark)' }} onMouseOut={e => { e.target.style.background = 'var(--orange)'; e.target.style.borderColor = 'var(--orange)' }}>
                     {checkoutLoading ? 'Laden...' : yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
                   </button>
                 </div>

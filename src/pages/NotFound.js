@@ -45,7 +45,7 @@ export default function NotFound() {
       </p>
 
       <button
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate('/scan')}
         style={{
           background: '#D94B0A',
           color: '#fff',
@@ -60,7 +60,7 @@ export default function NotFound() {
         onMouseEnter={e => e.currentTarget.style.background = '#bf4008'}
         onMouseLeave={e => e.currentTarget.style.background = '#D94B0A'}
       >
-        Zurück zum Dashboard
+        Zurück zur Hauptseite
       </button>
     </div>
   )

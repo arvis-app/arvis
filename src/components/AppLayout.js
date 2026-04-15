@@ -6,10 +6,6 @@ import { preloadPage } from '../App'
 
 const navItems = [
   {
-    to: '/dashboard', label: 'Dashboard',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-  },
-  {
     to: '/scan', label: 'Scan & Analyse',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
   },
@@ -28,13 +24,6 @@ const navItems = [
   {
     to: '/uebersetzung', label: 'Übersetzung',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-  },
-]
-
-const personalItems = [
-  {
-    to: '/dateien', label: 'Meine Dateien',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
   },
 ]
 
@@ -183,25 +172,25 @@ export default function AppLayout() {
                 : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
             </div>
             {avatarOpen && (
-              <div style={{position:'absolute',right:0,top:'calc(100% + 8px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:8,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
+              <div style={{position:'absolute',right:0,top:'calc(100% + 6px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:6,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
                 <div onClick={() => { setAvatarOpen(false); navigate('/profil') }}
-                  style={{padding:'11px 16px',fontSize:15,fontWeight:600,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
+                  style={{padding:'9px 14px',fontSize:12.5,fontWeight:500,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:9,transition:'background 0.12s'}}
                   onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   Mein Profil
                 </div>
                 <div style={{height:1,background:'var(--border)',margin:'0 12px'}}/>
                 <div onClick={() => { setAvatarOpen(false); setBugModalOpen(true) }}
-                  style={{padding:'11px 16px',fontSize:15,fontWeight:600,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
+                  style={{padding:'9px 14px',fontSize:12.5,fontWeight:500,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:9,transition:'background 0.12s'}}
                   onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                   Bug melden
                 </div>
                 <div style={{height:1,background:'var(--border)',margin:'0 12px'}}/>
                 <div onClick={handleLogout}
-                  style={{padding:'11px 16px',fontSize:15,fontWeight:600,color:'#D94B0A',cursor:'pointer',display:'flex',alignItems:'center',gap:10,transition:'background 0.12s'}}
-                  onMouseOver={e=>e.currentTarget.style.background='rgba(217,75,10,0.07)'} onMouseOut={e=>e.currentTarget.style.background=''}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D94B0A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  style={{padding:'9px 14px',fontSize:12.5,fontWeight:500,color:'var(--orange)',cursor:'pointer',display:'flex',alignItems:'center',gap:9,transition:'background 0.12s'}}
+                  onMouseOver={e=>e.currentTarget.style.background='var(--orange-ghost)'} onMouseOut={e=>e.currentTarget.style.background=''}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                   Abmelden
                 </div>
               </div>
@@ -218,14 +207,6 @@ export default function AppLayout() {
       <aside className="sidebar">
         <div className="sidebar-section-title">Hauptmenü</div>
         {navItems.map(item => (
-          <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)} onMouseEnter={() => preloadPage(item.to)}>
-            <span className="nav-item-icon">{item.icon}</span>
-            {item.label}
-          </NavLink>
-        ))}
-
-        <div className="sidebar-section-title">Persönlich</div>
-        {personalItems.map(item => (
           <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)} onMouseEnter={() => preloadPage(item.to)}>
             <span className="nav-item-icon">{item.icon}</span>
             {item.label}

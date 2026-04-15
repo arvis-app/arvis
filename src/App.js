@@ -3,7 +3,6 @@ import { lazy, Suspense } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import LoginPage      from './pages/LoginPage'
 import AppLayout      from './components/AppLayout'
-import Dashboard      from './pages/Dashboard'
 import Paywall        from './components/Paywall'
 import ErrorBoundary      from './components/ErrorBoundary'
 import NotFound    from './pages/NotFound'
@@ -17,7 +16,6 @@ const pageImports = {
   '/bausteine':      () => import('./pages/Bausteine'),
   '/uebersetzung':   () => import('./pages/Uebersetzung'),
   '/chat':           () => import('./pages/Chat'),
-  '/dateien':        () => import('./pages/Dateien'),
   '/profil':         () => import('./pages/Profil'),
 }
 const Scan           = lazy(pageImports['/scan'])
@@ -25,7 +23,6 @@ const BriefSchreiber = lazy(pageImports['/briefschreiber'])
 const Bausteine      = lazy(pageImports['/bausteine'])
 const Uebersetzung   = lazy(pageImports['/uebersetzung'])
 const Chat           = lazy(pageImports['/chat'])
-const Dateien        = lazy(pageImports['/dateien'])
 const Profil         = lazy(pageImports['/profil'])
 const MobileScan     = lazy(() => import('./pages/MobileScan'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
@@ -62,7 +59,7 @@ function PublicRoute({ children }) {
       sessionStorage.removeItem('redirectAfterLogin')
       return <Navigate to={saved} replace />
     }
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/scan" replace />
   }
   return children
 }
@@ -80,14 +77,12 @@ function AppRoutes() {
       <Route path="/" element={
         <PrivateRoute><AppLayout /></PrivateRoute>
       }>
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard"      element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+        <Route index element={<Navigate to="/scan" replace />} />
         <Route path="scan"           element={<Paywall><ErrorBoundary><Scan /></ErrorBoundary></Paywall>} />
         <Route path="briefschreiber" element={<Paywall><ErrorBoundary><BriefSchreiber /></ErrorBoundary></Paywall>} />
         <Route path="bausteine"      element={<Paywall><ErrorBoundary><Bausteine /></ErrorBoundary></Paywall>} />
         <Route path="uebersetzung"   element={<Paywall><ErrorBoundary><Uebersetzung /></ErrorBoundary></Paywall>} />
         <Route path="chat"           element={<Paywall><ErrorBoundary><Chat /></ErrorBoundary></Paywall>} />
-        <Route path="dateien"        element={<Paywall><ErrorBoundary><Dateien /></ErrorBoundary></Paywall>} />
         <Route path="profil"         element={<ErrorBoundary><Profil /></ErrorBoundary>} />
         <Route path="mobile-scan/:token" element={<ErrorBoundary><MobileScan /></ErrorBoundary>} />
       </Route>

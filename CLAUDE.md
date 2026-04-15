@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 14 avril 2026_
+_Dernière mise à jour : 15 avril 2026_
 
 > **Conventions critiques à ne pas oublier :**
 > - Toujours travailler sur `main` — pas de branches
@@ -48,8 +48,6 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 | **Bausteine** | Bibliothèque de 1 564 blocs de texte médicaux réutilisables, organisés par spécialité — permet d'assembler rapidement des comptes-rendus standardisés |
 | **Übersetzung** | Dictionnaire médical multilingue de 1 585 termes traduits en 6 langues (DE, FR, EN, AR, TR, RU) — pour communiquer avec des patients allophones |
 | **Chat** | Chat IA médical (GPT-5.4) — assistant Facharztniveau, historique persisté en Supabase, system prompt invisible |
-| **Dateien** | Gestionnaire de fichiers PDF/images — stockage Supabase Storage (bucket `user-files`, privé), organisation, accès rapide aux documents patients |
-| **Dashboard** | Vue d'ensemble : météo, agenda, gestion des patients |
 | **MobileScan** | Permet de scanner depuis le téléphone via QR code, en envoyant le document au PC |
 
 **Public cible :** Médecins hospitaliers en Allemagne (Assistenzärzte, Fachärzte).
@@ -105,6 +103,78 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 - Liens légaux en bas du panneau droit : Impressum · Datenschutz · AGB
 - Google Login disponible
 
+## Design — Refonte à venir (passage à un style sober)
+
+> **Statut** : todo — à exécuter quand Amine sera prêt. Ne pas démarrer sans son go.
+
+**Contexte déclencheur** : un Oberarzt a réagi "ça a l'air fake" en voyant Arvis en aveugle (avant de savoir que c'était à Amine). Diagnostic probable : l'aesthetic actuel est trop **"vibe coding AI"** (default SaaS startup généré par les outils IA) et ne correspond ni au goût réel d'Amine ni aux codes visuels de la médecine hospitalière allemande qui inspireraient confiance. Le vrai goût d'Amine est **plus sobre, plus dense, moins de perte d'espace**.
+
+### Problèmes actuels à corriger
+
+- Cards partout avec drop-shadows (`box-shadow: 0 4px 20px rgba(0,0,0,.08)`)
+- Border-radius trop généreux (12-16px → consumer feel)
+- Padding trop large (`24px 32px`) → whitespace gaspillé au lieu de respirant
+- Orange `#D94B0A` utilisé en **fond** de sections (devrait rester un accent uniquement)
+- Typographie trop grande, weight 700 agressif partout
+- Structure "hero + grid de cards" générique type Stripe-wannabe
+
+### Cible sober (où il faut aller)
+
+| ❌ Vibe coding AI | ✅ Sobre pro médical |
+|---|---|
+| Cards avec drop-shadow | Tableaux, listes denses, bordures fines `1px solid #e5e5e5` |
+| `padding: 24px 32px` | `padding: 8px 12px` dans des rows compactes |
+| Grille de 3-4 cards aérées | Sidebar + zone contenu dense, content-forward |
+| Orange en fond de zones | Orange en **accents uniquement** (boutons, liens, focus) |
+| Border-radius 12-16px | Border-radius 4-6px (institutionnel) |
+| Weight 700 partout | Hiérarchie via weight 500/600 + taille + espace |
+| Gradients, emojis, shadows multiples | Typographie pure, zéro décoration |
+
+### Règle des 10% — Orange
+
+L'orange `#D94B0A` doit occuper **~10% maximum** de la surface visible (idéalement moins). Il sert les **actions** (boutons primaires, liens, focus states, highlights), **pas les structures** (fonds de sections, headers, bandeaux).
+
+### Palette cible
+
+```css
+--bg:         #fafafa;  /* fond principal — blanc cassé, jamais blanc pur */
+--bg-2:       #f5f5f5;  /* zones secondaires */
+--text-1:     #1a1a1a;  /* texte principal */
+--text-2:     #6b6b6b;  /* texte secondaire (PAS de gris fadé type gray-400) */
+--border:     #e5e5e5;  /* bordures fines */
+--orange:     #D94B0A;  /* accent uniquement, ≤10% de surface */
+```
+
+### Références de style à étudier
+
+- **Superhuman** (email) — dense, sobre, typographie parfaite, **zéro card décorative**
+- **Linear** (vues de travail Inbox/Issues, **PAS** la homepage marketing)
+- **Height** (PM tool) — très dense, refined
+- **Craft** (notes Mac) — whitespace utilisé avec **intention**, pas gaspillé
+- **Readwise Reader** — content-forward pur
+- **Doctolib** — sobre, très blanc, accent coloré parcimonieux
+
+**À NE PAS copier** : Orbis, Nexus, iMedOne — denses mais **moches**. On veut "dense et refined", pas "laid et dense". Nuance fondamentale.
+
+### Plan de refonte (quand Amine donne le go)
+
+1. **Audit preview page par page** — identifier précisément ce qui crie "vibe coding AI"
+2. **Poser un design system "Arvis sober"** — tokens CSS (colors, spacings, radius, shadows, typography) qui capturent le vrai goût d'Amine
+3. **Refactor progressif** dans cet ordre de priorité :
+   - a. **Landing page** (`public/landing_page.html`) — premier trust signal, le plus critique
+   - b. **Scan** — feature la plus utilisée, page d'entrée après login
+   - c. **BriefSchreiber** — feature emblématique
+   - d. Le reste (Chat, Bausteine, Uebersetzung, Profil)
+
+### Pourquoi c'est prioritaire
+
+Parmi tous les points soulevés par l'Oberarzt (légal, marché, concurrence, épuisement), le design est le **seul** qui est :
+- 100% sous le contrôle d'Amine
+- Fixable en 1-2 semaines
+- Capable de transformer la perception "fake" en "outil pro sérieux" sans rien changer au produit lui-même
+
+Si ce point est corrigé, aucun futur médecin allemand ne devrait plus dire "ça a l'air fake" — ce qui affaiblit mécaniquement tous les autres arguments pessimistes.
+
 ## Commandes essentielles
 
 ```bash
@@ -129,20 +199,18 @@ arvis/
 │   ├── supabaseClient.js             ← Client Supabase + invokeEdgeFunction()
 │   ├── context/AuthContext.js        ← Auth state, profil, isPro, refreshProfile()
 │   ├── components/
-│   │   ├── AppLayout.js              ← Sidebar (ordre : Dashboard, Scan, Brief, Chat, Bausteine, Übersetzung | Dateien) + topbar + Bug melden modal
+│   │   ├── AppLayout.js              ← Sidebar (ordre : Scan, Brief, Chat, Bausteine, Übersetzung) + topbar + Bug melden modal
 │   │   ├── Paywall.js                ← Bloque accès si pas Pro
 │   │   ├── ErrorBoundary.js          ← Capture les erreurs React
 │   │   └── ResetPasswordModal.js     ← Modale reset mot de passe
 │   └── pages/
 │       ├── LoginPage.js              ← Login + Register + Forgot + Reset (4 onglets)
-│       ├── Dashboard.js              ← Vue d'ensemble, météo, agenda, patients
-│       ├── Scan.js                   ← Scan + OCR + KI-Analyse (Paywall)
+│       ├── Scan.js                   ← Scan + OCR + KI-Analyse (Paywall) — page d'entrée après login
 │       ├── MobileScan.js             ← Scan via QR code (téléphone)
 │       ├── BriefSchreiber.js         ← Rédaction/correction IA courriers (Paywall)
 │       ├── Chat.js                   ← Chat IA médical GPT-5.4 (Paywall)
 │       ├── Bausteine.js              ← 1564 blocs médicaux (Paywall)
 │       ├── Uebersetzung.js           ← 1585 termes 6 langues (Paywall)
-│       ├── Dateien.js                ← Gestionnaire fichiers (Paywall)
 │       ├── Profil.js                 ← Profil + abonnement Stripe
 │       ├── AdminStats.js             ← KPIs admin (accès UUID-protégé)
 │       ├── Onboarding.js             ← Flow d'onboarding (créé mais pas encore intégré dans App.js)
@@ -172,13 +240,11 @@ arvis/
 arvis-app.de/               → landing_page.html (statique)
 arvis-app.de/login          → LoginPage.js (public)
 arvis-app.de/reset-password → ResetPasswordPage.js (public)
-arvis-app.de/dashboard      → Dashboard.js (PrivateRoute)
-arvis-app.de/scan           → Scan.js (PrivateRoute + Paywall)
+arvis-app.de/scan           → Scan.js (PrivateRoute + Paywall) — page d'entrée après login
 arvis-app.de/briefschreiber → BriefSchreiber.js (PrivateRoute + Paywall)
 arvis-app.de/chat           → Chat.js (PrivateRoute + Paywall)
 arvis-app.de/bausteine      → Bausteine.js (PrivateRoute + Paywall)
 arvis-app.de/uebersetzung   → Uebersetzung.js (PrivateRoute + Paywall)
-arvis-app.de/dateien        → Dateien.js (PrivateRoute + Paywall)
 arvis-app.de/profil         → Profil.js (PrivateRoute)
 arvis-app.de/impressum / /datenschutz / /agb → public
 ```
@@ -355,7 +421,7 @@ Coupons auto-appliqués au checkout (priorité) :
 5. **Edge Functions** : CORS conditionnel (localhost seulement si `ALLOW_LOCALHOST=true`), erreurs censurées (`{ error: 'Internal server error' }`), JWT validé en interne
 6. **Rate limiting IA** : 1M tokens/mois + 100k tokens/heure par user (colonnes `ai_tokens_used`, `ai_hourly_tokens`)
 7. **Emails** : `escapeHtml()` sur tout contenu dynamique (`firstName`, `message`, `photoUrls`)
-8. **CSP** : `unsafe-inline` retiré de `script-src` (gardé dans `style-src`), `frame-src` inclut `blob:` (PDFs Dateien), SRI sur PDF.js
+8. **CSP** : `unsafe-inline` retiré de `script-src` (gardé dans `style-src`), SRI sur PDF.js
 9. **Erreurs** : toujours `logError(context, error)` dans les catch — jamais `console.error` seul
 10. **Konto löschen** : edge function `delete-user-account` (Stripe + Storage + DB + Auth) — modale confirmation "LÖSCHEN" dans Profil.js
 11. **Blocklist emails jetables** : `src/utils/disposable-domains.js` — 300+ domaines temp mail bloqués à l'inscription (`isDisposableEmail()` appelé dans `register()` avant `signUp`). Erreur affichée dans le formulaire LoginPage. Pour ajouter un domaine : l'ajouter au `Set` dans le fichier
@@ -387,7 +453,7 @@ Bouton "Jetzt upgraden" :
 5. Placeholders dans les bausteine : `[_]`
 6. **Pas de branches** — toujours travailler directement sur `main`. `git push` → Vercel auto-deploy.
 7. **Paramètre tokens OpenAI** : utiliser `max_completion_tokens` (pas `max_tokens`) — l'edge function `ai-chat` accepte les deux pour rétrocompatibilité (`requestedCompletionTokens ?? requestedTokens`), mais `max_completion_tokens` est le paramètre correct pour les modèles gpt-5.x. Exception : `Chat.js` envoie encore `max_tokens` (legacy, fonctionne car l'edge function normalise).
-8. **Code splitting** : `React.lazy()` sur toutes les pages sauf Dashboard et LoginPage — `ErrorBoundary` sur les routes sensibles. **Preload au hover** : `preloadPage(path)` exporté depuis `App.js`, appelé `onMouseEnter` sur les NavLinks sidebar → le chunk est téléchargé avant le clic
+8. **Code splitting** : `React.lazy()` sur toutes les pages sauf LoginPage — `ErrorBoundary` sur les routes sensibles. **Preload au hover** : `preloadPage(path)` exporté depuis `App.js`, appelé `onMouseEnter` sur les NavLinks sidebar → le chunk est téléchargé avant le clic
 9. **Offline** : bannière "Keine Internetverbindung" dans AppLayout.js
 10. **Tests** : `npm test` → Vitest (jsdom), 40+ tests unitaires — CI via `.github/workflows/ci.yml`
 11. **DOMPurify** : `DOMPurify.sanitize()` sur TOUT `dangerouslySetInnerHTML` sans exception — protection XSS obligatoire. Présent dans Scan.js, Chat.js, BriefSchreiber.js, Bausteine.js.
@@ -402,27 +468,23 @@ Bouton "Jetzt upgraden" :
 4. **Triple refresh Stripe** : au retour `?success=true`, polling 2s/20s jusqu'à `plan: pro`.
 5. **Vercel rewrites vs routes** : utiliser `routes` (pas `rewrites`) pour surcharger `/`.
 6. **`npx supabase db push` peut échouer** si l'historique des migrations local et remote sont désynchronisés. Solution : `npx supabase migration repair --status applied <timestamp>` pour marquer la migration comme déjà appliquée, puis réessayer. Alternative : exécuter le SQL directement dans le SQL Editor Supabase.
-7. **Date des events Calendrier** : JS `Date.getMonth()` est 0-indexé, PostgreSQL DATE est 1-indexé. Toujours construire les clés de date avec `toDateKey(y, m0, d)` (dans Dashboard.js) qui fait `m0 + 1` et `padStart(2,'0')` → format ISO `YYYY-MM-DD`. Ne jamais stocker `getMonth()` directement.
 8. **Favicons Safari** : les SVG favicons (`<link rel="icon" type="image/svg+xml">`) ne fonctionnent pas dans Safari — aucune icône affichée. Utiliser PNG + ICO uniquement. `arvis-icon.svg` est la version bold (stroke-width:100px) — source pour régénérer les PNG via Illustrator → Export for Screens. `favicon.ico` généré via Pillow depuis icon-16/32/48.png. Fichiers actifs : `favicon.ico`, `icon-16/32/96/152/167/192/512.png`.
 11. **Apple Touch Icon (iOS share sheet)** : doit être full-bleed — robot blanc sur fond orange `#D94B0A`, sans padding, 180×180px. Fichier : `public/apple-touch-icon.png`. Safari met l'icône en cache agressivement — changer le nom de fichier pour invalider le cache.
 12. **Couleur orange** : `#D94B0A` est la couleur officielle Arvis (variable CSS `--orange`). Ne jamais utiliser `#e87722` — c'était une erreur. La couleur est présente dans `index.html`, `landing_page.html`, `manifest.json`, `Impressum.js`, `Datenschutz.js`, `AGB.js`.
 9. **Landing page mobile — inline styles** : `public/landing_page.html` est massivement inline-stylé. Les sélecteurs CSS `div[style*="font-size:..."]` ne fonctionnent pas fiablement sur Safari. La bonne approche : ajouter une `class` aux éléments cibles, puis cibler via CSS. Pour réduire proportionnellement tout le contenu d'un mockup : `zoom: 0.75` sur le container (affecte layout + rendu, contrairement à `transform: scale`).
-13. **iOS sticky hover** : le bloc `@media (hover: none)` dans `App.css` ne doit PAS cibler `button:hover` générique — ça rend les boutons invisibles sur iOS (le `:hover` reste actif après un tap). Cibler uniquement les classes spécifiques (`.btn-secondary:hover`, `.btn-action:hover`, `.patient-row:hover`, etc.). `.patient-row:hover` y est inclus pour éviter le sticky hover au scroll de la liste patients.
+13. **iOS sticky hover** : le bloc `@media (hover: none)` dans `App.css` ne doit PAS cibler `button:hover` générique — ça rend les boutons invisibles sur iOS (le `:hover` reste actif après un tap). Cibler uniquement les classes spécifiques (`.btn-secondary:hover`, `.btn-action:hover`, `.btn-action-secondary:hover`, `.btn-danger:hover`).
 10. **Landing page mobile — feature cards** : les containers mockup dans les feature cards ont la classe `feat-demo-wrap` → `zoom: 0.75` appliqué dans `@media (max-width: 768px)`. Le grid interne Brief Schreiber a la classe `brief-2cols`. Footer mobile : `.footer-links` doit avoir `position: static; transform: none;` sur mobile sinon il se superpose au logo.
 14. **config.toml vs Supabase Dashboard** : `supabase/config.toml` configure les templates email en local uniquement. Pour la prod, configurer aussi dans Supabase Dashboard > Authentication > Email Templates. Templates actifs : `confirm-signup.html`, `recovery.html`, `email-change.html`.
 15. **Chunk Vite introuvable sur mobile (Safari)** : après un déploiement, un téléphone avec `index.html` en cache tente de charger des chunks avec d'anciens hash → Vercel renvoie `index.html` (`text/html`) → Safari throw `TypeError: 'text/html' is not a valid JavaScript MIME type`. Fix : `window.addEventListener('vite:preloadError', () => window.location.reload())` dans `src/index.js` — rechargement automatique qui récupère le bon `index.html`.
-16. **Redirect après login (PublicRoute race condition)** : `handleLogin` appelait `navigate(savedRedirect)` puis `PublicRoute` re-rendait avec `<Navigate to="/dashboard">` qui l'écrasait. Fix : la logique de redirection post-login est entièrement dans `PublicRoute` — il lit `redirectAfterLogin` depuis sessionStorage et redirige là, sinon `/dashboard`. `handleLogin` ne navigate plus du tout. Critique pour le flux QR MobileScan : scan sans auth → login → retour vers `/mobile-scan/:token`.
+16. **Redirect après login (PublicRoute race condition)** : `handleLogin` appelait `navigate(savedRedirect)` puis `PublicRoute` re-rendait avec `<Navigate to="/scan">` qui l'écrasait. Fix : la logique de redirection post-login est entièrement dans `PublicRoute` — il lit `redirectAfterLogin` depuis sessionStorage et redirige là, sinon `/scan`. `handleLogin` ne navigate plus du tout. Critique pour le flux QR MobileScan : scan sans auth → login → retour vers `/mobile-scan/:token`.
 17. **CORS "Load failed" dans le navigateur** : si une Edge Function renvoie "Load failed" dans le navigateur mais répond correctement via curl, c'est un problème CORS — curl ignore CORS, le navigateur non. Cause typique : `apikey` manquant dans `Access-Control-Allow-Headers`. Le header correct pour toutes les fonctions est `'authorization, x-client-info, apikey, content-type'` (comme dans `get-plan-status`). Ne jamais utiliser seulement `'authorization, content-type'`.
 18. **Profil "Kein Titel"** : `profile.title` est `""` (empty string) quand l'utilisateur choisit "Kein Titel". Utiliser `??` (nullish coalescing) et non `||` pour le fallback — `||` traite `""` comme falsy et remet "Dr.".
-19. **Dateien preview blanc** : le bucket `user-files` est **privé** — les public URLs (`getPublicUrl`) retournent 400. Les signed URLs (`createSignedUrl`) fonctionnent côté serveur mais ont des problèmes de timing React. Solution : `supabase.storage.download()` → `URL.createObjectURL(blob)` (blob URLs locales). Ne jamais revenir sur signed URLs ou public URLs.
 20. **Scan bouton direct (sans QR)** : le bouton "Weiter" dans Scan mobile direct (pas MobileScan QR) doit être noir `#1C1C1E` avec label "Weiter zur Anonymisierung" — même style que le scan via QR code.
 21. **Screenshots propres pour vidéo promo** : utiliser **Chrome DevTools** (pas Safari — Safari étend les scroll containers et produit des captures trop longues). Méthode : clic droit sur l'élément → "Capture node screenshot". CSS critique : `.app-layout { min-height: 100vh; overflow-x: clip }` + `.result-text { overflow-x: auto; max-width: 100% }`. Ne jamais mettre `height: 100vh` sur `.app-layout` ni `overflow: hidden/clip` sur `html`/`body`.
 22. **Scan — barre d'étapes supprimée** : la barre horizontale "Dokument laden → Anonymisieren → Analysieren → Ergebnis" a été supprimée — redondante (le contenu montre l'étape active). Le flow est intuitif sans elle. Ne pas la remettre.
 23. **Alignement vertical des panneaux** : les panneaux de toutes les pages doivent avoir leur **bordure basse au même niveau**. BriefSchreiber : `.brief-panel { height: calc(100vh - 280px) }`. Scan : `#panelUpload { height: calc(100vh - 222px) }` (58px de moins car pas de `.brief-modes`). `.scan-layout { align-items: stretch }` pour que la colonne droite s'étire. Si on ajoute/supprime un élément au-dessus des panneaux → ajuster le `calc()` pour réaligner les bas.
 24. **Sous-items Scan — format `* ` obligatoire** : le parseur `markdownToHtml()` dans `Scan.js` détecte les sous-items via `/^\* /` (astérisque + espace), les lignes commençant par `- ` ou `– ` sont traitées comme des items de liste plate, PAS comme sous-items sous une Diagnose/Modalité. Le SYSTEM_PROMPT doit donc imposer `* ` de façon explicite et répétée (GPT-4o a tendance à revenir à `- ` naturellement). Si les sous-items n'apparaissent plus groupés sous leur parent → vérifier que le prompt n'a pas été assoupli sur ce point.
 25. **Boucle infinie dans `markdownToHtml()`** : dans la branche sous-items, toujours faire `i++` AVANT le `continue` — sinon la ligne suivante n'est jamais consommée et le parseur tourne en rond sur la même ligne jusqu'à freezer l'onglet. Bug rencontré lors de l'implémentation initiale des sous-items (commit 83b99a0).
-26. **Inline style masque CSS rule** : si un composant a `style={{ marginTop: 12 }}` inline ET que sa classe CSS a `margin-top: 16px`, la règle CSS est masquée tant que l'inline existe. Retirer l'inline peut révéler la règle CSS — ce qui donne l'illusion que le fix n'a pas marché ("j'ai retiré la marge mais elle est toujours là"). Toujours inspecter les computed styles ET la classe CSS associée, pas juste l'inline. Rencontré sur `.patient-detail` : `marginTop: 12` inline dans Dashboard.js masquait `margin-top: 16px` dans App.css — il a fallu retirer les deux.
-27. **Hover sticky sur élément sélectionné** : un simple `.patient-row:hover` dans `@media (hover: none)` ne suffit PAS à empêcher le hover de masquer l'état sélectionné — il faut aussi que `.patient-row.selected` batte le `:hover` avec `!important` (même spécificité sinon la source order décide), et ajouter `-webkit-tap-highlight-color: transparent` sur la base pour tuer le flash gris iOS. Sans les 3 couches : symptôme "fond orange n'apparaît pas tout de suite sur mobile au clic, apparaît au scroll". Voir section Dashboard — Patientenliste pour le détail des 3 règles.
 
 ---
 
@@ -431,7 +493,7 @@ Bouton "Jetzt upgraden" :
 - **Fichier init** : `src/index.js` — DSN via `VITE_SENTRY_DSN`, `environment: import.meta.env.MODE`
 - **Intégrations** : `browserTracingIntegration()` (perf, 20% sample) + `replayIntegration()` (replay vidéo sur erreur, 100%)
 - **Helper** : `src/utils/logger.js` → `logError(context, error, extra)` — à utiliser dans tous les `catch`
-- **Branché dans** : `supabaseClient.invokeEdgeFunction`, `Dashboard`, `Scan`, `AdminStats`, `Dateien`, `Bausteine`, `MobileScan`, `Chat`, `Paywall`, `ErrorBoundary`
+- **Branché dans** : `supabaseClient.invokeEdgeFunction`, `Scan`, `AdminStats`, `Bausteine`, `MobileScan`, `Chat`, `Paywall`, `ErrorBoundary`
 - **Ne pas utiliser** `console.error` seul dans les catch — toujours passer par `logError()`
 - **Erreurs Supabase** : les objets erreur Supabase (type `{ message, details, hint, code }`) ne se sérialisent pas avec `String(error)` → produit `"[object Object]"`. `logError()` utilise `error?.message || JSON.stringify(error)` pour extraire un message lisible. Ne jamais passer directement un objet Supabase à `Sentry.captureException()` — toujours via `logError()`.
 
@@ -473,19 +535,6 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Effacé** à la fermeture de l'onglet (sessionStorage)
 - **Min-height résultat** : `minHeight: 900` sur le panneau résultat quand affiché (évite résultat trop court en paysage)
 
-## Dashboard — Patientenliste
-
-- **Tri** : par numéro de chambre (`room`) croissant, puis par nom alphabétique comme fallback — parsing numérique tolérant (`parseInt(room, 10)`) pour gérer les chambres "12a", "12b", etc.
-- **Séparateur visuel entre chambres** : chaque ligne de patient compare son `room` au patient précédent ; si le numéro change, une fine ligne `.room-sep` est insérée au-dessus (pas de border-radius, `border-top: 1px solid var(--border)`, hover-safe — ne déclenche pas le `:hover` de la row). Aide à distinguer visuellement les patients regroupés par chambre.
-- **Auto-scroll** : à la création (`addOpen`) ou sélection d'un patient (`selected !== null`), le formulaire correspondant est scrollé au centre via `useEffect` + `scrollIntoView({ behavior: 'smooth', block: 'center' })`. Refs : `addFormRef` sur le form de création, `detailFormRef` sur le form d'édition. Sans ça, sur une longue liste de patients, le form apparaît hors écran et l'utilisateur ne voit pas qu'il s'est ouvert.
-- **Hover 3 couches (anti-sticky iOS)** : trois règles interdépendantes dans `App.css` :
-  1. Base `.patient-row:hover:not(.selected)` — le hover desktop n'affecte jamais une ligne déjà sélectionnée.
-  2. `.patient-row.selected { background: var(--orange-ghost) !important; border-color: rgba(217,75,10,0.2) !important; }` — `!important` pour garantir que l'état sélectionné bat n'importe quel `:hover` résiduel (même spécificité, source order ne suffit pas sur Safari/iOS).
-  3. `.patient-row { -webkit-tap-highlight-color: transparent; }` — désactive le flash gris natif iOS au tap.
-  
-  Symptôme si une seule couche est retirée : sur mobile, cliquer un patient ne montre pas le fond orange tout de suite (il faut scroller pour "réveiller" l'état), ou le fond flash brièvement en cliquant un autre patient. Ne jamais retirer une des 3 couches sans re-tester sur iOS réel.
-- **Layout sans marge** : `.patient-row` a `margin: 0` (pas de `margin-bottom`), et le formulaire de détail/création qui suit la liste (`.patient-detail`, plus le wrapper du form de création) n'a AUCUN `margin-top` — ni en CSS, ni en inline style. Les inline `marginTop` sur les wrappers dans `Dashboard.js` ont été supprimés, et `.patient-detail { margin-top: 0 }`. L'écart entre la liste et le form vient uniquement du `gap` du parent flex. Si on réintroduit une marge quelque part, la symétrie visuelle casse (marge asymétrique haut/bas des rows).
-
 ## BriefSchreiber — Korrektur Prompt
 
 Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mode `korrektur`). Règles clés :
@@ -524,18 +573,6 @@ Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mod
 - Flow : QR code → scan photo(s) → **"Weiter zur Anonymisierung"** (bouton noir `#1C1C1E`) → transfert → anonymisation sur le PC → analyse
 - Le bouton "Weiter" a été renommé et mis en noir pour clarifier que l'anonymisation intervient AVANT l'envoi (évite la confusion "ça va uploader directement")
 - Tant que aucune photo n'est prise : bouton label caméra orange "Foto aufnehmen" → après 1+ photos : label orange outline "Weitere Seite aufnehmen" + bouton noir "Weiter zur Anonymisierung"
-
-## Dateien — Storage & Preview
-
-- **Bucket** : `user-files` (Supabase Storage, **privé**, RLS `auth.uid()::text = split_part(name, '/', 1)`)
-- **Structure fichiers** : `userId/timestamp_filename` (ex: `4a35.../1775766728648_IMG_4303.PNG`)
-- **Upload** : `supabase.storage.from('user-files').upload()` → si succès : `storage_path` + public URL en `content` ; si échec : fallback base64 en `content`
-- **Preview** : `supabase.storage.download()` → `URL.createObjectURL(blob)` → blob URLs locales (`blob:...`). Signed URLs et public URLs ne fonctionnent PAS (bucket privé, timing React).
-- **Pré-chargement** : `refresh()` télécharge tous les fichiers avec `storage_path` en blob URLs au chargement de la page
-- **Table `notes`** : colonnes `file_type` (text: 'image'/'pdf'/'note'/'text'/'other'), `storage_path` (text, chemin Storage), `content` (text, URL publique ou base64 fallback)
-- **HEIC/HEIF** : reconnu comme image dans `getNoteType()` et `handleUpload()` — fonctionne nativement sur Safari/iOS uniquement
-- **CSP** : `frame-src` inclut `blob:` pour les previews PDF en iframe
-- **Suppression compte** : bucket `user-files` nettoyé par `delete-user-account`
 
 ## Bausteine — Placeholders éditables
 
