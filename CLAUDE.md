@@ -103,77 +103,19 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 - Liens légaux en bas du panneau droit : Impressum · Datenschutz · AGB
 - Google Login disponible
 
-## Design — Refonte à venir (passage à un style sober)
+## Design — Refonte sober (en cours)
 
-> **Statut** : todo — à exécuter quand Amine sera prêt. Ne pas démarrer sans son go.
+**Contexte** : un Oberarzt a réagi "ça a l'air fake" en voyant Arvis en aveugle. Diagnostic : aesthetic trop **"vibe coding AI"** — la refonte vise le sobre pro médical (Superhuman / Linear / Doctolib), pas la dense médicale moche (Orbis / iMedOne).
 
-**Contexte déclencheur** : un Oberarzt a réagi "ça a l'air fake" en voyant Arvis en aveugle (avant de savoir que c'était à Amine). Diagnostic probable : l'aesthetic actuel est trop **"vibe coding AI"** (default SaaS startup généré par les outils IA) et ne correspond ni au goût réel d'Amine ni aux codes visuels de la médecine hospitalière allemande qui inspireraient confiance. Le vrai goût d'Amine est **plus sobre, plus dense, moins de perte d'espace**.
+**Règle centrale** : l'orange `--orange` (`#B24E24`, terracotta désaturé) occupe **≤10% de la surface visible**. Accent uniquement (boutons, liens, focus), jamais en fond de section ou bandeau.
 
-### Problèmes actuels à corriger
+**Priorités de refonte** :
+1. Landing page `public/landing_page.html` — premier trust signal
+2. Scan — pilote du design system (en cours, cf. case study dans DESIGN.md)
+3. BriefSchreiber
+4. Chat, Bausteine, Uebersetzung, Profil
 
-- Cards partout avec drop-shadows (`box-shadow: 0 4px 20px rgba(0,0,0,.08)`)
-- Border-radius trop généreux (12-16px → consumer feel)
-- Padding trop large (`24px 32px`) → whitespace gaspillé au lieu de respirant
-- Orange `#D94B0A` utilisé en **fond** de sections (devrait rester un accent uniquement)
-- Typographie trop grande, weight 700 agressif partout
-- Structure "hero + grid de cards" générique type Stripe-wannabe
-
-### Cible sober (où il faut aller)
-
-| ❌ Vibe coding AI | ✅ Sobre pro médical |
-|---|---|
-| Cards avec drop-shadow | Tableaux, listes denses, bordures fines `1px solid #e5e5e5` |
-| `padding: 24px 32px` | `padding: 8px 12px` dans des rows compactes |
-| Grille de 3-4 cards aérées | Sidebar + zone contenu dense, content-forward |
-| Orange en fond de zones | Orange en **accents uniquement** (boutons, liens, focus) |
-| Border-radius 12-16px | Border-radius 4-6px (institutionnel) |
-| Weight 700 partout | Hiérarchie via weight 500/600 + taille + espace |
-| Gradients, emojis, shadows multiples | Typographie pure, zéro décoration |
-
-### Règle des 10% — Orange
-
-L'orange `#D94B0A` doit occuper **~10% maximum** de la surface visible (idéalement moins). Il sert les **actions** (boutons primaires, liens, focus states, highlights), **pas les structures** (fonds de sections, headers, bandeaux).
-
-### Palette cible
-
-```css
---bg:         #fafafa;  /* fond principal — blanc cassé, jamais blanc pur */
---bg-2:       #f5f5f5;  /* zones secondaires */
---text-1:     #1a1a1a;  /* texte principal */
---text-2:     #6b6b6b;  /* texte secondaire (PAS de gris fadé type gray-400) */
---border:     #e5e5e5;  /* bordures fines */
---orange:     #D94B0A;  /* accent uniquement, ≤10% de surface */
-```
-
-### Références de style à étudier
-
-- **Superhuman** (email) — dense, sobre, typographie parfaite, **zéro card décorative**
-- **Linear** (vues de travail Inbox/Issues, **PAS** la homepage marketing)
-- **Height** (PM tool) — très dense, refined
-- **Craft** (notes Mac) — whitespace utilisé avec **intention**, pas gaspillé
-- **Readwise Reader** — content-forward pur
-- **Doctolib** — sobre, très blanc, accent coloré parcimonieux
-
-**À NE PAS copier** : Orbis, Nexus, iMedOne — denses mais **moches**. On veut "dense et refined", pas "laid et dense". Nuance fondamentale.
-
-### Plan de refonte (quand Amine donne le go)
-
-1. **Audit preview page par page** — identifier précisément ce qui crie "vibe coding AI"
-2. **Poser un design system "Arvis sober"** — tokens CSS (colors, spacings, radius, shadows, typography) qui capturent le vrai goût d'Amine
-3. **Refactor progressif** dans cet ordre de priorité :
-   - a. **Landing page** (`public/landing_page.html`) — premier trust signal, le plus critique
-   - b. **Scan** — feature la plus utilisée, page d'entrée après login
-   - c. **BriefSchreiber** — feature emblématique
-   - d. Le reste (Chat, Bausteine, Uebersetzung, Profil)
-
-### Pourquoi c'est prioritaire
-
-Parmi tous les points soulevés par l'Oberarzt (légal, marché, concurrence, épuisement), le design est le **seul** qui est :
-- 100% sous le contrôle d'Amine
-- Fixable en 1-2 semaines
-- Capable de transformer la perception "fake" en "outil pro sérieux" sans rien changer au produit lui-même
-
-Si ce point est corrigé, aucun futur médecin allemand ne devrait plus dire "ça a l'air fake" — ce qui affaiblit mécaniquement tous les autres arguments pessimistes.
+**Tous les détails** (tokens CSS complets, patterns composants, anti-patterns, règles boutons, audit page par page) sont dans **[DESIGN.md](./DESIGN.md)** — source de vérité du système visuel. À ouvrir avant toute modification de style.
 
 ## Commandes essentielles
 
