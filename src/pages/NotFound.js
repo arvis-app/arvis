@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#FAF9F7',
+      background: 'var(--bg)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -18,7 +18,7 @@ export default function NotFound() {
       <div style={{
         fontSize: 120,
         fontWeight: 800,
-        color: '#D94B0A',
+        color: 'var(--orange)',
         lineHeight: 1,
         letterSpacing: '-4px',
         marginBottom: 24,
@@ -27,17 +27,17 @@ export default function NotFound() {
       </div>
 
       <h1 style={{
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 700,
-        color: '#1a1a1a',
+        color: 'var(--text)',
         margin: '0 0 12px',
       }}>
         Seite nicht gefunden
       </h1>
 
       <p style={{
-        fontSize: 17,
-        color: '#666',
+        fontSize: 15,
+        color: 'var(--text-3)',
         margin: '0 0 40px',
         maxWidth: 380,
       }}>
@@ -47,18 +47,19 @@ export default function NotFound() {
       <button
         onClick={() => navigate('/scan')}
         style={{
-          background: '#D94B0A',
+          background: 'var(--orange)',
           color: '#fff',
-          border: 'none',
-          borderRadius: 10,
-          padding: '14px 32px',
-          fontSize: 16,
-          fontWeight: 600,
+          border: '1px solid var(--orange)',
+          borderRadius: 5,
+          padding: '8px 20px',
+          fontSize: 13,
+          fontWeight: 500,
           cursor: 'pointer',
           transition: 'background 0.15s',
+          fontFamily: 'DM Sans, sans-serif',
         }}
-        onMouseEnter={e => e.currentTarget.style.background = '#bf4008'}
-        onMouseLeave={e => e.currentTarget.style.background = '#D94B0A'}
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--orange-dark)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'var(--orange)'}
       >
         Zurück zur Hauptseite
       </button>

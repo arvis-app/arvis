@@ -141,9 +141,9 @@ export default function ResetPasswordPage() {
             <>
               {error && (
                 <p style={{
-                  margin: '0 0 16px', fontSize: 15, fontWeight: 600, textAlign: 'center',
-                  borderRadius: 8, padding: '8px 12px',
-                  background: 'rgba(217,75,10,0.07)', color: '#D94B0A'
+                  margin: '0 0 16px', fontSize: 13, fontWeight: 500, textAlign: 'center',
+                  borderRadius: 5, padding: '8px 12px',
+                  background: 'var(--orange-ghost)', color: 'var(--orange)'
                 }}>
                   {error}
                 </p>
