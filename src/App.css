@@ -927,7 +927,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 ═══════════════════════════════════ */
 .bausteine-layout { display:grid; grid-template-columns:2fr 3fr; gap:20px; align-items:start; min-width:0; overflow-x:auto; }
 .bausteine-left { display:flex; flex-direction:column; gap:12px; min-width:0; }
-.bausteine-right { display:flex; flex-direction:column; gap:12px; min-width:0; }
+.bausteine-right { display:flex; flex-direction:column; gap:12px; min-width:0; height:calc(100vh - 140px); min-height:400px; overflow:hidden; }
 .bausteine-search { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--bg); border:1px solid var(--border); border-radius:5px; }
 .bausteine-search input { flex:1; border:none; background:transparent; color:var(--text); font-size: 15px; font-family:'DM Sans',sans-serif; outline:none; }
 .bausteine-search input::placeholder { color:var(--text-3); }

@@ -121,7 +121,7 @@ function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
           <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Text *</label>
-          <textarea value={text} onChange={e=>setText(e.target.value)} rows={6} placeholder="Bausteintext eingeben…"
+          <textarea value={text} onChange={e=>setText(e.target.value)} rows={14} placeholder="Bausteintext eingeben…"
             style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:15,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',resize:'vertical',lineHeight:1.6}}/>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
@@ -467,7 +467,7 @@ export default function Bausteine() {
           </div>
 
           {/* List */}
-          <div className="bausteine-list" style={{height:'calc(100vh - 340px)',minHeight:280,overflowY:'auto',display:'flex',flexDirection:'column',borderTop:'1px solid var(--border)'}}>
+          <div className="bausteine-list" style={{height:'calc(100vh - 200px)',minHeight:280,overflowY:'auto',display:'flex',flexDirection:'column',borderTop:'1px solid var(--border)'}}>
             {filtered.length===0 && (
               <div style={{padding:32,textAlign:'center',color:'var(--text-3)',fontSize:15}}>Keine Ergebnisse</div>
             )}
@@ -490,7 +490,7 @@ export default function Bausteine() {
         <div ref={rightRef} className="bausteine-right">
 
           {/* Preview */}
-          <div style={{padding:'0 0 16px 0',display:'flex',flexDirection:'column',flexShrink:0,borderBottom:'1px solid var(--border)'}}>
+          <div style={{padding:'0 0 16px 0',display:'flex',flexDirection:'column',flex:1,minHeight:0,borderBottom:'1px solid var(--border)'}}>
             {!selected && (
               <div style={{minHeight:218,color:'var(--text-2)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>Baustein auswählen</div>
             )}
