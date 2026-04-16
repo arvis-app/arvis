@@ -776,9 +776,28 @@ export default function Scan() {
           if (r.join('').trim()) cells.push(r)
         })
         if (cells.length) {
-          const colCount = Math.max(...cells.map(r => r.length))
-          const colWidths = Array.from({ length: colCount }, (_, i) => Math.max(...cells.map(r => (r[i] || '').length)))
-          out.push(cells.map(r => r.map((c, i) => i < r.length - 1 ? c + '\t\t' : c).join('')).join('\n'))
+          // Skip header row for length calculation
+          const dataRows = cells.slice(1)
+          const longestLen = dataRows.length
+            ? Math.max(...dataRows.map(r => (r[0] || '').length))
+            : Math.max(...cells.map(r => (r[0] || '').length))
+          // Target column = 2 tab stops after the longest name
+          const TAB_W = 8
+          let targetCol = Math.floor(longestLen / TAB_W) * TAB_W + TAB_W
+          targetCol = Math.floor(targetCol / TAB_W) * TAB_W + TAB_W
+          function tabsToCol(nameLen) {
+            let pos = nameLen, tabs = 0
+            while (pos < targetCol) { pos = Math.floor(pos / TAB_W) * TAB_W + TAB_W; tabs++ }
+            return Math.max(1, tabs)
+          }
+          out.push(cells.map((r, ri) => {
+            if (r.length < 2) return r[0] || ''
+            const col1 = r[0] || ''
+            const rest = r.slice(1).join('\t\t')
+            // Header row: fixed 2 tabs
+            const t = ri === 0 ? 2 : tabsToCol(col1.length)
+            return `${col1}${'\t'.repeat(t)}${rest}`
+          }).join('\n'))
         }
         return
       }
