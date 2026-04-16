@@ -35,7 +35,18 @@ function renderDiff(orig, result) {
   return html
 }
 
-const SYS = 'Du bist ein erfahrener klinischer Dokumentationsassistent für Krankenhausärzte in Deutschland. Gib AUSSCHLIESSLICH den fertigen Text zurück. Kein Kommentar, keine Erklärung.'
+function formatMedTabs(text) {
+  const schemaPattern = /\b\d+[-–]\d+[-–]\d+(\b|[-–]\d+)?/
+  return text.split('\n').map(line => {
+    const m = line.match(schemaPattern)
+    if (!m) return line
+    const before = line.slice(0, m.index).trimEnd()
+    const schema = line.slice(m.index)
+    return `${before}\t\t${schema}`
+  }).join('\n')
+}
+
+const SYS ='Du bist ein erfahrener klinischer Dokumentationsassistent für Krankenhausärzte in Deutschland. Gib AUSSCHLIESSLICH den fertigen Text zurück. Kein Kommentar, keine Erklärung.'
 
 function buildPrompt(mode, style, length, input) {
   const si = mode === 'umformulierung' ? (style === 'Telegrafisch' ? ' Telegrafisch: kurze Sätze, keine Füllwörter.' : style === 'Präzise' ? ' Präzise und strukturiert.' : style === 'Narrativ' ? ' Narrativ: fließende Sätze.' : style === 'Aufzählung' ? ' Als Aufzählung mit Stichpunkten.' : '') : ''
@@ -333,23 +344,14 @@ export default function BriefSchreiber() {
       if (data?.error === 'limit_reached') { setState('empty'); setLimitReached(true); return }
       const content = data?.content
       if (!content) throw new Error('Leere Antwort.')
-      setResult(content.trim()); setState('result'); setDiffMode('result')
+      setResult(formatMedTabs(content.trim())); setState('result'); setDiffMode('result')
       showToast({ korrektur: 'Korrektur', umformulierung: 'Umformulierung', zusammenfassung: 'Zusammenfassung' }[mode] + ' abgeschlossen')
     } catch (e) { setState('empty'); showToast('Fehler: ' + e.message) }
   }
 
   const [copied, setCopied] = useState(false)
   function copyResult() {
-    // Insert 2 fixed tabs before schema (X-X-X) for Orbis column alignment
-    const schemaPattern = /\b\d+[-–]\d+[-–]\d+(\b|[-–]\d+)?/
-    const aligned = result.split('\n').map(line => {
-      const m = line.match(schemaPattern)
-      if (!m) return line
-      const before = line.slice(0, m.index).trimEnd()
-      const schema = line.slice(m.index)
-      return `${before}\t\t${schema}`
-    })
-    navigator.clipboard.writeText(aligned.join('\n'))
+    navigator.clipboard.writeText(result)
     setCopied(true); setTimeout(() => setCopied(false), 1500)
   }
   async function downloadDoc() {
