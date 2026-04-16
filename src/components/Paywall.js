@@ -49,13 +49,13 @@ export default function Paywall({ children }) {
       <div style={{
         background: 'var(--bg-2)',
         border: '1px solid var(--border)',
-        borderRadius: 8,
+        borderRadius: 6,
         padding: '50px 40px',
         textAlign: 'center',
         maxWidth: 500,
         margin: '0 auto'
       }}>
-        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>
+        <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16, color: 'var(--text)' }}>
           {planInfo.plan === 'canceled'
             ? 'Ihr Abonnement wurde gekündigt'
             : 'Ihre 14-tägige Testphase ist abgelaufen'}
@@ -76,9 +76,9 @@ export default function Paywall({ children }) {
             color: '#fff',
             border: 'none',
             padding: '14px 28px',
-            borderRadius: 8,
+            borderRadius: 6,
             fontSize: 17,
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.7 : 1,
             fontFamily: 'DM Sans, sans-serif'
