@@ -465,7 +465,7 @@ export default function Briefassistent() {
         {/* RIGHT */}
         <div className="brief-panel">
           <div className="brief-panel-header">
-            <span className="brief-panel-label">KI-Ergebnis</span>
+            <span className="brief-panel-label">Ergebnis</span>
             {state === 'result' && (
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <button className="result-action-btn" aria-label="Ergebnis kopieren" onClick={copyResult} title="Kopieren" style={copied ? { color: 'var(--orange)' } : {}}>
@@ -486,7 +486,7 @@ export default function Briefassistent() {
           {state === 'empty' && (
             <div className="brief-output-empty">
               <img src="/arvis-icon-light.svg" width="90" height="90" alt="" style={{ display: 'block', filter: 'grayscale(1) opacity(0.35)' }} />
-              <div style={{ fontSize: 15, color: 'var(--text-3)', marginTop: 12 }}>KI-Ergebnis erscheint hier</div>
+              <div style={{ fontSize: 15, color: 'var(--text-3)', marginTop: 12 }}>Ergebnis erscheint hier</div>
               <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 4 }}>Text eingeben und analysieren</div>
             </div>
           )}
