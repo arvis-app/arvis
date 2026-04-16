@@ -835,7 +835,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .scan-step-label { font-size: 16px; font-weight:400; color:var(--text); }
 .scan-step.active .scan-step-label { color:var(--orange); }
 .scan-step-line { flex:1; height:1px; background:var(--border); margin:0 12px; }
-.scan-layout { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr); gap:0; align-items:stretch; }
+.scan-layout { display:grid; grid-template-columns:1fr 1fr; gap:0; align-items:stretch; }
 .scan-left { min-width:0; padding-right:32px; display:flex; flex-direction:column; }
 .scan-right { min-width:0; padding-left:32px; border-left:1px solid var(--border); min-height:340px; display:flex; flex-direction:column; }
 .scan-panel { background:transparent; border:none; border-radius:0; overflow:visible; display:flex; flex-direction:column; flex:1; }
