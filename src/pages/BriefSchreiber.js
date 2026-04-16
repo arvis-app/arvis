@@ -364,48 +364,40 @@ export default function BriefSchreiber() {
   ]
 
   return (
-    <div className="page active">
-      <div className="page-header">
-        <div>
-          <div className="page-title">AI Brief Schreiber</div>
-          <div className="page-date">KI korrigiert und reformuliert Ihre medizinischen Briefe</div>
-        </div>
-        <button className="btn-secondary" id="briefResetBtn" onClick={clearAll} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, display: 'block' }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
-          <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
-        </button>
-      </div>
-
-      {limitReached && (
-        <div style={{ background: 'var(--orange-ghost)', border: '1px solid var(--orange)', borderRadius: 5, padding: '12px 16px', marginBottom: 16 }}>
-          <span style={{ color: 'var(--orange)', fontSize: 14, fontWeight: 500 }}>
-            Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert.
-          </span>
-        </div>
-      )}
-
-      <div className="brief-modes">
-        {modes.map(m => (
-          <button key={m.key} className={`brief-mode-btn${mode === m.key ? ' active' : ''}`} onClick={() => setMode(m.key)}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{m.icon}</svg>
-            {m.label}
-          </button>
-        ))}
-      </div>
+    <div className="page active" id="page-brief">
 
       <div className="brief-layout">
 
         {/* LEFT */}
         <div className="brief-panel">
           <div className="brief-panel-header">
-            <span className="brief-panel-label">Ihr Text</span>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <div className="brief-modes" style={{ margin: '0 0 -10px -0px', borderBottom: 'none' }}>
+              {modes.map(m => (
+                <button key={m.key} className={`brief-mode-btn${mode === m.key ? ' active' : ''}`} onClick={() => setMode(m.key)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{m.icon}</svg>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
               <span className="brief-char-count">{chars} Zeichen</span>
               <button className="result-action-btn" aria-label="Eingabe leeren" onClick={clearInput} title="Leeren">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /></svg>
               </button>
+              <button className="btn-secondary" id="briefResetBtn" onClick={clearAll} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+                <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
+              </button>
             </div>
           </div>
+
+          {limitReached && (
+            <div style={{ background: 'var(--orange-ghost)', border: '1px solid var(--orange)', borderRadius: 5, padding: '10px 14px', marginBottom: 12, flexShrink: 0 }}>
+              <span style={{ color: 'var(--orange)', fontSize: 13, fontWeight: 500 }}>
+                Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert.
+              </span>
+            </div>
+          )}
 
           <div ref={inputRef} className="brief-textarea" contentEditable suppressContentEditableWarning spellCheck={false}
             data-placeholder="Diktieren, Text eingeben oder Bausteine hinzufügen…"

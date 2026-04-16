@@ -857,57 +857,55 @@ export default function Scan() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="page active" id="page-scan" style={{ paddingBottom: 20 }}>
-
-      {/* Header */}
-      <div className="page-header">
-        <div>
-          <div className="page-title">Scan & Analyse</div>
-          <div className="page-date">Dokument fotografieren · anonymisieren · analysieren</div>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, display: 'block' }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
-            <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
-          </button>
-        </div>
-      </div>
-
-      {limitReached && (
-        <div style={{ background: 'var(--orange-ghost)', border: '1px solid var(--orange)', borderRadius: 5, padding: '10px 14px', marginBottom: 14 }}>
-          <span style={{ color: 'var(--orange)', fontSize: 12.5, fontWeight: 500 }}>
-            Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert.
-          </span>
-        </div>
-      )}
-
-      {/* Historique de session */}
-      {scanHistory.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
-          <span style={{ fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap', flexShrink: 0 }}>Verlauf:</span>
-          {scanHistory.map(item => (
-            <button key={item.id} onClick={() => {
-              if (item.thumb) {
-                imgDataRef.current = item.thumb
-                if (imgRef.current) imgRef.current.src = item.thumb
-                setPanel('crop')
-              }
-              setAiHtml(item.aiHtml); setOcrText(item.ocrText); setMode(item.mode); goStep(4)
-            }}
-              style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text-2)', fontSize: 12, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}
-              title={item.label}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              {item.time}{item.label !== 'OCR Text' ? ` — ${item.label.slice(0, 28)}${item.label.length > 28 ? '…' : ''}` : ' — OCR'}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="page active" id="page-scan">
 
       {/* Main layout */}
       <div className="scan-layout">
 
         {/* LEFT */}
         <div className="scan-left" ref={leftRef}>
+
+          {/* Left-panel top row: title + Zurücksetzen */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexShrink: 0 }}>
+            <div>
+              <div className="page-title" style={{ fontSize: 17 }}>Scan & Analyse</div>
+              <div className="page-date">Dokument · anonymisieren · analysieren</div>
+            </div>
+            <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+              <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
+            </button>
+          </div>
+
+          {limitReached && (
+            <div style={{ background: 'var(--orange-ghost)', border: '1px solid var(--orange)', borderRadius: 5, padding: '10px 14px', marginBottom: 14, flexShrink: 0 }}>
+              <span style={{ color: 'var(--orange)', fontSize: 12.5, fontWeight: 500 }}>
+                Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert.
+              </span>
+            </div>
+          )}
+
+          {/* Historique de session */}
+          {scanHistory.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2, flexShrink: 0 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap', flexShrink: 0 }}>Verlauf:</span>
+              {scanHistory.map(item => (
+                <button key={item.id} onClick={() => {
+                  if (item.thumb) {
+                    imgDataRef.current = item.thumb
+                    if (imgRef.current) imgRef.current.src = item.thumb
+                    setPanel('crop')
+                  }
+                  setAiHtml(item.aiHtml); setOcrText(item.ocrText); setMode(item.mode); goStep(4)
+                }}
+                  style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text-2)', fontSize: 12, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  title={item.label}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  {item.time}{item.label !== 'OCR Text' ? ` — ${item.label.slice(0, 28)}${item.label.length > 28 ? '…' : ''}` : ' — OCR'}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Upload panel */}
           {panel === 'upload' && (
@@ -1038,7 +1036,7 @@ export default function Scan() {
         </div>
 
         {/* RIGHT */}
-        <div className="scan-right" ref={rightRef} style={!isAnalyzing && (aiHtml || ocrText) && leftH > 0 ? { height: leftH, minHeight: 900 } : panel !== 'upload' && frozenRightH > 0 ? { height: frozenRightH } : { alignSelf: 'stretch' }}>
+        <div className="scan-right" ref={rightRef}>
           {/* Mode selector */}
           <div className="scan-mode-card">
             <div className="scan-mode-title">Analysemodus</div>
