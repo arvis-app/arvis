@@ -201,7 +201,7 @@ body {
 }
 .form-input:focus {
   border-color: var(--orange);
-  box-shadow: 0 0 0 4px rgba(217,75,10,0.08);
+  box-shadow: 0 0 0 3px rgba(178,78,36,0.12);
 }
 .form-input::placeholder { color: var(--text-3); }
 select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
@@ -1264,7 +1264,7 @@ a.nav-item:hover { background: var(--bg-3); color: var(--text); }
 
 .onboarding-title {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text);
   margin: 0 0 10px;
   line-height: 1.3;
