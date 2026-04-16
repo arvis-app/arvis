@@ -18,7 +18,12 @@ function formatBausteinText(s) {
 
 function renderPlaceholders(text) {
   let h = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')
+  // Old syntax: [_] or [opt1 / opt2]
   h = h.replace(/\[([^\][]{0,80})\]/g, (match) => `<span class="ph-chip" data-encoded="${encodeURIComponent(match)}" contenteditable="false">${match}</span>`)
+  // New syntax: (_) — free text placeholder
+  h = h.replace(/\(_\)/g, () => `<span class="ph-chip" data-encoded="${encodeURIComponent('(_)')}" contenteditable="false">(_)</span>`)
+  // New syntax: (opt1/opt2/...) — choice placeholder (must have at least one slash)
+  h = h.replace(/\(([^()]{1,120}(?:\/[^()]{0,80})+)\)/g, (match) => `<span class="ph-chip" data-encoded="${encodeURIComponent(match)}" contenteditable="false">${match}</span>`)
   return h
 }
 
@@ -539,7 +544,7 @@ export default function Bausteine() {
           {popup.choices.map(c => (
             <button key={c} className="ph-popup-btn" onMouseDown={e=>{e.preventDefault();choosePopup(c)}}>{c}</button>
           ))}
-          <button className="ph-popup-btn ph-andere" onMouseDown={e=>{e.preventDefault();andereEingeben()}}>Andere eingeben…</button>
+          <button className="ph-popup-btn ph-andere" onMouseDown={e=>{e.preventDefault();andereEingeben()}}>Andere Option…</button>
         </div>
       )}
 
