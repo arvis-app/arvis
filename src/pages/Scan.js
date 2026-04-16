@@ -778,7 +778,7 @@ export default function Scan() {
         if (cells.length) {
           const colCount = Math.max(...cells.map(r => r.length))
           const colWidths = Array.from({ length: colCount }, (_, i) => Math.max(...cells.map(r => (r[i] || '').length)))
-          out.push(cells.map(r => r.map((c, i) => i < r.length - 1 ? c.padEnd(colWidths[i] + 2) : c).join('')).join('\n'))
+          out.push(cells.map(r => r.map((c, i) => i < r.length - 1 ? c + '\t\t' : c).join('')).join('\n'))
         }
         return
       }
