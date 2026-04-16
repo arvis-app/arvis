@@ -412,7 +412,7 @@ export default function Bausteine() {
   function sendDirectToBrief() {
     if (!selected) return
     sessionStorage.setItem('arvis_brief_input', selected.text)
-    navigate('/briefschreiber')
+    navigate('/briefassistent')
   }
 
   const isFav = selected && favs.includes(selected.id)
@@ -528,7 +528,7 @@ export default function Bausteine() {
                   </button>
                   <button className="btn-action" onClick={sendDirectToBrief} style={{flex:1,justifyContent:'center',display:'flex',gap:6}}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                    An Brief Schreiber
+                    An Briefassistent
                   </button>
                 </div>
               </div>

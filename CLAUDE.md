@@ -44,7 +44,7 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 | Fonctionnalité | Description |
 |----------------|-------------|
 | **Scan / OCR + KI-Analyse** | Scanne un document médical via GPT-4o Vision (pas de Tesseract) — extraction texte OCR et analyse IA structurée en allemand |
-| **BriefSchreiber** | Rédige ou corrige des courriers médicaux professionnels en allemand via IA (arztbrief, Überweisung, etc.) |
+| **Briefassistent** | Rédige ou corrige des courriers médicaux professionnels en allemand via IA (arztbrief, Überweisung, etc.) |
 | **Bausteine** | Bibliothèque de 1 564 blocs de texte médicaux réutilisables, organisés par spécialité — permet d'assembler rapidement des comptes-rendus standardisés |
 | **Übersetzung** | Dictionnaire médical multilingue de 1 585 termes traduits en 6 langues (DE, FR, EN, AR, TR, RU) — pour communiquer avec des patients allophones |
 | **Chat** | Chat IA médical (GPT-5.4) — assistant Facharztniveau, historique persisté en Supabase, system prompt invisible |
@@ -112,7 +112,7 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 **Priorités de refonte** :
 1. Landing page `public/landing_page.html` — premier trust signal
 2. Scan — pilote du design system (en cours, cf. case study dans DESIGN.md)
-3. BriefSchreiber
+3. Briefassistent
 4. Chat, Bausteine, Uebersetzung, Profil
 
 **Tous les détails** (tokens CSS complets, patterns composants, anti-patterns, règles boutons, audit page par page) sont dans **[DESIGN.md](./DESIGN.md)** — source de vérité du système visuel. À ouvrir avant toute modification de style.
@@ -149,7 +149,7 @@ arvis/
 │       ├── LoginPage.js              ← Login + Register + Forgot + Reset (4 onglets)
 │       ├── Scan.js                   ← Scan + OCR + KI-Analyse (Paywall) — page d'entrée après login
 │       ├── MobileScan.js             ← Scan via QR code (téléphone)
-│       ├── BriefSchreiber.js         ← Rédaction/correction IA courriers (Paywall)
+│       ├── Briefassistent.js         ← Rédaction/correction IA courriers (Paywall)
 │       ├── Chat.js                   ← Chat IA médical GPT-5.4 (Paywall)
 │       ├── Bausteine.js              ← 1564 blocs médicaux (Paywall)
 │       ├── Uebersetzung.js           ← 1585 termes 6 langues (Paywall)
@@ -183,7 +183,7 @@ arvis-app.de/               → landing_page.html (statique)
 arvis-app.de/login          → LoginPage.js (public)
 arvis-app.de/reset-password → ResetPasswordPage.js (public)
 arvis-app.de/scan           → Scan.js (PrivateRoute + Paywall) — page d'entrée après login
-arvis-app.de/briefschreiber → BriefSchreiber.js (PrivateRoute + Paywall)
+arvis-app.de/briefassistent → Briefassistent.js (PrivateRoute + Paywall)
 arvis-app.de/chat           → Chat.js (PrivateRoute + Paywall)
 arvis-app.de/bausteine      → Bausteine.js (PrivateRoute + Paywall)
 arvis-app.de/uebersetzung   → Uebersetzung.js (PrivateRoute + Paywall)
@@ -398,7 +398,7 @@ Bouton "Jetzt upgraden" :
 8. **Code splitting** : `React.lazy()` sur toutes les pages sauf LoginPage — `ErrorBoundary` sur les routes sensibles. **Preload au hover** : `preloadPage(path)` exporté depuis `App.js`, appelé `onMouseEnter` sur les NavLinks sidebar → le chunk est téléchargé avant le clic
 9. **Offline** : bannière "Keine Internetverbindung" dans AppLayout.js
 10. **Tests** : `npm test` → Vitest (jsdom), 40+ tests unitaires — CI via `.github/workflows/ci.yml`
-11. **DOMPurify** : `DOMPurify.sanitize()` sur TOUT `dangerouslySetInnerHTML` sans exception — protection XSS obligatoire. Présent dans Scan.js, Chat.js, BriefSchreiber.js, Bausteine.js.
+11. **DOMPurify** : `DOMPurify.sanitize()` sur TOUT `dangerouslySetInnerHTML` sans exception — protection XSS obligatoire. Présent dans Scan.js, Chat.js, Briefassistent.js, Bausteine.js.
 
 ---
 
@@ -415,7 +415,7 @@ Bouton "Jetzt upgraden" :
 12. **Couleur orange** : `#D94B0A` est la couleur officielle Arvis (variable CSS `--orange`). Ne jamais utiliser `#e87722` — c'était une erreur. La couleur est présente dans `index.html`, `landing_page.html`, `manifest.json`, `Impressum.js`, `Datenschutz.js`, `AGB.js`.
 9. **Landing page mobile — inline styles** : `public/landing_page.html` est massivement inline-stylé. Les sélecteurs CSS `div[style*="font-size:..."]` ne fonctionnent pas fiablement sur Safari. La bonne approche : ajouter une `class` aux éléments cibles, puis cibler via CSS. Pour réduire proportionnellement tout le contenu d'un mockup : `zoom: 0.75` sur le container (affecte layout + rendu, contrairement à `transform: scale`).
 13. **iOS sticky hover** : le bloc `@media (hover: none)` dans `App.css` ne doit PAS cibler `button:hover` générique — ça rend les boutons invisibles sur iOS (le `:hover` reste actif après un tap). Cibler uniquement les classes spécifiques (`.btn-secondary:hover`, `.btn-action:hover`, `.btn-action-secondary:hover`, `.btn-danger:hover`).
-10. **Landing page mobile — feature cards** : les containers mockup dans les feature cards ont la classe `feat-demo-wrap` → `zoom: 0.75` appliqué dans `@media (max-width: 768px)`. Le grid interne Brief Schreiber a la classe `brief-2cols`. Footer mobile : `.footer-links` doit avoir `position: static; transform: none;` sur mobile sinon il se superpose au logo.
+10. **Landing page mobile — feature cards** : les containers mockup dans les feature cards ont la classe `feat-demo-wrap` → `zoom: 0.75` appliqué dans `@media (max-width: 768px)`. Le grid interne Briefassistent a la classe `brief-2cols`. Footer mobile : `.footer-links` doit avoir `position: static; transform: none;` sur mobile sinon il se superpose au logo.
 14. **config.toml vs Supabase Dashboard** : `supabase/config.toml` configure les templates email en local uniquement. Pour la prod, configurer aussi dans Supabase Dashboard > Authentication > Email Templates. Templates actifs : `confirm-signup.html`, `recovery.html`, `email-change.html`.
 15. **Chunk Vite introuvable sur mobile (Safari)** : après un déploiement, un téléphone avec `index.html` en cache tente de charger des chunks avec d'anciens hash → Vercel renvoie `index.html` (`text/html`) → Safari throw `TypeError: 'text/html' is not a valid JavaScript MIME type`. Fix : `window.addEventListener('vite:preloadError', () => window.location.reload())` dans `src/index.js` — rechargement automatique qui récupère le bon `index.html`.
 16. **Redirect après login (PublicRoute race condition)** : `handleLogin` appelait `navigate(savedRedirect)` puis `PublicRoute` re-rendait avec `<Navigate to="/scan">` qui l'écrasait. Fix : la logique de redirection post-login est entièrement dans `PublicRoute` — il lit `redirectAfterLogin` depuis sessionStorage et redirige là, sinon `/scan`. `handleLogin` ne navigate plus du tout. Critique pour le flux QR MobileScan : scan sans auth → login → retour vers `/mobile-scan/:token`.
@@ -424,7 +424,7 @@ Bouton "Jetzt upgraden" :
 20. **Scan bouton direct (sans QR)** : le bouton "Weiter" dans Scan mobile direct (pas MobileScan QR) doit être noir `#1C1C1E` avec label "Weiter zur Anonymisierung" — même style que le scan via QR code.
 21. **Screenshots propres pour vidéo promo** : utiliser **Chrome DevTools** (pas Safari — Safari étend les scroll containers et produit des captures trop longues). Méthode : clic droit sur l'élément → "Capture node screenshot". CSS critique : `.app-layout { min-height: 100vh; overflow-x: clip }` + `.result-text { overflow-x: auto; max-width: 100% }`. Ne jamais mettre `height: 100vh` sur `.app-layout` ni `overflow: hidden/clip` sur `html`/`body`.
 22. **Scan — barre d'étapes supprimée** : la barre horizontale "Dokument laden → Anonymisieren → Analysieren → Ergebnis" a été supprimée — redondante (le contenu montre l'étape active). Le flow est intuitif sans elle. Ne pas la remettre.
-23. **Alignement vertical des panneaux** : les panneaux de toutes les pages doivent avoir leur **bordure basse au même niveau**. BriefSchreiber : `.brief-panel { height: calc(100vh - 280px) }`. Scan : `#panelUpload { height: calc(100vh - 222px) }` (58px de moins car pas de `.brief-modes`). `.scan-layout { align-items: stretch }` pour que la colonne droite s'étire. Si on ajoute/supprime un élément au-dessus des panneaux → ajuster le `calc()` pour réaligner les bas.
+23. **Alignement vertical des panneaux** : les panneaux de toutes les pages doivent avoir leur **bordure basse au même niveau**. Briefassistent : `.brief-panel { height: calc(100vh - 280px) }`. Scan : `#panelUpload { height: calc(100vh - 222px) }` (58px de moins car pas de `.brief-modes`). `.scan-layout { align-items: stretch }` pour que la colonne droite s'étire. Si on ajoute/supprime un élément au-dessus des panneaux → ajuster le `calc()` pour réaligner les bas.
 24. **Sous-items Scan — format `* ` obligatoire** : le parseur `markdownToHtml()` dans `Scan.js` détecte les sous-items via `/^\* /` (astérisque + espace), les lignes commençant par `- ` ou `– ` sont traitées comme des items de liste plate, PAS comme sous-items sous une Diagnose/Modalité. Le SYSTEM_PROMPT doit donc imposer `* ` de façon explicite et répétée (GPT-4o a tendance à revenir à `- ` naturellement). Si les sous-items n'apparaissent plus groupés sous leur parent → vérifier que le prompt n'a pas été assoupli sur ce point.
 25. **Boucle infinie dans `markdownToHtml()`** : dans la branche sous-items, toujours faire `i++` AVANT le `continue` — sinon la ligne suivante n'est jamais consommée et le parseur tourne en rond sur la même ligne jusqu'à freezer l'onglet. Bug rencontré lors de l'implémentation initiale des sous-items (commit 83b99a0).
 
@@ -477,9 +477,9 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Effacé** à la fermeture de l'onglet (sessionStorage)
 - **Min-height résultat** : `minHeight: 900` sur le panneau résultat quand affiché (évite résultat trop court en paysage)
 
-## BriefSchreiber — Korrektur Prompt
+## Briefassistent — Korrektur Prompt
 
-Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mode `korrektur`). Règles clés :
+Le prompt Korrektur est dans `src/pages/Briefassistent.js` (`buildPrompt()`, mode `korrektur`). Règles clés :
 - **Prose** pour Anamnese, Befunde, Bildgebung, Procedere — phrases complètes et connectées, pas de fragments
 - **Liste** pour Medikation et Diagnosen
 - **Medikation** : format `Wirkstoff Dosis – Schema` — pas de Darreichungsform (pas de "Tabletten", "retard", etc.), ligne vide entre chaque médicament pour l'espacement
@@ -489,7 +489,7 @@ Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mod
 - **Ton** : Facharzt — concis, sachlich, pas de sur-explication (le lecteur est médecin)
 - Constructions-types fournies dans le prompt : Anamnese ("stellte sich vor… berichtet über…"), Befunde ("Die Untersuchung ergab…"), Procedere ("Es erfolgte… Der Patient erhielt…")
 
-## BriefSchreiber — Modèle IA
+## Briefassistent — Modèle IA
 
 - **Modèle** : `gpt-5.4-mini` via edge function `ai-chat`
 - **Paramètres** : `max_completion_tokens: 3000` pour Korrektur/Umformulierung/Zusammenfassung
@@ -518,11 +518,11 @@ Le prompt Korrektur est dans `src/pages/BriefSchreiber.js` (`buildPrompt()`, mod
 
 ## Bausteine — Placeholders éditables
 
-- Placeholders `[...]` rendus comme `<span class="ph-chip">` (même système que BriefSchreiber)
+- Placeholders `[...]` rendus comme `<span class="ph-chip">` (même système que Briefassistent)
 - Clic sur placeholder sans `/` → curseur remplace le chip (saisie libre)
 - Clic sur placeholder avec `/` (ex: `[bejaht / verneint]`) → popup de choix + option "Andere eingeben…"
 - Bouton **Kopieren** (grand, outline orange) copie le texte avec valeurs remplies via `getPlainText()`
-- Bouton **An Brief Schreiber** envoie le texte brut au rédacteur IA
+- Bouton **An Briefassistent** envoie le texte brut au rédacteur IA
 - Warenkorb supprimé — le flow est : sélectionner → remplir placeholders → copier
 - Layout 40/60 (liste / preview)
 

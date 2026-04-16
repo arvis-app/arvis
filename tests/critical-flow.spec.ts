@@ -32,7 +32,7 @@ test.describe('Flow critique Arvis', () => {
     await expect(planBadge).toContainText(/trial/i, { timeout: 5000 })
   })
 
-  test('Paywall bloque accès Brief Schreiber en trial', async ({ page }) => {
+  test('Paywall bloque accès Briefassistent en trial', async ({ page }) => {
     const email = process.env.TEST_TRIAL_EMAIL
     const password = process.env.TEST_TRIAL_PASSWORD
 
@@ -48,8 +48,8 @@ test.describe('Flow critique Arvis', () => {
     await page.getByRole('button', { name: /anmelden|einloggen/i }).click()
     await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 10000 })
 
-    // Naviguer vers /briefschreiber
-    await page.goto('/briefschreiber')
+    // Naviguer vers /briefassistent
+    await page.goto('/briefassistent')
     await page.waitForLoadState('networkidle')
 
     // Vérifier que le Paywall est visible

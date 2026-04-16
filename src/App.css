@@ -629,7 +629,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   z-index: 99;
 }
 
-/* ── Immersive full-height layout — Scan & BriefSchreiber, desktop uniquement ── */
+/* ── Immersive full-height layout — Scan & Briefassistent, desktop uniquement ── */
 @media (min-width: 1101px) {
   .main-content:has(#page-scan),
   .main-content:has(#page-brief) {
@@ -904,8 +904,8 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .ocr-textarea::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; min-height:40px; }
 .ocr-textarea::-webkit-scrollbar-thumb:hover { background:var(--text-3); }
 .ocr-textarea:focus { border-color:var(--orange); }
-.btn-send-briefschreiber { align-self:flex-start; margin-top:14px; padding:8px 14px; background:var(--orange); color:white; border:1px solid var(--orange); border-radius: 5px; font-size: 13px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:7px; transition:background 0.15s, border-color 0.15s; }
-.btn-send-briefschreiber:hover { background:var(--orange-dark); border-color:var(--orange-dark); }
+.btn-send-briefassistent { align-self:flex-start; margin-top:14px; padding:8px 14px; background:var(--orange); color:white; border:1px solid var(--orange); border-radius: 5px; font-size: 13px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:7px; transition:background 0.15s, border-color 0.15s; }
+.btn-send-briefassistent:hover { background:var(--orange-dark); border-color:var(--orange-dark); }
 .scan-options-cancel { margin-top:4px; margin-bottom:0; padding:6px 12px; border-radius:5px; border:none; background:transparent; color:var(--text-3); cursor:pointer; font-size:13px; font-weight:500; font-family:'DM Sans',sans-serif; align-self:flex-start; display:inline-flex; align-items:center; justify-content:center; transition:color 0.15s, background 0.15s; }
 .scan-options-cancel:hover { color:#DC2626; background:rgba(220,38,38,0.07); }
 .copy-toast { position:fixed; bottom:24px; right:24px; background:#1C1C1E; color:white; padding:10px 18px; border-radius: 6px; font-size: 15px; font-weight:600; opacity:0; transform:translateY(10px); transition:all 0.3s; pointer-events:none; z-index:999; }

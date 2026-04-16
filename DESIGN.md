@@ -251,13 +251,13 @@ Pas de box, pas de fond, pas de radius. Juste une ligne qui glisse.
 **Classes CSS touchées** : `.scan-layout`, `.scan-left`, `.scan-right`, `.scan-panel`, `.scan-panel-header`, `.scan-panel-title`, `.scan-drop-zone`, `.scan-mode-card`, `.scan-mode-toggle`, `.scan-mode-btn`, `.scan-result-card`.
 
 **À finir sur /scan** :
-- [x] Toolbar / boutons copier / "An Brief Schreiber" — classes CSS correctes (`.btn-send-briefschreiber`, `.scan-viewer-toolbar`) — pas de hardcode résiduel
+- [x] Toolbar / boutons copier / "An Briefassistent" — classes CSS correctes (`.btn-send-briefassistent`, `.scan-viewer-toolbar`) — pas de hardcode résiduel
 - [x] Crop step — anonWarning, Schwärzen button, blackout handles migrés vers CSS variables (commit `1f2485c`)
-- [ ] Vérifier l'alignement vertical avec BriefSchreiber (règle des bas de panneau alignés — cf. piège `#23` dans CLAUDE.md)
+- [ ] Vérifier l'alignement vertical avec Briefassistent (règle des bas de panneau alignés — cf. piège `#23` dans CLAUDE.md)
 
 ---
 
-### /briefschreiber — refactor sober (✅ sessions avril 2026)
+### /briefassistent — refactor sober (✅ sessions avril 2026)
 
 **Avant** — panels avec `background: var(--card)`, `border-radius: 8px`, `box-shadow` décorative. Boutons modes (Korrektur / Umformulierung / Zusammenfassung) en style pill coloré. Label de section absent.
 
@@ -341,7 +341,7 @@ Ordre d'exécution recommandé :
 
 1. **Landing page** `public/landing_page.html` — premier trust signal, le plus critique pour un médecin qui arrive en aveugle
 2. **Scan** — pilote du design system (en cours)
-3. **BriefSchreiber** — feature emblématique, deuxième plus utilisée
+3. **Briefassistent** — feature emblématique, deuxième plus utilisée
 4. **Chat** — KI-Assistent
 5. **Bausteine** — bibliothèque 1564 blocs
 6. **Uebersetzung** — dictionnaire 1585 termes

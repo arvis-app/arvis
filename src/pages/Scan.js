@@ -840,7 +840,7 @@ export default function Scan() {
   }
   function sendToBrief() {
     const text = mode === 'ai' ? document.getElementById('aiSummaryDiv')?.innerText : ocrText
-    if (text) { sessionStorage.setItem('arvis_brief_input', text); navigate('/briefschreiber') }
+    if (text) { sessionStorage.setItem('arvis_brief_input', text); navigate('/briefassistent') }
   }
 
   // ── Reset pan when zoom returns to 1 ─────────────────────────────────────
@@ -890,7 +890,6 @@ export default function Scan() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexShrink: 0 }}>
             <div>
               <div className="page-title" style={{ fontSize: 17 }}>Scan & Analyse</div>
-              <div className="page-date">Dokument · anonymisieren · analysieren</div>
             </div>
             <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
@@ -1148,9 +1147,9 @@ export default function Scan() {
                     <div className="result-text" id="aiSummaryDiv" onClick={handleSectionCopy} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(aiHtml) }} />
                   </div>
                 </div>
-                <button className="btn-send-briefschreiber" onClick={sendToBrief} style={{ marginTop: 16, flexShrink: 0 }}>
+                <button className="btn-send-briefassistent" onClick={sendToBrief} style={{ marginTop: 16, flexShrink: 0 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
-                  An Brief Schreiber senden
+                  An Briefassistent senden
                 </button>
               </div>
             )}
@@ -1177,9 +1176,9 @@ export default function Scan() {
                   </div>
                 </div>
                 <textarea className="ocr-textarea" value={ocrText} onChange={e => setOcrText(e.target.value)} placeholder="OCR Text erscheint hier..." />
-                <button className="btn-send-briefschreiber" onClick={sendToBrief} style={{ marginTop: 12 }}>
+                <button className="btn-send-briefassistent" onClick={sendToBrief} style={{ marginTop: 12 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
-                  An Brief Schreiber senden
+                  An Briefassistent senden
                 </button>
               </div>
             )}

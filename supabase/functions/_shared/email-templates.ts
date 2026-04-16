@@ -68,7 +68,7 @@ export function buildEmailHtml(type: string, firstName?: string): EmailTemplate 
 <p>Sch&ouml;n, dass du dabei bist. Dein <span class="highlight">14-t&auml;giger kostenloser Test</span> hat begonnen &mdash; alle Funktionen sind freigeschaltet:</p>
 <ul>
 <li><strong>Scan &amp; KI-Analyse</strong> &mdash; Dokumente scannen, OCR und KI-Auswertung</li>
-<li><strong>Brief Schreiber</strong> &mdash; Arztbriefe mit KI-Unterst&uuml;tzung</li>
+<li><strong>Briefassistent</strong> &mdash; Arztbriefe mit KI-Unterst&uuml;tzung</li>
 <li><strong>Bausteine</strong> &mdash; 1.550 medizinische Textbausteine</li>
 <li><strong>&Uuml;bersetzung</strong> &mdash; Medizinisches W&ouml;rterbuch in 6 Sprachen</li>
 </ul>
@@ -84,7 +84,7 @@ ${cta('Jetzt loslegen', loginUrl)}
         html: wrap('Testphase endet bald', `
 <h1>Deine Testphase endet in 3 Tagen</h1>
 <p>Hallo ${name},</p>
-<p>dein kostenloser Test bei Arvis l&auml;uft in <strong>3 Tagen</strong> aus. Danach werden die Premium-Funktionen (Scan, Brief Schreiber, Bausteine, &Uuml;bersetzung) gesperrt.</p>
+<p>dein kostenloser Test bei Arvis l&auml;uft in <strong>3 Tagen</strong> aus. Danach werden die Premium-Funktionen (Scan, Briefassistent, Bausteine, &Uuml;bersetzung) gesperrt.</p>
 <p>Damit du ohne Unterbrechung weiterarbeiten kannst, sichere dir jetzt dein Abo:</p>
 <ul>
 <li><strong>Monatlich:</strong> 19&nbsp;&euro;/Monat</li>

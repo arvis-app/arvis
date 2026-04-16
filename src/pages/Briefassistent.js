@@ -57,7 +57,7 @@ function buildPrompt(mode, style, length, input) {
   return `${ph}\nZUSAMMENFASSUNG in 5-10 Zeilen: Aufnahmegrund, Befunde, Diagnose(n), Maßnahmen, Weiteres. WICHTIG: Gib AUSSCHLIESSLICH den Zusammenfassungstext zurück. Kein Titel, keine Überschrift wie "Zusammenfassung:", kein Originaltext, keine Einleitung — nur der reine Text.${si}${li}\n\nText:\n${input}`
 }
 
-export default function BriefSchreiber() {
+export default function Briefassistent() {
   const [mode, setMode] = useState('korrektur')
   const [style, setStyle] = useState('Telegrafisch')
   const [length, setLength] = useState('Original')
@@ -376,6 +376,13 @@ export default function BriefSchreiber() {
 
   return (
     <div className="page active" id="page-brief">
+
+      {/* Header */}
+      <div className="page-header">
+        <div>
+          <div className="page-title">Briefassistent</div>
+        </div>
+      </div>
 
       <div className="brief-layout">
 

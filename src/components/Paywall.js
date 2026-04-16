@@ -63,8 +63,8 @@ export default function Paywall({ children }) {
 
         <p style={{ color: 'var(--text-2)', fontSize: 17, lineHeight: 1.6, marginBottom: 32 }}>
           {planInfo.plan === 'canceled'
-            ? 'Ihr vorheriges Abonnement ist nicht mehr aktiv. Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und Premium-Funktionen zu haben, reaktivieren Sie bitte Ihr Abonnement.'
-            : 'Um weiterhin Zugriff auf Brief Schreiber, Scan & Analyse und andere Premium-Funktionen zu haben, upgraden Sie bitte auf Arvis Pro.'}
+            ? 'Ihr vorheriges Abonnement ist nicht mehr aktiv. Um weiterhin Zugriff auf Briefassistent, Scan & Analyse und Premium-Funktionen zu haben, reaktivieren Sie bitte Ihr Abonnement.'
+            : 'Um weiterhin Zugriff auf Briefassistent, Scan & Analyse und andere Premium-Funktionen zu haben, upgraden Sie bitte auf Arvis Pro.'}
         </p>
 
         <button
