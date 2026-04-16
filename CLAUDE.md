@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 15 avril 2026_
+_Dernière mise à jour : 16 avril 2026_
 
 > **Conventions critiques à ne pas oublier :**
 > - Toujours travailler sur `main` — pas de branches
@@ -427,6 +427,9 @@ Bouton "Jetzt upgraden" :
 23. **Alignement vertical des panneaux** : les panneaux de toutes les pages doivent avoir leur **bordure basse au même niveau**. Briefassistent : `.brief-panel { height: calc(100vh - 280px) }`. Scan : `#panelUpload { height: calc(100vh - 222px) }` (58px de moins car pas de `.brief-modes`). `.scan-layout { align-items: stretch }` pour que la colonne droite s'étire. Si on ajoute/supprime un élément au-dessus des panneaux → ajuster le `calc()` pour réaligner les bas.
 24. **Sous-items Scan — format `* ` obligatoire** : le parseur `markdownToHtml()` dans `Scan.js` détecte les sous-items via `/^\* /` (astérisque + espace), les lignes commençant par `- ` ou `– ` sont traitées comme des items de liste plate, PAS comme sous-items sous une Diagnose/Modalité. Le SYSTEM_PROMPT doit donc imposer `* ` de façon explicite et répétée (GPT-4o a tendance à revenir à `- ` naturellement). Si les sous-items n'apparaissent plus groupés sous leur parent → vérifier que le prompt n'a pas été assoupli sur ce point.
 25. **Boucle infinie dans `markdownToHtml()`** : dans la branche sous-items, toujours faire `i++` AVANT le `continue` — sinon la ligne suivante n'est jamais consommée et le parseur tourne en rond sur la même ligne jusqu'à freezer l'onglet. Bug rencontré lors de l'implémentation initiale des sous-items (commit 83b99a0).
+26. **Mobile Scan/Bausteine — alignement des colonnes empilées (16/04/2026)** : sur `@media (max-width: 785px)`, `.scan-left` (padding-right:32px) et `.scan-right` (padding-left:32px + border-left) créaient un décalage à gauche en stack mobile → reset des paddings à 0 + border-left supprimée + `border-top` séparateur entre les deux colonnes empilées. Pour Bausteine ≤700px : ajout de `order:1` sur `.bausteine-left` et `order:2` sur `.bausteine-right` pour garantir liste au-dessus de preview.
+27. **Bausteine — perte de saisie dans le modal d'édition (16/04/2026)** : le `useEffect` d'init de `NeuBausteinModal` dépendait de `[open, editingBaustein, categories]`. Quand `bausteine_data.js` finit de charger en arrière-plan (peut prendre plusieurs secondes), `baudataVersion` change → `allData`/`categories` recomputés → nouvelle référence → useEffect refire → `setText(editingBaustein.text)` ÉCRASE le brouillon en cours et reset tous les champs. **Fix** : dépendances → `[open, editingBaustein?.id]` (avec eslint-disable-next-line). Ne réinitialise que sur ouverture du modal OU changement de baustein édité.
+28. **Briefassistent desktop — chaîne flex/grid ne propageait pas la hauteur (16/04/2026)** : la chaîne `#page-brief (flex:1)` → `.brief-layout (display:grid, flex:1)` → `.brief-panel (height:100%)` ne donnait pas une hauteur définie aux panneaux → ils restaient courts → bouton Diktieren+KI analysieren pas en bas de l'écran. **Fix** : `.brief-layout { grid-template-rows: minmax(0, 1fr) }` + `.brief-panel { height: calc(100vh - 80px) !important; min-height: calc(100vh - 80px) !important }` + action row en `position: absolute; bottom: 24px`. Sélecteurs préfixés `#page-brief` pour spécificité. Toutes les règles avec `!important` car le base CSS (line ~962) défi un `height: calc(100vh - 220px)` qu'il faut surcharger.
 
 ---
 
@@ -461,12 +464,32 @@ Le prompt est dans `src/pages/Scan.js` (`const SYSTEM_PROMPT`). Structure :
 - **Température** : `0.2` (déterministe, évite les oublis)
 - **Modèle** : `gpt-5.4-mini`, `max_completion_tokens: 4000`
 - **Tableau médication** : 3 colonnes `| Medikament (Dosis) | morgens-mittags-abends | ggf. Dauer |` — pas de colonne nachts si 0, pas de Darreichungsform (pas de "Tabletten", "retard", etc.)
+- **Tri médication par classe thérapeutique** (21 catégories, ordre clinique imposé dans le prompt) : 1. Antikoagulation/TAH → 2. Betablocker → 3. Herzinsuffizienz-spez. (Entresto, Ivabradin) → 4. ACE/Sartane → 5. Andere Antihypertensiva → 6. Antiarrhythmika → 7. Diuretika → 8. Elektrolyte → 9. Gliflozine → 10. Antidiabetika → 11. Stoffwechsel-Medikation **inkl. ALLE Supplementationen** (Statine, Allopurinol, Vitamin D, B12, Folsäure, Eisen, Zink) → 12. Schilddrüse → 13. Pulmo → 14. Magen-Darm → 15. Analgetika (de la plus forte à la plus faible) → 16. Ko-Analgetika → 17. Neuro (Antiepileptika/Neuroleptika/Parkinson/Antidepressiva) → 18. Urologie → 19. Antibiotika → **médicaments non-classables** → 20. Heparine → 21. Insulin. **Aucune zwischenüberschrift, aucun groupe-header, aucune ligne vide** — un seul tableau continu trié.
+- **Colonne `ggf. Dauer`** : restreinte à **pausiert / abgesetzt / durée restante** uniquement (ex: "für 5 Tage", "noch 3 Tage", "bis 18.04.2026"). **Cellule vide** dans tous les autres cas — pas de "nüchtern", pas d'indication ("H.p.-Eradikation"), pas de "wie Vormedikation", pas de Startdatum/Applikationsart.
 - **Diagnosen** : reprise **verbatim** du document — aucune numérotation, aucune abréviation, aucune omission. Toutes les Diagnosen présentes doivent figurer, groupées en "Hauptdiagnose(n)" et "Weitere Diagnose(n)". Une Diagnose par ligne (ligne principale sans tiret ni bullet). Détails associés (OP-Datum, Prozedur, Verlauf, Symptômes) en **sous-items `* `** (Sternchen + espace, **jamais `- `**) directement sous la Diagnose. Les sous-items sont rendus avec indentation, puce `•`, couleur `var(--text-2)` et police plus petite — mais la ligne grise de gauche s'étend jusqu'au bas du dernier sous-item pour grouper visuellement Diagnose + détails en un seul bloc. La Diagnose principale est en **`font-weight:600`** (bold).
+- **Enrichissement des Diagnosen** : pour chaque Diagnose, GPT doit **scanner tout le document** (Therapie, Verlauf, Procedere, OP-Bericht, Befunde, Bildgebung, Konsile, Medikation, Anamnèse) et rapatrier sous la Diagnose **uniquement les infos cliniquement pertinentes** qui définissent le statut, la thérapie ou la conduite à tenir. Exemples : Femurfraktur → OP-Datum + verfahren (TFNa) ; Pneumonie → Erreger + Antibiose+Dauer ; VHF → Antikoagulation+CHA₂DS₂-VASc ; OP/Z.n. → Datum+Prozedur ; Onko → Stadium+TNM+Histologie+Therapie. **EXCLU** : CRP-Verlauf, valeurs labo en série, mesures quotidiennes, Beobachtungsnotizen, Normalbefunde. Règle d'or : "*Im Zweifel WENIGER ist mehr — nur das, was ein Facharzt auf einen Blick über diese Diagnose wissen muss.*"
 - **Wichtige Befunde** : structuré par **modalité** — chaque modalité sur sa propre ligne **sans tiret et sans deux-points** (Labor, Sono Abdomen, CT Thorax, Röntgen Thorax, EKG, MRT, Echokardiographie, Histologie — selon ce qui est dans le document), suivie des valeurs/findings en sous-items `* `. Les valeurs labo liées peuvent être groupées par virgules sur une même ligne (ex: `* Kreatinin 1,8 mg/dl, GFR 38 ml/min`). Rendu natif : chaque modalité = bloc plain-text-else avec bordure gauche (`padding:7px 12px, margin-top:4px`), sous-items compacts en dessous (`gap:1px, line-height:1.5, font-size:12px`) → labs visuellement serrés sous Labor, espacement normal entre Labor/Sono/CT. **Ne pas ajouter de compactage CSS global** (`inBefunde` flag) — tout le serrage vient du passage "lignes plates → sous-items".
 - **Médication** : exhaustive — chaque médicament du document doit apparaître dans le tableau, même si incomplet ou lisible partiellement.
 - **Copie** : `copyResult()` utilise `ClipboardItem` avec `text/html` + `text/plain` — collage dans Word conserve gras, titres, tableaux, espacement. Collage dans ORBIS/KIS reçoit le texte brut avec tableaux tab-separated. Fallback `writeText` si `ClipboardItem` non supporté
 - **Word** : `downloadAsWord()` (dans `src/utils/downloadWord.js`) parse le HTML du `aiSummaryDiv` — titres en vrais Heading Word, **bold** conservé, tableaux avec bordures, listes à puces, espacement. Mode OCR/Brief = texte brut simple. **Récursion dans les wrappers `flex-column`** (blocs Diagnose + sous-items, Modalité + valeurs) : la fonction descend dans les children pour émettre chaque ligne plate ET chaque sous-item avec préfixe `- ` (via l'attribut `data-subitem="1"` posé dans `markdownToHtml()`). Sans cette récursion, les sous-items étaient perdus à l'export Word.
 - **Boutons copier par section** : chaque titre `###` est suivi d'un wrapper `data-sec-body` qui englobe tout le contenu de la section, et le titre porte un petit bouton copier (`data-copy-sec`). Event delegation sur `aiSummaryDiv` : `handleSectionCopy()` récupère le wrapper via `querySelector('[data-sec-body]')`, marche le DOM avec `sectionBodyToText()` (helper qui traverse récursivement et préfixe les `data-subitem` avec `- `), et copie en `text/plain`. Permet de ne copier que Diagnosen, ou Wichtige Befunde, etc. — sans toucher au reste du résultat.
+
+## Scan — Anonymisierung obligatoire (DSGVO)
+
+L'étape Schwärzen est **bloquante** — `proceedToAnalysis()` refuse de lancer l'analyse tant que l'une des deux conditions n'est pas remplie :
+1. Au moins UN blackout posé (sur n'importe quelle page si PDF multi-pages)
+2. Checkbox cochée : *"Ich bestätige: Es gibt keine zu anonymisierenden Patientendaten auf {allen Seiten dieses Dokuments | diesem Dokument}."*
+
+**État** : `noDataConfirmed` (boolean), reset à chaque nouveau document chargé (`loadFile()` PDF + image).
+
+**UI** :
+- Bandeau rouge en haut du panneau Anonymisieren : "Bitte alle Patientendaten schwärzen, bevor Sie fortfahren."
+- Si `pdfTotal > 1` → sous-titre rouge bold majuscules : "⚠ Auf ALLEN N Seiten anwenden" (pour éviter qu'ils oublient les autres pages)
+- Checkbox sous le bandeau (orange accent)
+- Bouton "Analysieren" : `disabled={!canProceed}` + style gris si désactivé + tooltip "Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind"
+- Garde côté JS dans `proceedToAnalysis` (defense in depth) : si conditions pas remplies → `setErrorMsg(...)` et return.
+
+**Détection blackouts toutes pages** : `blackouts.length > 0 || Object.values(blackoutsByPageRef.current).some(a => a && a.length > 0)`. La checkbox sert de trace défendable côté DSGVO en cas de litige.
 
 ## Scan — Historique de session
 
@@ -493,7 +516,16 @@ Le prompt Korrektur est dans `src/pages/Briefassistent.js` (`buildPrompt()`, mod
 
 - **Modèle** : `gpt-5.4-mini` via edge function `ai-chat`
 - **Paramètres** : `max_completion_tokens: 3000` pour Korrektur/Umformulierung/Zusammenfassung
-- **Vocal (Diktat)** : WebSocket OpenAI Realtime `gpt-4o-realtime-preview-2024-12-17` via token from `realtime-token` edge function
+- **Vocal (Diktat)** : WebSocket OpenAI Realtime `gpt-4o-realtime-preview-2024-12-17` via token from `realtime-function` edge function
+
+## Briefassistent — Layout (renommage 16/04/2026)
+
+- **Renommé** depuis `BriefSchreiber` → `Briefassistent` partout : fichier `src/pages/Briefassistent.js`, route `/briefassistent`, classe CSS `.btn-send-briefassistent`, labels UI ("Briefassistent" partout), landing page (`#briefassistent` anchor + h3), emails transactionnels, tests Playwright. Pas de redirect legacy car `pas de user actif`.
+- **Pas de `.page-header` externe** — la title row "Briefassistent" + bouton **Zurücksetzen** vit **À L'INTÉRIEUR** du panneau gauche (`.brief-panel:first-child`), même pattern que Scan (`.scan-left`). FontSize 17.
+- **Label panneau droit** : "Ergebnis" (et non "KI-Ergebnis") — empty state : "Ergebnis erscheint hier".
+- **Hauteur panneau desktop** : sur `@media (min-width: 1101px)`, `.brief-panel { height: calc(100vh - 80px) !important; min-height: calc(100vh - 80px) !important; }`. Le `!important` est obligatoire car la chaîne `flex` → `grid` → `100%` ne propageait pas correctement la hauteur. Voir piège #28.
+- **Action row Diktieren+KI analysieren** : `position: absolute; left: 24px; right: 24px; bottom: 24px` à l'intérieur de `.brief-panel:first-child` (qui a `position: relative; padding-bottom: 80px; overflow: hidden`). Garantie d'être tout en bas du panneau peu importe le contenu du textarea.
+- **Min-height textarea** : `#page-brief .brief-textarea { min-height: calc(100vh - 280px) !important }` — force le textarea à pousser le panneau en hauteur.
 
 ## Chat — KI-Assistent
 
@@ -518,13 +550,27 @@ Le prompt Korrektur est dans `src/pages/Briefassistent.js` (`buildPrompt()`, mod
 
 ## Bausteine — Placeholders éditables
 
-- Placeholders `[...]` rendus comme `<span class="ph-chip">` (même système que Briefassistent)
-- Clic sur placeholder sans `/` → curseur remplace le chip (saisie libre)
-- Clic sur placeholder avec `/` (ex: `[bejaht / verneint]`) → popup de choix + option "Andere eingeben…"
-- Bouton **Kopieren** (grand, outline orange) copie le texte avec valeurs remplies via `getPlainText()`
-- Bouton **An Briefassistent** envoie le texte brut au rédacteur IA
-- Warenkorb supprimé — le flow est : sélectionner → remplir placeholders → copier
-- Layout 40/60 (liste / preview)
+Trois syntaxes coexistent dans `renderPlaceholders()` (ordre des regex important) :
+
+| Syntaxe | Comportement |
+|---------|-------------|
+| `[_]` ou `(_)` | **Champ libre** — clic = curseur, saisie libre |
+| `(opt1 / opt2 / opt3)` | **Choix unique** — popup boutons + "Andere Option…" |
+| `(opt1 + opt2 + opt3)` | **Multi-cases (NEW 16/04)** — popup checkboxes + "Übernehmen". Items joints avec `, ` dans l'ordre original. |
+
+**Règle de discrimination** : la regex multi requiert ≥1 `+` et **interdit `/`** (`[^()/]`) → permet à GPT/aux auteurs de mélanger les deux syntaxes dans le même baustein sans conflit. Chip multi → `data-multi="1"`. État popup étendu : `{ visible, choices, x, y, multi, selected[] }`. `applyMultiPopup()` filtre `popup.choices` par `popup.selected.includes()` pour préserver l'ordre original.
+
+**Edit modal (NeuBausteinModal)** :
+- `maxWidth: 880px` (au lieu de 520) + `rows={14}` sur le textarea — confort de saisie pour longs bausteine
+- **PIÈGE résolu** : les dépendances du useEffect d'init sont `[open, editingBaustein?.id]` (PAS `[open, editingBaustein, categories]`). Sinon, quand `bausteine_data.js` finit de charger en arrière-plan → `categories` recomputé (nouvelle ref) → useEffect refire → `setText(editingBaustein.text)` ÉCRASE le brouillon en cours. Voir piège #27.
+
+**Layout** : 40/60 (liste / preview). Sur desktop, liste à `height: calc(100vh - 200px)`, panneau preview (`.bausteine-right`) à `height: calc(100vh - 140px) + overflow:hidden` avec wrapper interne `flex:1, min-height:0` → preview text scroll en interne, boutons "Kopieren" + "An Briefassistent" toujours visibles en bas.
+
+**Boutons** : **Kopieren** (outline orange) → `getPlainText()`. **An Briefassistent** → texte brut envoyé via sessionStorage `arvis_brief_input` puis `navigate('/briefassistent')`.
+
+**Warenkorb supprimé** — flow : sélectionner → remplir placeholders → copier.
+
+**Mobile (≤700px)** : grid stack 1fr avec `order:1` sur left + `order:2` sur right pour garantir liste au-dessus de la preview.
 
 ## Bug melden
 
