@@ -422,14 +422,14 @@ export default function Profil() {
                     </div>
                   )}
                 </div>
-                <span data-testid="plan-badge" style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? 'var(--error)' : '#16a34a', color: 'white', fontSize: 13, fontWeight: 700 }}>
+                <span data-testid="plan-badge" style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? 'var(--error)' : '#16a34a', color: 'white', fontSize: 13, fontWeight: 600 }}>
                   {planInfo.canceledPending ? 'Gekündigt' : planInfo.plan === 'pro' ? 'Aktiv' : planInfo.expired ? 'Abgelaufen' : 'Trial'}
                 </span>
               </div>
 
               {/* Zahlungsmittel */}
               <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>Zahlungsmittel</div>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>Zahlungsmittel</div>
                 {paymentMethod ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     {['paypal', 'sepa', 'sepa_debit', 'apple_pay', 'applepay', 'apple pay'].includes(paymentMethod.brand?.toLowerCase()) ? (
@@ -449,7 +449,7 @@ export default function Profil() {
                       </div>
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 52, height: 34, borderRadius: 6, background: 'white', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                        <div style={{ width: 52, height: 34, borderRadius: 6, background: 'var(--bg-2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                           <CardIcon brand={paymentMethod.brand} />
                         </div>
                         <div>
@@ -492,7 +492,7 @@ export default function Profil() {
                   {!yearly && (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '6px 12px', background: 'var(--orange-ghost)', border: '1px solid rgba(217,75,10,0.2)', borderRadius: 6 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--orange)' }}>Einführungsangebot –34% · erste 3 Monate</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--orange)' }}>Einführungsangebot –34% · erste 3 Monate</span>
                     </div>
                   )}
                   {/* Toggle Monatlich / Jährlich */}
@@ -500,7 +500,7 @@ export default function Profil() {
                     <div onClick={() => setYearly(false)} style={{ fontSize: 15, fontWeight: 600, color: yearly ? 'var(--text-3)' : 'var(--text)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <span>Monatlich</span>
                       <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-3)' }}>
-                        <span style={{ fontWeight: 700, color: yearly ? 'var(--text-3)' : 'var(--orange)' }}>19 €</span> <span style={{ textDecoration: 'line-through' }}>29 €</span>
+                        <span style={{ fontWeight: 600, color: yearly ? 'var(--text-3)' : 'var(--orange)' }}>19 €</span> <span style={{ textDecoration: 'line-through' }}>29 €</span>
                       </div>
                     </div>
                     <div onClick={() => setYearly(v => !v)} style={{ width: 44, height: 24, borderRadius: 999, background: 'var(--orange)', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
