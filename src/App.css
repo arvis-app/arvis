@@ -951,7 +951,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .brief-mode-btn.active { border-bottom-color:var(--orange); color:var(--text); font-weight:600; background:transparent; }
 .brief-layout { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
 .profil-layout { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
-.brief-panel { background:transparent; border-radius:0; border:none; box-shadow:none; display:flex; flex-direction:column; height:calc(100vh - 280px); min-height:340px; min-width:0; overflow:hidden; }
+.brief-panel { background:transparent; border-radius:0; border:none; box-shadow:none; display:flex; flex-direction:column; height:calc(100vh - 220px); min-height:380px; min-width:0; overflow:hidden; }
 .brief-panel:last-child { min-height:340px; }
 .brief-panel-header { padding:0 0 10px; border-bottom:1px solid var(--border); margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
 .brief-panel-label { font-family:'DM Sans',sans-serif; font-size:10.5px; font-weight:600; color:var(--text-3); letter-spacing:0.12em; text-transform:uppercase; }

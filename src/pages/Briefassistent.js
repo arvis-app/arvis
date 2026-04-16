@@ -377,21 +377,22 @@ export default function Briefassistent() {
   return (
     <div className="page active" id="page-brief">
 
-      {/* Header */}
-      <div className="page-header">
-        <div>
-          <div className="page-title">Briefassistent</div>
-        </div>
-        <button className="btn-secondary" id="briefResetBtn" onClick={clearAll} style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
-          <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
-        </button>
-      </div>
-
       <div className="brief-layout">
 
         {/* LEFT */}
         <div className="brief-panel">
+
+          {/* Top row: title + Zurücksetzen — comme Scan */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexShrink: 0 }}>
+            <div>
+              <div className="page-title" style={{ fontSize: 17 }}>Briefassistent</div>
+            </div>
+            <button className="btn-secondary" id="briefResetBtn" onClick={clearAll} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+              <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
+            </button>
+          </div>
+
           <div className="brief-panel-header">
             <div className="brief-modes" style={{ margin: '0 0 -10px -0px', borderBottom: 'none' }}>
               {modes.map(m => (
@@ -449,7 +450,7 @@ export default function Briefassistent() {
             </div>
           )}
 
-          <div className="brief-action-row" style={{ justifyContent: 'center' }}>
+          <div className="brief-action-row" style={{ justifyContent: 'center', marginTop: 'auto' }}>
             <button className={`btn-diktieren${recording ? ' diktieren-recording' : ''}`} onClick={toggleDictation}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></svg>
               {recording ? 'Stoppen' : 'Diktieren'}
