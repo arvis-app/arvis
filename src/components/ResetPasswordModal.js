@@ -38,7 +38,7 @@ export default function ResetPasswordModal() {
     }}>
       <div style={{
         background: 'var(--card)', border: '1px solid var(--border)',
-        borderRadius: 12, padding: '40px 36px', width: '100%', maxWidth: 400,
+        borderRadius: 6, padding: '40px 36px', width: '100%', maxWidth: 400,
         boxShadow: 'var(--shadow-lg)'
       }}>
         {/* Header */}
@@ -66,8 +66,8 @@ export default function ResetPasswordModal() {
         {success ? (
           <div style={{
             textAlign: 'center', padding: '16px',
-            background: 'rgba(46,125,50,0.07)', borderRadius: 8,
-            color: '#2e7d32', fontWeight: 600, fontSize: 16
+            background: 'rgba(58,139,92,0.07)', borderRadius: 5,
+            color: 'var(--success)', fontWeight: 600, fontSize: 16
           }}>
             ✓ Passwort erfolgreich geändert — Sie werden weitergeleitet…
           </div>

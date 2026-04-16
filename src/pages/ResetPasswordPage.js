@@ -132,8 +132,8 @@ export default function ResetPasswordPage() {
           {success ? (
             <div style={{
               textAlign: 'center', padding: '16px',
-              background: 'rgba(46,125,50,0.07)', borderRadius: 8,
-              color: '#2e7d32', fontWeight: 600, fontSize: 16
+              background: 'rgba(58,139,92,0.07)', borderRadius: 5,
+              color: 'var(--success)', fontWeight: 600, fontSize: 16
             }}>
               Passwort erfolgreich geaendert — Sie werden zur Anmeldung weitergeleitet...
             </div>
