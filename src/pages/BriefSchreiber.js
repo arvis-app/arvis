@@ -340,7 +340,32 @@ export default function BriefSchreiber() {
 
   const [copied, setCopied] = useState(false)
   function copyResult() {
-    navigator.clipboard.writeText(result)
+    // Align medication schema columns with tabs for Orbis import
+    const TAB_WIDTH = 8
+    const schemaPattern = /\b\d+[-–]\d+[-–]\d+(\b|[-–]\d+)?/
+    const lines = result.split('\n')
+    const medIndices = []
+    const parsed = lines.map((line, i) => {
+      const m = line.match(schemaPattern)
+      if (!m) return null
+      const schemaStart = line.indexOf(m[0])
+      const nameAndDose = line.slice(0, schemaStart).trimEnd()
+      const schema = line.slice(schemaStart)
+      medIndices.push(i)
+      return { nameAndDose, schema }
+    })
+    let aligned = lines
+    if (medIndices.length > 0) {
+      const longestLen = Math.max(...medIndices.map(i => parsed[i].nameAndDose.length))
+      const targetCol = Math.ceil((longestLen + 1) / TAB_WIDTH) * TAB_WIDTH + 2 * TAB_WIDTH
+      aligned = lines.map((line, i) => {
+        if (!medIndices.includes(i)) return line
+        const { nameAndDose, schema } = parsed[i]
+        const tabs = Math.max(2, Math.ceil((targetCol - nameAndDose.length) / TAB_WIDTH))
+        return `${nameAndDose}${'\t'.repeat(tabs)}${schema}`
+      })
+    }
+    navigator.clipboard.writeText(aligned.join('\n'))
     setCopied(true); setTimeout(() => setCopied(false), 1500)
   }
   async function downloadDoc() {
