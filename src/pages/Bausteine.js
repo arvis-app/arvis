@@ -92,7 +92,8 @@ function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }
       setTitel(''); setCategory(categories[0]||''); setText(''); setKeywords('')
     }
     setError('')
-  }, [open, editingBaustein, categories])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editingBaustein?.id])  // ne pas dépendre de categories ni de la ref objet — sinon une recompute en arrière-plan (ex: chargement de bausteine_data.js) écrase la saisie en cours
 
   function handleSave() {
     if (!titel.trim() || !text.trim()) { setError('Bitte Titel und Text ausfüllen.'); return }
