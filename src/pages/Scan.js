@@ -781,21 +781,11 @@ export default function Scan() {
           const longestLen = dataRows.length
             ? Math.max(...dataRows.map(r => (r[0] || '').length))
             : Math.max(...cells.map(r => (r[0] || '').length))
-          // Target column = 2 tab stops after the longest name
-          const TAB_W = 4
-          let targetCol = Math.floor(longestLen / TAB_W) * TAB_W + TAB_W
-          targetCol = Math.floor(targetCol / TAB_W) * TAB_W + TAB_W
-          function tabsToCol(nameLen) {
-            let pos = nameLen, tabs = 0
-            while (pos < targetCol) { pos = Math.floor(pos / TAB_W) * TAB_W + TAB_W; tabs++ }
-            return Math.max(1, tabs)
-          }
           out.push(cells.map((r, ri) => {
             if (r.length < 2) return r[0] || ''
             const col1 = r[0] || ''
             const rest = r.slice(1).join('\t\t')
-            // Header row: fixed 2 tabs
-            const t = ri === 0 ? 2 : tabsToCol(col1.length)
+            const t = ri === 0 ? 2 : Math.max(2, 2 + Math.round((longestLen - col1.length) / 6))
             return `${col1}${'\t'.repeat(t)}${rest}`
           }).join('\n'))
         }
