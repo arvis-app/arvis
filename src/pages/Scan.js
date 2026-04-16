@@ -772,7 +772,11 @@ export default function Scan() {
       if (tableEl) {
         const cells = []
         tableEl.querySelectorAll('tr').forEach(tr => {
-          const r = [...tr.querySelectorAll('td,th')].map(td => td.textContent.trim())
+          const r = [...tr.querySelectorAll('td,th')].map(td => {
+            let text = td.textContent.trim()
+            text = text.replace(/\s+(ab\s+\d|bis\s+\d|ab dem\s|\d{1,2}\.\d{1,2}\.\d{4}.*)/gi, '').trim()
+            return text
+          })
           if (r.join('').trim()) cells.push(r)
         })
         if (cells.length) {
@@ -785,7 +789,7 @@ export default function Scan() {
             if (r.length < 2) return r[0] || ''
             const col1 = r[0] || ''
             const rest = r.slice(1).join('\t\t')
-            const t = ri === 0 ? 2 : Math.max(2, 2 + Math.round((longestLen - col1.length) / 6))
+            const t = ri === 0 ? 2 : Math.max(2, 2 + Math.round((longestLen - col1.length) / 5))
             return `${col1}${'\t'.repeat(t)}${rest}`
           }).join('\n'))
         }
