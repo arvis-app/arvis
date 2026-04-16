@@ -203,6 +203,7 @@ export default function Scan() {
   const [viewerHeight, setViewerHeight] = useState(0)
   const [blackouts, setBlackouts] = useState([])
   const [selectedBk, setSelectedBk] = useState(null)
+  const [noDataConfirmed, setNoDataConfirmed] = useState(false)
   const [copied, setCopied] = useState(false)
   const [limitReached, setLimitReached] = useState(() => sessionStorage.getItem('arvis_scan_limitReached') === 'true')
   const [scanHistory, setScanHistory] = useState(() => {
@@ -418,6 +419,7 @@ export default function Scan() {
           setPdfPage(1)
           setBlackouts([])
           setSelectedBk(null)
+          setNoDataConfirmed(false)
           await renderPdfPage(1)
           if (rightRef.current) setFrozenRightH(rightRef.current.offsetHeight)
           setPanel('crop')
@@ -434,6 +436,7 @@ export default function Scan() {
         sessionStorage.setItem('arvis_scan_imgData', e.target.result)
         setBlackouts([])
         setSelectedBk(null)
+        setNoDataConfirmed(false)
         if (imgRef.current) imgRef.current.src = e.target.result
         if (rightRef.current) setFrozenRightH(rightRef.current.offsetHeight)
         setPanel('crop')
@@ -643,6 +646,11 @@ export default function Scan() {
   // ── Proceed to analysis ────────────────────────────────────────────────────
   async function proceedToAnalysis() {
     if (pdfDocRef.current) blackoutsByPageRef.current[pdfPageRef.current] = blackouts.map(b => ({ ...b }))
+    const hasAnyBlackout = blackouts.length > 0 || Object.values(blackoutsByPageRef.current).some(a => a && a.length > 0)
+    if (!hasAnyBlackout && !noDataConfirmed) {
+      setErrorMsg('Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind.')
+      return
+    }
     goStep(3)
     setIsAnalyzing(true)
     sessionStorage.setItem('arvis_scan_isAnalyzing', 'true')
@@ -984,10 +992,20 @@ export default function Scan() {
                 <span className="scan-panel-sub">Patientendaten mit dem Schwärzungs-Tool entfernen</span>
               </div>
               {/* Warning */}
-              <div id="anonWarning" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(193,58,43,0.07)', borderBottom: '1px solid rgba(193,58,43,0.2)', padding: '10px 16px', marginTop: 0 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--error)' }}>Bitte alle Patientendaten schwärzen, bevor Sie fortfahren.</span>
+              <div id="anonWarning" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(193,58,43,0.07)', borderBottom: '1px solid rgba(193,58,43,0.2)', padding: '10px 16px', marginTop: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--error)' }}>Bitte alle Patientendaten schwärzen, bevor Sie fortfahren.</span>
+                  {pdfTotal > 1 && (
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--error)', textTransform: 'uppercase', letterSpacing: 0.3 }}>⚠ Auf ALLEN {pdfTotal} Seiten anwenden</span>
+                  )}
+                </div>
               </div>
+              {/* No-data confirmation checkbox */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none' }}>
+                <input type="checkbox" checked={noDataConfirmed} onChange={e => setNoDataConfirmed(e.target.checked)} style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--orange)' }} />
+                <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Ich bestätige: Es gibt keine zu anonymisierenden Patientendaten auf {pdfTotal > 1 ? 'allen Seiten dieses Dokuments' : 'diesem Dokument'}.</span>
+              </label>
               {/* PDF nav */}
               {pdfDocRef.current && (
                 <div id="pdfNav" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, marginBottom: 10, justifyContent: 'center' }}>
@@ -1016,9 +1034,15 @@ export default function Scan() {
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
                   </button>
                 </div>
-                <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} style={{ background: 'var(--orange)', color: 'white', border: '1px solid var(--orange)', borderRadius: 5, fontWeight: 500, cursor: 'pointer' }}>
-                  Analysieren
-                </button>
+                {(() => {
+                  const hasAnyBlackout = blackouts.length > 0 || Object.values(blackoutsByPageRef.current).some(a => a && a.length > 0)
+                  const canProceed = hasAnyBlackout || noDataConfirmed
+                  return (
+                    <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} disabled={!canProceed} title={!canProceed ? 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind' : ''} style={{ background: canProceed ? 'var(--orange)' : 'var(--bg-2)', color: canProceed ? 'white' : 'var(--text-3)', border: `1px solid ${canProceed ? 'var(--orange)' : 'var(--border)'}`, borderRadius: 5, fontWeight: 500, cursor: canProceed ? 'pointer' : 'not-allowed', opacity: canProceed ? 1 : 0.7 }}>
+                      Analysieren
+                    </button>
+                  )
+                })()}
               </div>
               {/* Document viewer */}
               <div id="cropContainer" ref={viewerRef} onMouseDown={startPan} onTouchStart={startPan} style={{ height: viewerHeight > 0 ? viewerHeight : 'auto', cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none' }}>
