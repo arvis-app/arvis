@@ -34,7 +34,7 @@ export default function Chat() {
   const [error, setError] = useState('')
   const [listLoading, setListLoading] = useState(true)
   const [copiedIdx, setCopiedIdx] = useState(null)
-  const bottomRef = useRef(null)
+  const messagesRef = useRef(null)
   const inputRef = useRef(null)
   const saveTimer = useRef(null)
   const chipsRef = useRef(null)
@@ -59,13 +59,15 @@ export default function Chat() {
       })
   }, [user])
 
-  // Auto-scroll
+  // Auto-scroll — scroll only the messages container, not the page
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight
+    }
   }, [messages, loading])
 
-  // Focus input on mount
-  useEffect(() => { inputRef.current?.focus() }, [])
+  // Focus input on mount — desktop only (mobile: avoid triggering iOS keyboard scroll)
+  useEffect(() => { if (!('ontouchstart' in window)) inputRef.current?.focus() }, [])
 
   // Save conversation to Supabase (debounced)
   const saveConversation = useCallback((id, msgs) => {
@@ -288,7 +290,7 @@ export default function Chat() {
       )}
 
       {/* Messages area */}
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 16, paddingRight: 12 }}>
+      <div ref={messagesRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: 16, paddingRight: 12 }}>
 
         {/* Empty state */}
         {messages.length === 0 && !loading && (
@@ -359,7 +361,6 @@ export default function Chat() {
           </div>
         )}
 
-        <div ref={bottomRef} />
       </div>
 
       {/* Error */}
