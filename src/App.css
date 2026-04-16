@@ -751,6 +751,9 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   .scan-step-line { flex: 1; min-width: 6px; margin: 0; transform: translateY(-11px); }
   #panelUpload, .scan-right { height: auto !important; min-height: 480px; }
   #cropContainer { height: auto !important; min-height: 300px; }
+  /* Reset asymmetric padding/border so les colonnes sont centrées en stack mobile */
+  .scan-left { padding-right: 0 !important; padding-left: 0 !important; }
+  .scan-right { padding-left: 0 !important; padding-right: 0 !important; border-left: none !important; padding-top: 24px; border-top: 1px solid var(--border); margin-top: 8px; }
 
   /* Brief & Profil strictly mobile stack */
   .brief-layout, .profil-layout { grid-template-columns: 1fr !important; max-width: 100%; overflow-x: hidden; }
@@ -800,7 +803,8 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 /* ── Bausteine stack (≤700px) ── */
 @media (max-width: 700px) {
   .bausteine-layout { grid-template-columns: 1fr; }
-  .bausteine-left { min-width: 0; }
+  .bausteine-left { min-width: 0; order: 1; }
+  .bausteine-right { order: 2; }
   .bausteine-left-col { height: auto !important; }
   .bausteine-list { max-height: 300px !important; }
   .bausteine-left, .bausteine-right { width: 100%; box-sizing: border-box; max-width: 100%; overflow-x: hidden; }
