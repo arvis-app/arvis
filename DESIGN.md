@@ -251,9 +251,87 @@ Pas de box, pas de fond, pas de radius. Juste une ligne qui glisse.
 **Classes CSS touchées** : `.scan-layout`, `.scan-left`, `.scan-right`, `.scan-panel`, `.scan-panel-header`, `.scan-panel-title`, `.scan-drop-zone`, `.scan-mode-card`, `.scan-mode-toggle`, `.scan-mode-btn`, `.scan-result-card`.
 
 **À finir sur /scan** :
-- [ ] Load un vrai document et auditer la toolbar / boutons copier / "An Brief Schreiber" en état résultat chargé
-- [ ] Auditer le crop step (étape intermédiaire après upload)
+- [x] Toolbar / boutons copier / "An Brief Schreiber" — classes CSS correctes (`.btn-send-briefschreiber`, `.scan-viewer-toolbar`) — pas de hardcode résiduel
+- [x] Crop step — anonWarning, Schwärzen button, blackout handles migrés vers CSS variables (commit `1f2485c`)
 - [ ] Vérifier l'alignement vertical avec BriefSchreiber (règle des bas de panneau alignés — cf. piège `#23` dans CLAUDE.md)
+
+---
+
+### /briefschreiber — refactor sober (✅ sessions avril 2026)
+
+**Avant** — panels avec `background: var(--card)`, `border-radius: 8px`, `box-shadow` décorative. Boutons modes (Korrektur / Umformulierung / Zusammenfassung) en style pill coloré. Label de section absent.
+
+**Après** :
+- Panneaux transparents — `background: transparent; border: none; border-radius: 0`
+- Séparateur vertical `.brief-right` : `border-left: 1px solid var(--border)`
+- Labels uppercase via `.brief-panel-label` : `font-size:10.5px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-3)`
+- Onglets modes (`.brief-diff-toggle`) : underline orange actif, fond transparent
+- Boutons d'action : `.btn-action` / `.btn-action-secondary` — largeur intrinsèque
+- Banner limitReached : `var(--orange-ghost)` / `var(--orange)` / `borderRadius:5`
+
+**Classes CSS touchées** : `.brief-panel`, `.brief-panel-label`, `.brief-modes`, `.brief-diff-toggle`, `.brief-diff-btn`, `.btn-action`, `.btn-action-secondary`.
+
+---
+
+### /chat — refactor sober (✅ sessions avril 2026)
+
+**Avant** — layout avec `position: absolute; inset: 0` mais scroll scrollait le document entier via `scrollIntoView`. Input box `borderRadius: 8`. Error banner `#DC2626` hardcodé.
+
+**Après** :
+- Auto-scroll scoped au container messages : `messagesRef.scrollTop = scrollHeight` (plus de `scrollIntoView`)
+- Auto-focus désactivé sur mobile (`ontouchstart` check) — empêche iOS d'ouvrir le clavier et de faire défiler la page
+- Error banner : `var(--error)` / `var(--bg-3)` / `borderRadius: 5`
+- Input container : `borderRadius: 8 → 6`
+
+**Points d'attention** : chat utilise `position: absolute; inset: 0` + `.main-content:has(.chat-layout-outer) { height: calc(100dvh - 60px); overflow: hidden }` — ne pas modifier sans vérifier le scroll sur mobile.
+
+---
+
+### /bausteine — refactor sober (✅ sessions avril 2026)
+
+**Avant** — conteneur liste avec `background: var(--card)`, `box-shadow`, `border-radius: 8px`. Preview panel en card flottante. Search box avec ombre.
+
+**Après** :
+- Search box : `background: var(--bg); border: 1px solid var(--border); border-radius: 5; overflow: hidden` — pas de shadow
+- Liste : `borderTop: 1px solid var(--border)` comme seul séparateur — fond transparent
+- Preview panel : transparent, `borderBottom: 1px solid var(--border)` pour séparer titre/contenu
+- Hover item : `var(--bg-2)` (pas `var(--bg)` — même fond que la page → aucun contraste)
+- Modales : `borderRadius: 8 → 6`, inputs `borderRadius: 5`
+
+**Classes CSS touchées** : `.bausteine-search`, `.baustein-item`, `.baustein-item:hover`, `.baustein-preview-card`, `.baustein-preview-title`, `.kat-select-wrap`.
+
+---
+
+### /uebersetzung — refactor sober (✅ sessions avril 2026)
+
+**Avant** — search box avec `box-shadow`, liste avec card background, detail panel avec `border-radius: 8px` et padding latéral de card.
+
+**Après** :
+- Search box : `border: 1px solid var(--border)` — pas de shadow
+- Liste : `borderTop: 1px solid var(--border)` — fond transparent
+- Detail panel : transparent, rows `padding: 10px 0` (pas de padding latéral card)
+- `.ueb-detail-term` : `font-family: DM Sans; font-size: 18px; font-weight: 700`
+- `.ueb-lang-toggle` : `border-radius: 5px; opacity: 0.6` sur inactifs
+- Hover rows : `background: transparent` (pas de card hover)
+
+**Classes CSS touchées** : `.ueb-search-box`, `.ueb-list-container`, `.ueb-detail-card`, `.ueb-detail-term`, `.ueb-detail-cat`, `.ueb-cat-select`, `.ueb-lang-toggle`, `.ueb-detail-row`, `.ueb-detail-divider`.
+
+---
+
+### /profil — refactor sober (✅ sessions avril 2026)
+
+**Avant** — avatar avec `linear-gradient(135deg, var(--orange), var(--orange-dark))`. Couleurs hardcodées `#e53e3e`, `#fff7ed`. `borderRadius: 8` généralisé. Labels sections font-weight 700.
+
+**Après** :
+- Avatar : `var(--bg-3)` avec border (pas de gradient orange — respecte règle ≤10% orange)
+- `#e53e3e` → `var(--error)` partout
+- `#fff7ed` → `var(--orange-ghost)`
+- `borderRadius: 8 → 6`, boutons `radius: 5`
+- "Rechnungsadresse" + "Zahlungsmittel" : labels uppercase `font-size:11px; font-weight:600; letter-spacing:0.1em`
+- Plan badge, promo, prix : `fontWeight: 700 → 600`
+- Logo carte bancaire : `background: white → var(--bg-2)`
+
+**Points d'attention** : `profile.title === ""` (Kein Titel) — utiliser `??` pas `||` pour le fallback.
 
 ---
 
