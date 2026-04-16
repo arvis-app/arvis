@@ -377,8 +377,8 @@ export default function BriefSchreiber() {
       </div>
 
       {limitReached && (
-        <div style={{ background: 'rgba(217, 75, 10, 0.08)', border: '1px solid #D94B0A', borderRadius: 8, padding: '14px 20px', marginBottom: 16 }}>
-          <span style={{ color: '#D94B0A', fontSize: 15, fontWeight: 500 }}>
+        <div style={{ background: 'var(--orange-ghost)', border: '1px solid var(--orange)', borderRadius: 5, padding: '12px 16px', marginBottom: 16 }}>
+          <span style={{ color: 'var(--orange)', fontSize: 14, fontWeight: 500 }}>
             Ihr monatliches KI-Kontingent ist erschöpft. Es wird am 1. des nächsten Monats erneuert.
           </span>
         </div>

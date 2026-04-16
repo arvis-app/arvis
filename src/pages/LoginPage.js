@@ -162,12 +162,12 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p style={{display:'block', margin:'-20px 0 16px', fontSize:'13px', fontWeight:600, textAlign:'center', borderRadius:'8px', padding:'8px 12px', background:'rgba(217,75,10,0.07)', color:'#D94B0A'}}>
+            <p style={{display:'block', margin:'-20px 0 16px', fontSize:'13px', fontWeight:500, textAlign:'center', borderRadius:'5px', padding:'8px 12px', background:'var(--orange-ghost)', color:'var(--orange)'}}>
               {error}
             </p>
           )}
           {info && (
-            <p style={{display:'block', margin:'-20px 0 16px', fontSize:'13px', fontWeight:600, textAlign:'center', borderRadius:'8px', padding:'8px 12px', background:'rgba(46,125,50,0.07)', color:'#2e7d32'}}>
+            <p style={{display:'block', margin:'-20px 0 16px', fontSize:'13px', fontWeight:500, textAlign:'center', borderRadius:'5px', padding:'8px 12px', background:'rgba(46,125,50,0.07)', color:'#2e7d32'}}>
               {info}
             </p>
           )}
