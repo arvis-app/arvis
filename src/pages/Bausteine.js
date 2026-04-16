@@ -22,6 +22,8 @@ function renderPlaceholders(text) {
   h = h.replace(/\[([^\][]{0,80})\]/g, (match) => `<span class="ph-chip" data-encoded="${encodeURIComponent(match)}" contenteditable="false">${match}</span>`)
   // New syntax: (_) — free text placeholder
   h = h.replace(/\(_\)/g, () => `<span class="ph-chip" data-encoded="${encodeURIComponent('(_)')}" contenteditable="false">(_)</span>`)
+  // New syntax: (opt1+opt2+opt3) — multi-select (cases à cocher), au moins un +, jamais de /
+  h = h.replace(/\(([^()/]{1,120}(?:\+[^()/]{1,80})+)\)/g, (match) => `<span class="ph-chip" data-multi="1" data-encoded="${encodeURIComponent(match)}" contenteditable="false">${match}</span>`)
   // New syntax: (opt1/opt2/...) — choice placeholder (must have at least one slash)
   h = h.replace(/\(([^()]{1,120}(?:\/[^()]{0,80})+)\)/g, (match) => `<span class="ph-chip" data-encoded="${encodeURIComponent(match)}" contenteditable="false">${match}</span>`)
   return h
@@ -182,7 +184,7 @@ export default function Bausteine() {
   const [rightH, setRightH]             = useState(0)
   const previewRef                      = useRef(null)
   const popupChipRef                    = useRef(null)
-  const [popup, setPopup]               = useState({ visible: false, choices: [], x: 0, y: 0 })
+  const [popup, setPopup]               = useState({ visible: false, choices: [], x: 0, y: 0, multi: false, selected: [] })
 
   // Sync left panel height with right panel
   useEffect(() => {
@@ -350,7 +352,7 @@ export default function Bausteine() {
   }
 
   // ── Placeholder interaction ────────────────────────────────
-  function hidePopup() { popupChipRef.current = null; setPopup({ visible: false, choices: [], x: 0, y: 0 }) }
+  function hidePopup() { popupChipRef.current = null; setPopup({ visible: false, choices: [], x: 0, y: 0, multi: false, selected: [] }) }
 
   function replaceChipWithCursor(chip) {
     const textNode = document.createTextNode('')
@@ -375,14 +377,22 @@ export default function Bausteine() {
     if (!chip) return
     const raw = decodeURIComponent(chip.dataset.encoded || '')
     const inner = raw.slice(1, -1)
+    const isMulti = chip.dataset.multi === '1'
     const isChoice = inner.indexOf('/') !== -1 && !inner.startsWith('_')
-    if (isChoice) {
+    if (isMulti) {
+      const choices = inner.split('+').map(c => c.trim()).filter(Boolean)
+      const rect = chip.getBoundingClientRect()
+      popupChipRef.current = chip
+      const popupWidth = 220
+      const x = Math.min(rect.left, window.innerWidth - popupWidth - 8)
+      setPopup({ visible: true, choices, x: Math.max(8, x), y: rect.bottom + 6, multi: true, selected: [] })
+    } else if (isChoice) {
       const choices = inner.split('/').map(c => c.trim())
       const rect = chip.getBoundingClientRect()
       popupChipRef.current = chip
       const popupWidth = 160
       const x = Math.min(rect.left, window.innerWidth - popupWidth - 8)
-      setPopup({ visible: true, choices, x: Math.max(8, x), y: rect.bottom + 6 })
+      setPopup({ visible: true, choices, x: Math.max(8, x), y: rect.bottom + 6, multi: false, selected: [] })
     } else {
       replaceChipWithCursor(chip)
       hidePopup()
@@ -391,6 +401,20 @@ export default function Bausteine() {
 
   function choosePopup(val) { const chip = popupChipRef.current; if (chip) replaceChipWithText(chip, val); hidePopup() }
   function andereEingeben() { const chip = popupChipRef.current; if (chip) replaceChipWithCursor(chip); hidePopup() }
+  function toggleMultiChoice(val) {
+    setPopup(p => p.selected.includes(val)
+      ? { ...p, selected: p.selected.filter(s => s !== val) }
+      : { ...p, selected: [...p.selected, val] })
+  }
+  function applyMultiPopup() {
+    const chip = popupChipRef.current
+    if (!chip) { hidePopup(); return }
+    // Conserver l'ordre original des options (pas l'ordre de clic)
+    const ordered = popup.choices.filter(c => popup.selected.includes(c))
+    if (ordered.length === 0) { hidePopup(); return }
+    replaceChipWithText(chip, ordered.join(', '))
+    hidePopup()
+  }
 
   useEffect(() => {
     if (!popup.visible) return
@@ -541,11 +565,25 @@ export default function Bausteine() {
 
       {/* Placeholder popup */}
       {popup.visible && (
-        <div id="bausteinePlaceholderPopup" style={{position:'fixed',zIndex:9999,top:popup.y,left:popup.x,background:'var(--card)',border:'1px solid var(--border)',borderRadius:6,padding:8,boxShadow:'var(--shadow-lg)',minWidth:140,display:'flex',flexDirection:'column'}}>
-          {popup.choices.map(c => (
-            <button key={c} className="ph-popup-btn" onMouseDown={e=>{e.preventDefault();choosePopup(c)}}>{c}</button>
-          ))}
-          <button className="ph-popup-btn ph-andere" onMouseDown={e=>{e.preventDefault();andereEingeben()}}>Andere Option…</button>
+        <div id="bausteinePlaceholderPopup" style={{position:'fixed',zIndex:9999,top:popup.y,left:popup.x,background:'var(--card)',border:'1px solid var(--border)',borderRadius:6,padding:8,boxShadow:'var(--shadow-lg)',minWidth:popup.multi?200:140,display:'flex',flexDirection:'column'}}>
+          {popup.multi ? (
+            <>
+              {popup.choices.map(c => (
+                <label key={c} className="ph-popup-btn" style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',userSelect:'none'}} onMouseDown={e=>e.preventDefault()}>
+                  <input type="checkbox" checked={popup.selected.includes(c)} onChange={()=>toggleMultiChoice(c)} style={{cursor:'pointer',accentColor:'var(--orange)',flexShrink:0}}/>
+                  <span>{c}</span>
+                </label>
+              ))}
+              <button className="ph-popup-btn ph-andere" style={{textAlign:'center',fontWeight:600,color:popup.selected.length?'var(--orange)':'var(--text-3)',cursor:popup.selected.length?'pointer':'not-allowed'}} disabled={!popup.selected.length} onMouseDown={e=>{e.preventDefault();if(popup.selected.length)applyMultiPopup()}}>Übernehmen</button>
+            </>
+          ) : (
+            <>
+              {popup.choices.map(c => (
+                <button key={c} className="ph-popup-btn" onMouseDown={e=>{e.preventDefault();choosePopup(c)}}>{c}</button>
+              ))}
+              <button className="ph-popup-btn ph-andere" onMouseDown={e=>{e.preventDefault();andereEingeben()}}>Andere Option…</button>
+            </>
+          )}
         </div>
       )}
 
