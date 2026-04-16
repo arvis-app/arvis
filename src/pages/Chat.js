@@ -365,7 +365,7 @@ export default function Chat() {
 
       {/* Error */}
       {error && (
-        <div style={{ padding: '8px 12px', fontSize: 13, color: '#DC2626', background: 'rgba(220,38,38,0.06)', borderRadius: 8, marginBottom: 8, flexShrink: 0 }}>
+        <div style={{ padding: '8px 12px', fontSize: 13, color: 'var(--error)', background: 'var(--bg-3)', borderRadius: 5, marginBottom: 8, flexShrink: 0 }}>
           {error}
         </div>
       )}
@@ -375,7 +375,7 @@ export default function Chat() {
         <div style={{
           display: 'flex', gap: 8, alignItems: 'flex-end',
           background: 'var(--bg-2)', border: '1px solid var(--border)',
-          borderRadius: 8, padding: '8px 8px 8px 14px',
+          borderRadius: 6, padding: '8px 8px 8px 14px',
         }}>
           <textarea
             ref={inputRef}
