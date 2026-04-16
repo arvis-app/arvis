@@ -167,7 +167,7 @@ export default function LoginPage() {
             </p>
           )}
           {info && (
-            <p style={{display:'block', margin:'-20px 0 16px', fontSize:'13px', fontWeight:500, textAlign:'center', borderRadius:'5px', padding:'8px 12px', background:'rgba(46,125,50,0.07)', color:'#2e7d32'}}>
+            <p style={{display:'block', margin:'-20px 0 16px', fontSize:'13px', fontWeight:500, textAlign:'center', borderRadius:'5px', padding:'8px 12px', background:'rgba(58,139,92,0.07)', color:'var(--success)'}}>
               {info}
             </p>
           )}
@@ -227,7 +227,7 @@ export default function LoginPage() {
               <div className="form-sub">Geben Sie Ihr neues Passwort ein</div>
 
               {resetSuccess ? (
-                <p style={{ textAlign: 'center', padding: '16px', borderRadius: 8, background: 'rgba(46,125,50,0.07)', color: '#2e7d32', fontWeight: 600, fontSize: 16 }}>
+                <p style={{ textAlign: 'center', padding: '16px', borderRadius: 5, background: 'rgba(58,139,92,0.07)', color: 'var(--success)', fontWeight: 600, fontSize: 16 }}>
                   ✓ Passwort erfolgreich geändert — Sie werden weitergeleitet…
                 </p>
               ) : (
