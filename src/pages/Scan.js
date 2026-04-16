@@ -782,7 +782,7 @@ export default function Scan() {
             ? Math.max(...dataRows.map(r => (r[0] || '').length))
             : Math.max(...cells.map(r => (r[0] || '').length))
           // Target column = 2 tab stops after the longest name
-          const TAB_W = 8
+          const TAB_W = 4
           let targetCol = Math.floor(longestLen / TAB_W) * TAB_W + TAB_W
           targetCol = Math.floor(targetCol / TAB_W) * TAB_W + TAB_W
           function tabsToCol(nameLen) {
