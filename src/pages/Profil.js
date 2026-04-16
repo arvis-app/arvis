@@ -293,15 +293,15 @@ export default function Profil() {
             {/* Avatar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
               <div id="profilAvatar" onClick={() => photoInputRef.current?.click()}
-                style={{ width: 100, height: 100, borderRadius: '50%', background: 'linear-gradient(135deg,var(--orange),var(--orange-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 700, color: 'white', flexShrink: 0, cursor: 'pointer', overflow: 'hidden' }}>
+                style={{ width: 100, height: 100, borderRadius: '50%', background: 'var(--bg-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 700, color: 'white', flexShrink: 0, cursor: 'pointer', overflow: 'hidden' }}>
                 {photo ? <img src={photo} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
               </div>
               <div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button className="btn-secondary" style={{ fontSize: 14 }} onClick={() => photoInputRef.current?.click()}>Foto ändern</button>
                   <button 
-                    className="btn-secondary" 
-                    style={{ fontSize: 14, color: '#e53e3e', borderColor: '#e53e3e', transition: 'background 0.2s' }} 
+                    className="btn-secondary"
+                    style={{ fontSize: 14, color: 'var(--error)', borderColor: 'var(--error)', transition: 'background 0.2s' }}
                     onClick={() => { setPhoto(null); setPhotoFile(null) }}
                     onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
                     onMouseOut={e=>e.target.style.background=''}
@@ -330,21 +330,21 @@ export default function Profil() {
               </div>
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Vorname <span style={{ color: 'var(--orange)' }}>*</span></label>
-                <input type="text" className="form-input" value={vorname} onChange={e => setVorname(e.target.value)} placeholder="Hans" style={{ borderColor: errors.vorname ? '#e53e3e' : '' }} />
-                {errors.vorname && <div style={{ fontSize: 13, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
+                <input type="text" className="form-input" value={vorname} onChange={e => setVorname(e.target.value)} placeholder="Hans" style={{ borderColor: errors.vorname ? 'var(--error)' : '' }} />
+                {errors.vorname && <div style={{ fontSize: 13, color: 'var(--error)', marginTop: 4 }}>Pflichtfeld</div>}
               </div>
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Nachname <span style={{ color: 'var(--orange)' }}>*</span></label>
-                <input type="text" className="form-input" value={nachname} onChange={e => setNachname(e.target.value)} placeholder="Müller" style={{ borderColor: errors.nachname ? '#e53e3e' : '' }} />
-                {errors.nachname && <div style={{ fontSize: 13, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
+                <input type="text" className="form-input" value={nachname} onChange={e => setNachname(e.target.value)} placeholder="Müller" style={{ borderColor: errors.nachname ? 'var(--error)' : '' }} />
+                {errors.nachname && <div style={{ fontSize: 13, color: 'var(--error)', marginTop: 4 }}>Pflichtfeld</div>}
               </div>
             </div>
 
             {/* Email */}
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">E-Mail-Adresse <span style={{ color: 'var(--orange)' }}>*</span></label>
-              <input type="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} placeholder="dr.mueller@klinik.de" style={{ borderColor: errors.email ? '#e53e3e' : '' }} />
-              {errors.email && <div style={{ fontSize: 13, color: '#e53e3e', marginTop: 4 }}>Pflichtfeld</div>}
+              <input type="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} placeholder="dr.mueller@klinik.de" style={{ borderColor: errors.email ? 'var(--error)' : '' }} />
+              {errors.email && <div style={{ fontSize: 13, color: 'var(--error)', marginTop: 4 }}>Pflichtfeld</div>}
               {user?.email && email.trim() !== user.email && (
                 <div style={{ fontSize: 13, color: 'var(--orange)', marginTop: 8, padding: '8px 10px', background: 'var(--orange-ghost)', borderRadius: 6 }}>
                   Beim Speichern erhalten Sie eine Bestätigungs-E-Mail an die alte und neue Adresse.
@@ -359,7 +359,7 @@ export default function Profil() {
             </div>
 
             <div style={{ height: 1, background: 'var(--border)' }} />
-            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)' }}>Rechnungsadresse</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Rechnungsadresse</div>
 
             {/* Straße + Hausnummer */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12 }}>
@@ -406,13 +406,13 @@ export default function Profil() {
             <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
               {/* Plan badge */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: planInfo.canceledPending ? 'rgba(245,158,11,0.08)' : planInfo.expired ? 'rgba(229,62,62,0.06)' : 'rgba(22,163,74,0.08)', border: planInfo.canceledPending ? '1px solid rgba(245,158,11,0.3)' : planInfo.expired ? '1px solid rgba(229,62,62,0.2)' : '1px solid rgba(22,163,74,0.3)', borderRadius: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: planInfo.canceledPending ? 'rgba(245,158,11,0.08)' : planInfo.expired ? 'rgba(229,62,62,0.06)' : 'rgba(22,163,74,0.08)', border: planInfo.canceledPending ? '1px solid rgba(245,158,11,0.3)' : planInfo.expired ? '1px solid rgba(229,62,62,0.2)' : '1px solid rgba(22,163,74,0.3)', borderRadius: 6 }}>
                 <div>
                   <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>
                     {planInfo.plan === 'pro' ? 'Plan Pro' : planInfo.expired ? 'Testversion abgelaufen' : 'Testversion'}
                   </div>
                   {planInfo.canceledPending && (
-                    <div style={{ fontSize: 14, color: '#e53e3e', marginTop: 2 }}>
+                    <div style={{ fontSize: 14, color: 'var(--error)', marginTop: 2 }}>
                       Gekündigt · Noch {planInfo.daysLeft} Tag{planInfo.daysLeft !== 1 ? 'e' : ''} verbleibend
                     </div>
                   )}
@@ -422,7 +422,7 @@ export default function Profil() {
                     </div>
                   )}
                 </div>
-                <span data-testid="plan-badge" style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? '#e53e3e' : '#16a34a', color: 'white', fontSize: 13, fontWeight: 700 }}>
+                <span data-testid="plan-badge" style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? 'var(--error)' : '#16a34a', color: 'white', fontSize: 13, fontWeight: 700 }}>
                   {planInfo.canceledPending ? 'Gekündigt' : planInfo.plan === 'pro' ? 'Aktiv' : planInfo.expired ? 'Abgelaufen' : 'Trial'}
                 </span>
               </div>
@@ -463,7 +463,7 @@ export default function Profil() {
                     <button
                       onClick={manageSubscription}
                       disabled={portalLoading}
-                      style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 14, fontWeight: 600, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1, transition: 'all 0.2s' }}
+                      style={{ padding: '6px 14px', borderRadius: 5, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 13, fontWeight: 500, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1, transition: 'all 0.2s' }}
                       onMouseOver={e => { if (!portalLoading) { e.target.style.background = 'var(--orange-ghost)'; e.target.style.color = 'var(--orange)'; e.target.style.borderColor = 'var(--orange-dark)'; } }}
                       onMouseOut={e => { if (!portalLoading) { e.target.style.background = 'var(--bg-2)'; e.target.style.color = 'var(--text)'; e.target.style.borderColor = 'var(--border)'; } }}
                     >
@@ -478,7 +478,7 @@ export default function Profil() {
                       </div>
                       <div style={{ fontSize: 15, color: 'var(--text-3)' }}>Kein Zahlungsmittel hinterlegt</div>
                     </div>
-                    <button onClick={manageSubscription} disabled={portalLoading} style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: 'var(--orange)', color: 'white', fontSize: 14, fontWeight: 600, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}>
+                    <button onClick={manageSubscription} disabled={portalLoading} style={{ padding: '6px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}>
                       {portalLoading ? '...' : 'Hinzufügen'}
                     </button>
                   </div>
@@ -490,7 +490,7 @@ export default function Profil() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {/* Promo badge */}
                   {!yearly && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '6px 12px', background: '#fff7ed', border: '1px solid rgba(217,75,10,0.2)', borderRadius: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '6px 12px', background: 'var(--orange-ghost)', border: '1px solid rgba(217,75,10,0.2)', borderRadius: 6 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
                       <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--orange)' }}>Einführungsangebot –34% · erste 3 Monate</span>
                     </div>
@@ -529,7 +529,7 @@ export default function Profil() {
                     <div style={{ fontSize: 14, color: 'var(--text-3)', marginBottom: 12 }}>Ihr Zugang bleibt bis zum Ende des aktuellen Abrechnungszeitraums aktiv.</div>
                     <button 
                       onClick={() => setShowCancelModal(true)} 
-                      style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid #e53e3e', background: 'transparent', color: '#e53e3e', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition:'background 0.2s' }}
+                      style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid var(--error)', background: 'transparent', color: 'var(--error)', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition:'background 0.2s' }}
                       onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
                       onMouseOut={e=>e.target.style.background='transparent'}
                     >
@@ -578,14 +578,14 @@ export default function Profil() {
           </div>
 
           {/* Konto löschen */}
-          <div style={{ padding: '14px 16px', background: 'rgba(229,62,62,0.04)', border: '1px solid rgba(229,62,62,0.15)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ padding: '14px 16px', background: 'rgba(229,62,62,0.04)', border: '1px solid rgba(229,62,62,0.15)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#e53e3e' }}>Konto löschen</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--error)' }}>Konto löschen</div>
               <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 2 }}>Alle Daten werden unwiderruflich gelöscht.</div>
             </div>
             <button
               onClick={() => { setDeleteConfirmText(''); setShowDeleteModal(true) }}
-              style={{ padding: '7px 16px', borderRadius: 6, border: '1px solid #e53e3e', background: 'transparent', color: '#e53e3e', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', whiteSpace: 'nowrap', transition: 'background 0.2s' }}
+              style={{ padding: '7px 16px', borderRadius: 6, border: '1px solid var(--error)', background: 'transparent', color: 'var(--error)', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', whiteSpace: 'nowrap', transition: 'background 0.2s' }}
               onMouseOver={e => e.target.style.background = 'rgba(229,62,62,0.08)'}
               onMouseOut={e => e.target.style.background = 'transparent'}
             >
@@ -598,15 +598,15 @@ export default function Profil() {
       {/* Cancel modal */}
       {showCancelModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '28px 28px 22px', width: 340, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 6, padding: '28px 28px 22px', width: 340, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(229,62,62,0.1)', border: '1px solid rgba(229,62,62,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
               </div>
               <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>Abonnement kündigen</div>
             </div>
             <div style={{ fontSize: 15, color: 'var(--text-3)', marginBottom: 8, lineHeight: 1.6 }}>Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?</div>
-            <div style={{ fontSize: 15, color: 'var(--text-2)', marginBottom: 22, padding: '10px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 8, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 15, color: 'var(--text-2)', marginBottom: 22, padding: '10px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 6, lineHeight: 1.6 }}>
               Ihr Zugang bleibt bis zum <strong>Ende des Abrechnungszeitraums</strong> aktiv.
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -614,7 +614,7 @@ export default function Profil() {
               <button
                 onClick={manageSubscription}
                 disabled={portalLoading}
-                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: '#e53e3e', color: 'white', cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}
+                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: 'var(--error)', color: 'white', cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}
               >
                 {portalLoading ? 'Lädt...' : 'Kündigen'}
               </button>
@@ -626,12 +626,12 @@ export default function Profil() {
       {/* Delete account modal */}
       {showDeleteModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '28px 28px 22px', width: 380, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 6, padding: '28px 28px 22px', width: 380, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(229,62,62,0.1)', border: '1px solid rgba(229,62,62,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
               </div>
-              <div style={{ fontSize: 17, fontWeight: 600, color: '#e53e3e' }}>Konto unwiderruflich löschen</div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--error)' }}>Konto unwiderruflich löschen</div>
             </div>
             <div style={{ fontSize: 15, color: 'var(--text-2)', marginBottom: 12, lineHeight: 1.6 }}>
               Diese Aktion kann <strong>nicht rückgängig</strong> gemacht werden. Alle Ihre Daten, Dateien und Ihr Abonnement werden dauerhaft gelöscht.
@@ -653,7 +653,7 @@ export default function Profil() {
               <button
                 onClick={handleDeleteAccount}
                 disabled={deleteLoading || deleteConfirmText !== 'LÖSCHEN'}
-                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: deleteConfirmText === 'LÖSCHEN' ? '#e53e3e' : '#ccc', color: 'white', cursor: (deleteLoading || deleteConfirmText !== 'LÖSCHEN') ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: deleteLoading ? 0.6 : 1 }}
+                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: deleteConfirmText === 'LÖSCHEN' ? 'var(--error)' : 'var(--text-3)', color: 'white', cursor: (deleteLoading || deleteConfirmText !== 'LÖSCHEN') ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: deleteLoading ? 0.6 : 1 }}
               >
                 {deleteLoading ? 'Wird gelöscht...' : 'Endgültig löschen'}
               </button>
