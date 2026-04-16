@@ -285,7 +285,7 @@ export default function MobileScan() {
         </button>
 
         {/* Card: height = banner + toolbar + photo */}
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border, #E5E5EA)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: 'var(--bg-2)', borderRadius: 6, border: '1px solid var(--border)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
           {/* Warning banner — border top + bottom */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEE2E2', borderTop: '1px solid #FCA5A5', borderBottom: '1px solid #FCA5A5', padding: '10px 16px', flexShrink: 0 }}>
@@ -385,10 +385,10 @@ export default function MobileScan() {
   // ── Main render ───────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 24, background: '#fff', gap: 20, paddingTop: 48 }}>
-      <div style={{ width: 64, height: 64, borderRadius: 16, background: '#FDEAE0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ width: 56, height: 56, borderRadius: 8, background: 'var(--orange-ghost)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D94B0A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       </div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: '#1C1C1E', textAlign: 'center' }}>Dokument fotografieren</div>
+      <div style={{ fontSize: 20, fontWeight: 600, color: 'var(--text)', textAlign: 'center' }}>Dokument fotografieren</div>
 
       {status === 'ready' && (<>
         {photos.length > 0 && (
@@ -397,40 +397,40 @@ export default function MobileScan() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {photos.map((p, i) => (
                 <div key={i} style={{ position: 'relative' }}>
-                  <img src={p.preview} alt={`Seite ${i + 1}`} style={{ width: 80, height: 100, objectFit: 'cover', borderRadius: 8, border: '2px solid #E5E5EA' }} />
-                  <div style={{ position: 'absolute', top: 4, left: 4, background: '#D94B0A', color: 'white', borderRadius: 10, fontSize: 12, fontWeight: 700, padding: '1px 6px' }}>{i + 1}</div>
+                  <img src={p.preview} alt={`Seite ${i + 1}`} style={{ width: 80, height: 100, objectFit: 'cover', borderRadius: 5, border: '1px solid var(--border)' }} />
+                  <div style={{ position: 'absolute', top: 4, left: 4, background: 'var(--orange)', color: 'white', borderRadius: 10, fontSize: 12, fontWeight: 700, padding: '1px 6px' }}>{i + 1}</div>
                 </div>
               ))}
             </div>
           </div>
         )}
-        <label style={{ width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '14px 0', background: photos.length === 0 ? (addingPhoto ? '#E5E5EA' : '#D94B0A') : 'white', color: photos.length === 0 ? (addingPhoto ? '#8E8E93' : 'white') : '#D94B0A', border: photos.length === 0 ? '2px solid transparent' : '2px solid #D94B0A', borderRadius: 10, fontSize: 18, fontWeight: 600, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer', display: 'block', opacity: photos.length > 0 && addingPhoto ? 0.6 : 1 }}>
+        <label style={{ width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '14px 0', background: photos.length === 0 ? (addingPhoto ? 'var(--bg-3)' : 'var(--orange)') : 'transparent', color: photos.length === 0 ? (addingPhoto ? 'var(--text-3)' : 'white') : 'var(--orange)', border: photos.length === 0 ? '1px solid transparent' : '1px solid var(--orange)', borderRadius: 6, fontSize: 15, fontWeight: 500, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer', display: 'block', opacity: photos.length > 0 && addingPhoto ? 0.6 : 1 }}>
           {addingPhoto ? 'Wird geladen…' : (<>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={photos.length === 0 ? 'white' : '#D94B0A'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, verticalAlign: 'middle' }}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={photos.length === 0 ? 'white' : 'var(--orange)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, verticalAlign: 'middle' }}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             {photos.length === 0 ? 'Foto aufnehmen' : 'Weitere Seite aufnehmen'}
           </>)}
           <input type="file" accept="image/jpeg, image/png, image/webp" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} disabled={addingPhoto} />
         </label>
         {photos.length > 0 && (
-          <button onClick={handleFinish} disabled={addingPhoto} style={{ width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '14px 0', background: addingPhoto ? '#E5E5EA' : '#1C1C1E', color: addingPhoto ? '#8E8E93' : 'white', border: '2px solid transparent', borderRadius: 10, fontSize: 18, fontWeight: 600, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer' }}>
+          <button onClick={handleFinish} disabled={addingPhoto} style={{ width: '100%', maxWidth: 360, boxSizing: 'border-box', padding: '14px 0', background: addingPhoto ? 'var(--bg-3)' : '#1C1C1E', color: addingPhoto ? 'var(--text-3)' : 'white', border: '1px solid transparent', borderRadius: 6, fontSize: 15, fontWeight: 500, textAlign: 'center', cursor: addingPhoto ? 'not-allowed' : 'pointer' }}>
             Weiter zur Anonymisierung
           </button>
         )}
         {!photos.length && <div style={{ fontSize: 15, color: '#8E8E93', textAlign: 'center' }}>Das Foto wird nach dem Schwärzen auf Ihren Computer übertragen</div>}
       </>)}
 
-      {status === 'uploading' && <div style={{ textAlign: 'center', color: '#D94B0A', fontSize: 18, fontWeight: 600 }}>Wird übertragen…</div>}
+      {status === 'uploading' && <div style={{ textAlign: 'center', color: 'var(--orange)', fontSize: 18, fontWeight: 600 }}>Wird übertragen…</div>}
 
       {status === 'done' && (<>
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
-        <div style={{ fontSize: 20, fontWeight: 700, color: '#1C1C1E' }}>{photos.length} Seite{photos.length > 1 ? 'n' : ''} übertragen!</div>
-        <div style={{ fontSize: 16, color: '#8E8E93' }}>Sie können zu Ihrem Computer zurückkehren</div>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)' }}>{photos.length} Seite{photos.length > 1 ? 'n' : ''} übertragen!</div>
+        <div style={{ fontSize: 14, color: 'var(--text-3)' }}>Sie können zu Ihrem Computer zurückkehren</div>
       </>)}
 
-      {status === 'error' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600 }}>Fehler beim Übertragen. Bitte erneut versuchen.</div>}
-      {status === 'already_used' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600 }}>Dieser QR-Code wurde bereits verwendet. Bitte einen neuen QR-Code scannen.</div>}
-      {status === 'expired' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600 }}>Dieser QR-Code ist abgelaufen. Bitte einen neuen QR-Code scannen.</div>}
-      {status === 'wrong_account' && <div style={{ color: '#EF4444', fontSize: 17, fontWeight: 600, textAlign: 'center' }}>Dieser QR-Code gehört zu einem anderen Konto. Bitte melden Sie sich mit dem richtigen Konto an oder scannen Sie einen neuen QR-Code.</div>}
+      {status === 'error' && <div style={{ color: 'var(--error)', fontSize: 15, fontWeight: 500 }}>Fehler beim Übertragen. Bitte erneut versuchen.</div>}
+      {status === 'already_used' && <div style={{ color: 'var(--error)', fontSize: 15, fontWeight: 500 }}>Dieser QR-Code wurde bereits verwendet. Bitte einen neuen QR-Code scannen.</div>}
+      {status === 'expired' && <div style={{ color: 'var(--error)', fontSize: 15, fontWeight: 500 }}>Dieser QR-Code ist abgelaufen. Bitte einen neuen QR-Code scannen.</div>}
+      {status === 'wrong_account' && <div style={{ color: 'var(--error)', fontSize: 15, fontWeight: 500, textAlign: 'center' }}>Dieser QR-Code gehört zu einem anderen Konto. Bitte melden Sie sich mit dem richtigen Konto an oder scannen Sie einen neuen QR-Code.</div>}
     </div>
   )
 }

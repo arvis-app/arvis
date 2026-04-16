@@ -233,13 +233,13 @@ export default function Chat() {
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, maxWidth: 820, width: '100%', margin: '0 auto', padding: '0 16px', overflow: 'hidden' }}>
 
       {/* Header */}
-      <div style={{ padding: '24px 0 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ padding: '20px 0 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, fontFamily: "'Bricolage Grotesque', sans-serif", color: 'var(--text)', margin: 0 }}>Chat</h1>
-          <p style={{ fontSize: 14, color: 'var(--text-3)', margin: '4px 0 0' }}>Medizinischer KI-Assistent</p>
+          <h1 style={{ fontSize: 20, fontWeight: 600, fontFamily: "'DM Sans', sans-serif", color: 'var(--text)', margin: 0 }}>Chat</h1>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', margin: '3px 0 0' }}>Medizinischer KI-Assistent</p>
         </div>
         <button onClick={startNewChat} className="chat-new-btn"
-          style={{ padding: '7px 14px', fontSize: 13, fontWeight: 600, border: 'none', borderRadius: 8, background: 'var(--bg)', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}>
+          style={{ padding: '6px 12px', fontSize: 13, fontWeight: 500, border: '1px solid var(--border)', borderRadius: 5, background: 'var(--bg-2)', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s, border-color 0.15s' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Neuer Chat
         </button>
@@ -266,9 +266,9 @@ export default function Chat() {
               <div key={c.id} onClick={() => { if (!isDragging.current) loadConversation(c.id) }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 10px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+                  padding: '5px 10px', borderRadius: 5, fontSize: 12.5, fontWeight: 500,
                   whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0,
-                  background: activeId === c.id ? 'var(--orange-ghost)' : 'var(--card)',
+                  background: activeId === c.id ? 'var(--orange-ghost)' : 'var(--bg-2)',
                   color: activeId === c.id ? 'var(--orange)' : 'var(--text-2)',
                   border: `1px solid ${activeId === c.id ? 'var(--orange)' : 'var(--border)'}`,
                   transition: 'all 0.15s',
@@ -316,15 +316,14 @@ export default function Chat() {
             )}
             <div style={{
               maxWidth: '85%',
-              padding: '12px 16px',
-              borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-              background: msg.role === 'user' ? 'var(--orange)' : 'var(--card)',
+              padding: '10px 14px',
+              borderRadius: 6,
+              background: msg.role === 'user' ? 'var(--orange)' : 'var(--bg-2)',
               color: msg.role === 'user' ? 'white' : 'var(--text)',
-              fontFamily: "'DM Sans', Inter, sans-serif",
-              fontSize: 15,
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14,
               lineHeight: 1.6,
               border: msg.role === 'user' ? 'none' : '1px solid var(--border)',
-              boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.04)' : 'none',
               wordBreak: 'break-word',
             }}>
               {msg.role === 'user'
@@ -349,8 +348,8 @@ export default function Chat() {
         {loading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
             <div style={{
-              padding: '12px 20px', borderRadius: '16px 16px 16px 4px',
-              background: 'var(--card)', border: '1px solid var(--border)',
+              padding: '10px 16px', borderRadius: 6,
+              background: 'var(--bg-2)', border: '1px solid var(--border)',
               display: 'flex', gap: 6, alignItems: 'center'
             }}>
               <span className="chat-dot" style={{ animationDelay: '0ms' }} />
@@ -374,9 +373,8 @@ export default function Chat() {
       <div style={{ flexShrink: 0, paddingBottom: 20, paddingTop: 8 }}>
         <div style={{
           display: 'flex', gap: 8, alignItems: 'flex-end',
-          background: 'var(--card)', border: '1px solid var(--border)',
-          borderRadius: 14, padding: '8px 8px 8px 16px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+          background: 'var(--bg-2)', border: '1px solid var(--border)',
+          borderRadius: 8, padding: '8px 8px 8px 14px',
         }}>
           <textarea
             ref={inputRef}
@@ -400,7 +398,7 @@ export default function Chat() {
             onClick={handleSend}
             disabled={!input.trim() || loading}
             style={{
-              width: 40, height: 40, borderRadius: 10, border: 'none',
+              width: 36, height: 36, borderRadius: 6, border: 'none',
               background: input.trim() && !loading ? 'var(--orange)' : 'var(--bg-3)',
               color: input.trim() && !loading ? 'white' : 'var(--text-3)',
               cursor: input.trim() && !loading ? 'pointer' : 'default',

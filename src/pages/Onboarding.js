@@ -58,7 +58,7 @@ export default function Onboarding() {
   async function handleFinish() {
     if (user) await markOnboardingComplete(user.id)
     await updateProfile({ onboarding_completed: true })
-    navigate('/dashboard', { replace: true })
+    navigate('/scan', { replace: true })
   }
 
   async function handleShortcut(path) {
@@ -72,7 +72,7 @@ export default function Onboarding() {
 
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#D94B0A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--orange)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Willkommen bei Arvis
         </div>
         <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)' }}>
