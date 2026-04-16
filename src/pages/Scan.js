@@ -973,9 +973,9 @@ export default function Scan() {
                 <span className="scan-panel-sub">Patientendaten mit dem Schwärzungs-Tool entfernen</span>
               </div>
               {/* Warning */}
-              <div id="anonWarning" style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEE2E2', borderBottom: '1px solid #FCA5A5', padding: '10px 16px', marginTop: 0 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                <span style={{ fontSize: 15, fontWeight: 600, color: '#DC2626' }}>Bitte alle Patientendaten schwärzen, bevor Sie fortfahren.</span>
+              <div id="anonWarning" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(193,58,43,0.07)', borderBottom: '1px solid rgba(193,58,43,0.2)', padding: '10px 16px', marginTop: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--error)' }}>Bitte alle Patientendaten schwärzen, bevor Sie fortfahren.</span>
               </div>
               {/* PDF nav */}
               {pdfDocRef.current && (
@@ -987,7 +987,7 @@ export default function Scan() {
               )}
               {/* Toolbar */}
               <div className="scan-viewer-toolbar">
-                <button onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: '#1C1C1E', color: 'white', border: 'none', borderRadius: 6, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: 'pointer' }}>
+                <button onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 6, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: 'pointer' }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
                   Schwärzen
                 </button>
@@ -1017,13 +1017,13 @@ export default function Scan() {
                   {/* Blackout boxes */}
                   {blackouts.map(box => (
                     <div key={box.id} onMouseDown={e => startDragBlackout(e, box)} onTouchStart={e => startDragBlackout(e, box)}
-                      style={{ position: 'absolute', background: '#000', boxSizing: 'border-box', left: box.x, top: box.y, width: box.w, height: box.h, border: selectedBk === box.id ? '2px solid #EF4444' : '2px solid transparent', cursor: 'move', minWidth: 20, minHeight: 10, userSelect: 'none' }}>
+                      style={{ position: 'absolute', background: '#000', boxSizing: 'border-box', left: box.x, top: box.y, width: box.w, height: box.h, border: selectedBk === box.id ? '2px solid var(--error)' : '2px solid transparent', cursor: 'move', minWidth: 20, minHeight: 10, userSelect: 'none' }}>
                       {selectedBk === box.id && (
                         <>
                           <div onMouseDown={e => e.stopPropagation()} onClick={() => deleteBlackout(box.id)}
-                            style={{ position: 'absolute', top: -10, right: -10, width: 20, height: 20, borderRadius: '50%', background: '#EF4444', color: 'white', fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>×</div>
+                            style={{ position: 'absolute', top: -10, right: -10, width: 20, height: 20, borderRadius: '50%', background: 'var(--error)', color: 'white', fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>×</div>
                           <div onMouseDown={e => startResizeBlackout(e, box)} onTouchStart={e => startResizeBlackout(e, box)}
-                            style={{ position: 'absolute', bottom: -9, right: -9, width: 18, height: 18, background: '#EF4444', borderRadius: '50%', cursor: 'se-resize', zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            style={{ position: 'absolute', bottom: -9, right: -9, width: 18, height: 18, background: 'var(--error)', borderRadius: '50%', cursor: 'se-resize', zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'scaleY(-1)' }}><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
                           </div>
                         </>
@@ -1155,33 +1155,33 @@ export default function Scan() {
       {/* ── Mobile multi-photo overlay ── */}
       {showMobileMultiUI && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-          <div style={{ background: 'white', borderRadius: '20px 20px 0 0', padding: '24px 20px 40px', width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#1C1C1E', textAlign: 'center' }}>
+          <div style={{ background: 'var(--bg-2)', borderRadius: '8px 8px 0 0', padding: '24px 20px 40px', width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', textAlign: 'center' }}>
               {mobilePhotos.length} Seite{mobilePhotos.length > 1 ? 'n' : ''} aufgenommen
             </div>
             {/* Thumbnails */}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
               {mobilePhotos.map((p, i) => (
                 <div key={i} style={{ position: 'relative' }}>
-                  <img src={p.preview} alt={`Seite ${i + 1}`} style={{ width: 72, height: 90, objectFit: 'cover', borderRadius: 8, border: '2px solid #E5E5EA' }} />
+                  <img src={p.preview} alt={`Seite ${i + 1}`} style={{ width: 72, height: 90, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--border)' }} />
                   <div style={{ position: 'absolute', top: 4, left: 4, background: 'var(--orange)', color: 'white', borderRadius: 10, fontSize: 12, fontWeight: 600, padding: '1px 6px' }}>{i + 1}</div>
                 </div>
               ))}
             </div>
             {/* Weitere Seite */}
             <button onClick={() => cameraInputRef.current.click()}
-              style={{ padding: '14px', borderRadius: 12, border: '2px solid var(--orange)', background: 'white', color: 'var(--orange)', fontSize: 17, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              style={{ padding: '14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--bg-2)', color: 'var(--orange)', fontSize: 17, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               Weitere Seite
             </button>
             {/* Fertig */}
             <button onClick={handleMobileFinish}
-              style={{ padding: '14px', borderRadius: 12, border: 'none', background: '#1C1C1E', color: 'white', fontSize: 17, fontWeight: 600, cursor: 'pointer' }}>
+              style={{ padding: '14px', borderRadius: 5, border: 'none', background: 'var(--text)', color: 'white', fontSize: 17, fontWeight: 500, cursor: 'pointer' }}>
               Weiter zur Anonymisierung
             </button>
             {/* Abbrechen */}
             <button onClick={() => { setShowMobileMultiUI(false); setMobilePhotos([]) }}
-              style={{ padding: '12px', borderRadius: 10, border: 'none', background: '#F2F2F7', color: '#3C3C43', fontSize: 17, fontWeight: 600, cursor: 'pointer' }}>
+              style={{ padding: '12px', borderRadius: 5, border: 'none', background: 'var(--bg-3)', color: 'var(--text-2)', fontSize: 17, fontWeight: 500, cursor: 'pointer' }}>
               Abbrechen
             </button>
           </div>
@@ -1190,20 +1190,20 @@ export default function Scan() {
 
       {showMobileScanOptions && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setShowMobileScanOptions(false)}>
-          <div style={{ background: 'white', borderRadius: '16px 16px 0 0', padding: '24px 20px 36px', width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 12 }} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#1C1C1E', marginBottom: 4, textAlign: 'center' }}>Dokument laden</div>
+          <div style={{ background: 'var(--bg-2)', borderRadius: '8px 8px 0 0', padding: '24px 20px 36px', width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 12 }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', marginBottom: 4, textAlign: 'center' }}>Dokument laden</div>
             <button onClick={() => { setShowMobileScanOptions(false); fileInputRef.current.click() }}
-              style={{ padding: '16px', borderRadius: 12, border: '1px solid #E5E5EA', background: 'white', color: '#1C1C1E', fontSize: 17, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
+              style={{ padding: '16px', borderRadius: 5, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 17, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               Datei auswählen
             </button>
             <button onClick={() => { setShowMobileScanOptions(false); cameraInputRef.current.click() }}
-              style={{ padding: '16px', borderRadius: 12, border: '1px solid #E5E5EA', background: 'white', color: '#1C1C1E', fontSize: 17, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
+              style={{ padding: '16px', borderRadius: 5, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 17, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
               Foto aufnehmen
             </button>
             <button onClick={() => setShowMobileScanOptions(false)}
-              style={{ marginTop: 4, padding: '12px', borderRadius: 10, border: 'none', background: '#F2F2F7', color: '#3C3C43', cursor: 'pointer', fontSize: 17, fontWeight: 600 }}>
+              style={{ marginTop: 4, padding: '12px', borderRadius: 5, border: 'none', background: 'var(--bg-3)', color: 'var(--text-2)', cursor: 'pointer', fontSize: 17, fontWeight: 500 }}>
               Abbrechen
             </button>
           </div>
@@ -1212,16 +1212,16 @@ export default function Scan() {
 
       {showDesktopScanOptions && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: 'white', borderRadius: 12, padding: 24, width: 320, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ fontSize: 19, fontWeight: 700, color: '#1C1C1E', marginBottom: 8, textAlign: 'center' }}>Scan-Methode wählen</div>
+          <div style={{ background: 'var(--bg-2)', borderRadius: 6, padding: 24, width: 320, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--text)', marginBottom: 8, textAlign: 'center' }}>Scan-Methode wählen</div>
 
             <button onClick={() => { setShowDesktopScanOptions(false); fileInputRef.current.click() }}
-              style={{ padding: '14px', borderRadius: 10, border: '1px solid #E5E5EA', background: 'white', color: '#1C1C1E', fontSize: 17, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+              style={{ padding: '14px', borderRadius: 5, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 17, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               Datei hochladen
             </button>
             <button onClick={startMobileScan}
-              style={{ padding: '14px', borderRadius: 10, border: '1px solid #E5E5EA', background: 'white', color: '#1C1C1E', fontSize: 17, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+              style={{ padding: '14px', borderRadius: 5, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 17, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>
               Mit Handy fotografieren
             </button>
@@ -1235,14 +1235,14 @@ export default function Scan() {
 
       {showQrModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: 'white', borderRadius: 16, padding: 32, width: 340, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <div style={{ fontSize: 19, fontWeight: 700, color: '#1C1C1E' }}>Mit Handy fotografieren</div>
+          <div style={{ background: 'var(--bg-2)', borderRadius: 6, padding: 32, width: 340, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+            <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--text)' }}>Mit Handy fotografieren</div>
             {qrExpired ? (
               <>
-                <div style={{ fontSize: 15, color: '#FF3B30', fontWeight: 600 }}>
+                <div style={{ fontSize: 15, color: 'var(--error)', fontWeight: 600 }}>
                   QR-Code abgelaufen
                 </div>
-                <div style={{ fontSize: 14, color: '#8E8E93', lineHeight: 1.4 }}>
+                <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.4 }}>
                   Die Sitzung ist nach 10 Minuten abgelaufen. Bitte erneut versuchen.
                 </div>
                 <button onClick={() => { scanChannel?.unsubscribe(); startMobileScan() }}
