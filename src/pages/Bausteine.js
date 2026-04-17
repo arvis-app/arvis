@@ -470,9 +470,8 @@ export default function Bausteine() {
 
   return (
     <div className="page active" id="page-bausteine">
-      {/* Header row: subtitle left, new-button right */}
-      <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14}}>
-        <div style={{fontSize:12.5, color:'var(--text-3)'}}>Vorgefertigte Textbausteine · Einfügen per Klick</div>
+      {/* Header row: new-button right */}
+      <div style={{display:'flex', justifyContent:'flex-end', marginBottom:8}}>
         <button onClick={()=>{setEditingB(null);setNeuOpen(true)}}
           style={{padding:'6px 12px',fontSize:13,fontWeight:500,border:'1px solid var(--border)',borderRadius:5,background:'var(--bg-2)',color:'var(--text-2)',cursor:'pointer',fontFamily:'DM Sans,sans-serif',display:'flex',alignItems:'center',gap:6,transition:'background 0.15s'}}
           onMouseOver={e=>e.currentTarget.style.background='var(--bg-3)'}
@@ -508,7 +507,7 @@ export default function Bausteine() {
             <select
               value={activeCat||''}
               onChange={e=>{setActiveCat(e.target.value||null); e.target.blur()}}
-              style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'11px 40px 11px 14px',fontSize:16,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text)',fontWeight:700,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
+              style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'8px 40px 8px 14px',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text)',fontWeight:600,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
               <option value="">Alle Kategorien</option>
               <option value="Favoriten">★ Favoriten</option>
               <option value="MeineBausteine">✎ Meine Bausteine</option>
@@ -589,14 +588,14 @@ export default function Bausteine() {
                   onClick={handlePreviewClick}
                   style={{overflowY:'auto',flex:1,outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)'}} />
                 <div style={{display:'flex',gap:8,marginTop:16}}>
-                  <button className="btn-secondary btn-secondary-orange" onClick={copyBaustein} style={{flex:1,justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
+                  <button className="btn-secondary btn-secondary-orange" onClick={copyBaustein} style={{justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
                     {copied
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     }
                     {copied ? 'Kopiert!' : 'Kopieren'}
                   </button>
-                  <button className="btn-action" onClick={sendDirectToBrief} style={{flex:1,justifyContent:'center',display:'flex',gap:6}}>
+                  <button className="btn-action" onClick={sendDirectToBrief} style={{justifyContent:'center',display:'flex',gap:6}}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     An Briefassistent
                   </button>
