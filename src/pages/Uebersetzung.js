@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { addHistory, consumeRestore } from '../utils/history'
 
 const UEB_LANGS = [
   { key:'en', label:'English',    abbr:'EN' },
@@ -81,6 +82,37 @@ export default function Uebersetzung() {
 
   useEffect(() => { setVisibleCount(200) }, [search, cat])
 
+  // Raccourci / : focus la recherche (sauf si déjà dans un input)
+  useEffect(() => {
+    const onKey = e => {
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return
+      const t = e.target
+      if (t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.isContentEditable) return
+      const input = document.querySelector('.ueb-search-box input')
+      if (input) { e.preventDefault(); input.focus() }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
+  // Restauration depuis sidebar history : id = DE term
+  useEffect(() => {
+    function applyId(id) {
+      if (!id || !data.length) return false
+      const found = data.find(b => b.de === id)
+      if (found) { setSelected(found); return true }
+      return false
+    }
+    const restoreId = consumeRestore('uebersetzung')
+    if (restoreId) applyId(restoreId) || sessionStorage.setItem('arvis_restore_uebersetzung', restoreId)
+    function onRestore(e) {
+      if (e.detail?.tab !== 'uebersetzung') return
+      applyId(String(e.detail.id))
+    }
+    window.addEventListener('arvis:restore-request', onRestore)
+    return () => window.removeEventListener('arvis:restore-request', onRestore)
+  }, [data])
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
     let items = data.filter(b => {
@@ -115,12 +147,7 @@ export default function Uebersetzung() {
 
   return (
     <div className="page active">
-      <div className="page-header">
-        <div>
-          <div className="page-title">Übersetzung</div>
-          <div className="page-date">1.585 medizinische Fachbegriffe · 7 Sprachen</div>
-        </div>
-      </div>
+      <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginBottom: 14 }}>1.585 medizinische Fachbegriffe · 6 Sprachen</div>
 
       <div>
         {/* Controls */}
@@ -175,7 +202,7 @@ export default function Uebersetzung() {
             )}
             <div className="ueb-list">
               {filtered.slice(0, visibleCount).map((b,i)=>(
-                <div key={i} className={`ueb-item${selected===b?' selected':''}`} onClick={()=>setSelected(b)}>
+                <div key={i} className={`ueb-item${selected===b?' selected':''}`} onClick={()=>{ setSelected(b); addHistory('uebersetzung', { id: b.de, label: b.de }) }}>
                   <div className="ueb-item-term">{b.de}</div>
                   {b.de_allg && <div className="ueb-item-sub">{b.de_allg}</div>}
                 </div>
@@ -186,9 +213,16 @@ export default function Uebersetzung() {
           {/* Detail */}
           <div className="ueb-detail-card">
             {!selected && (
-              <div className="ueb-detail-empty">
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <div style={{fontSize:15,color:'var(--text-3)',marginTop:12}}>Begriff auswählen</div>
+              <div style={{padding:'28px 0',display:'flex',flexDirection:'column',gap:18,maxWidth:420}}>
+                <div style={{fontSize:14,color:'var(--text-2)',lineHeight:1.6}}>
+                  Wählen Sie links einen Fachbegriff. Sie sehen rechts Allgemeinbegriff (DE), Übersetzungen in <strong>EN · ES · FR · RU · UK</strong> sowie Aussprache-Hinweise und können jede Zeile einzeln kopieren.
+                </div>
+                <div>
+                  <div style={{fontSize:10.5,fontWeight:600,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.12em',marginBottom:10}}>Tipp</div>
+                  <div style={{fontSize:13.5,color:'var(--text-2)',lineHeight:1.55}}>
+                    Tippen Sie einen Begriff wie <em>Aneurysma</em>, <em>Dyspnoe</em> oder <em>Blutdruck</em> in die Suche. Sprachen lassen sich über die Flaggen oben rechts ein-/ausblenden.
+                  </div>
+                </div>
               </div>
             )}
             {selected && (

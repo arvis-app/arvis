@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 16 avril 2026_
+_Dernière mise à jour : 17 avril 2026_
 
 > **Conventions critiques à ne pas oublier :**
 > - Toujours travailler sur `main` — pas de branches
@@ -429,7 +429,7 @@ Bouton "Jetzt upgraden" :
 25. **Boucle infinie dans `markdownToHtml()`** : dans la branche sous-items, toujours faire `i++` AVANT le `continue` — sinon la ligne suivante n'est jamais consommée et le parseur tourne en rond sur la même ligne jusqu'à freezer l'onglet. Bug rencontré lors de l'implémentation initiale des sous-items (commit 83b99a0).
 26. **Mobile Scan/Bausteine — alignement des colonnes empilées (16/04/2026)** : sur `@media (max-width: 785px)`, `.scan-left` (padding-right:32px) et `.scan-right` (padding-left:32px + border-left) créaient un décalage à gauche en stack mobile → reset des paddings à 0 + border-left supprimée + `border-top` séparateur entre les deux colonnes empilées. Pour Bausteine ≤700px : ajout de `order:1` sur `.bausteine-left` et `order:2` sur `.bausteine-right` pour garantir liste au-dessus de preview.
 27. **Bausteine — perte de saisie dans le modal d'édition (16/04/2026)** : le `useEffect` d'init de `NeuBausteinModal` dépendait de `[open, editingBaustein, categories]`. Quand `bausteine_data.js` finit de charger en arrière-plan (peut prendre plusieurs secondes), `baudataVersion` change → `allData`/`categories` recomputés → nouvelle référence → useEffect refire → `setText(editingBaustein.text)` ÉCRASE le brouillon en cours et reset tous les champs. **Fix** : dépendances → `[open, editingBaustein?.id]` (avec eslint-disable-next-line). Ne réinitialise que sur ouverture du modal OU changement de baustein édité.
-28. **Briefassistent desktop — chaîne flex/grid ne propageait pas la hauteur (16/04/2026)** : la chaîne `#page-brief (flex:1)` → `.brief-layout (display:grid, flex:1)` → `.brief-panel (height:100%)` ne donnait pas une hauteur définie aux panneaux → ils restaient courts → bouton Diktieren+KI analysieren pas en bas de l'écran. **Fix** : `.brief-layout { grid-template-rows: minmax(0, 1fr) }` + `.brief-panel { height: calc(100vh - 80px) !important; min-height: calc(100vh - 80px) !important }` + action row en `position: absolute; bottom: 24px`. Sélecteurs préfixés `#page-brief` pour spécificité. Toutes les règles avec `!important` car le base CSS (line ~962) défi un `height: calc(100vh - 220px)` qu'il faut surcharger.
+28. **Briefassistent desktop — chaîne flex/grid ne propageait pas la hauteur (16/04/2026)** : la chaîne `#page-brief (flex:1)` → `.brief-layout (display:grid, flex:1)` → `.brief-panel (height:100%)` ne donnait pas une hauteur définie aux panneaux → ils restaient courts → bouton Diktieren+KI analysieren pas en bas de l'écran. **Fix** : `.brief-layout { grid-template-rows: minmax(0, 1fr) }` + `.brief-panel { height: calc(100vh - 44px) !important; min-height: calc(100vh - 44px) !important }` + action row en `position: absolute; bottom: 24px`. Sélecteurs préfixés `#page-brief` pour spécificité. Toutes les règles avec `!important` car le base CSS (line ~962) défi un `height: calc(100vh - 220px)` qu'il faut surcharger. **La topbar fait exactement 44px** — `calc(100vh - 80px)` était faux (36px de trop court), corrigé le 17/04/2026.
 
 ---
 
@@ -523,7 +523,7 @@ Le prompt Korrektur est dans `src/pages/Briefassistent.js` (`buildPrompt()`, mod
 - **Renommé** depuis `BriefSchreiber` → `Briefassistent` partout : fichier `src/pages/Briefassistent.js`, route `/briefassistent`, classe CSS `.btn-send-briefassistent`, labels UI ("Briefassistent" partout), landing page (`#briefassistent` anchor + h3), emails transactionnels, tests Playwright. Pas de redirect legacy car `pas de user actif`.
 - **Pas de `.page-header` externe** — la title row "Briefassistent" + bouton **Zurücksetzen** vit **À L'INTÉRIEUR** du panneau gauche (`.brief-panel:first-child`), même pattern que Scan (`.scan-left`). FontSize 17.
 - **Label panneau droit** : "Ergebnis" (et non "KI-Ergebnis") — empty state : "Ergebnis erscheint hier".
-- **Hauteur panneau desktop** : sur `@media (min-width: 1101px)`, `.brief-panel { height: calc(100vh - 80px) !important; min-height: calc(100vh - 80px) !important; }`. Le `!important` est obligatoire car la chaîne `flex` → `grid` → `100%` ne propageait pas correctement la hauteur. Voir piège #28.
+- **Hauteur panneau desktop** : sur `@media (min-width: 1101px)`, `.brief-panel { height: calc(100vh - 44px) !important; min-height: calc(100vh - 44px) !important; }`. Le `!important` est obligatoire car la chaîne `flex` → `grid` → `100%` ne propageait pas correctement la hauteur. **44px = hauteur exacte de la topbar** — `.brief-layout` démarre directement à 44px du viewport top, sans header intermédiaire. Voir piège #28.
 - **Action row Diktieren+KI analysieren** : `position: absolute; left: 24px; right: 24px; bottom: 24px` à l'intérieur de `.brief-panel:first-child` (qui a `position: relative; padding-bottom: 80px; overflow: hidden`). Garantie d'être tout en bas du panneau peu importe le contenu du textarea.
 - **Min-height textarea** : `#page-brief .brief-textarea { min-height: calc(100vh - 280px) !important }` — force le textarea à pousser le panneau en hauteur.
 
@@ -595,6 +595,37 @@ Tous via **Resend** depuis `noreply@arvis-app.de`. Templates HTML partagés dans
 **Tracking anti-doublon** : colonnes `welcome_email_sent`, `trial_reminder_sent`, `trial_expired_sent` (boolean) sur table `users`.
 
 **Cron** : `cron.schedule('check-trial-emails', '0 9 * * *', ...)` via pg_cron + pg_net (SQL Editor Supabase).
+
+---
+
+## Idées futures (backlog)
+
+### Notaufnahme-Seite (priorité haute)
+
+Nouvelle page dédiée aux **Assistenzärzte / Ärzte aux urgences** pour générer en un coup l'Aufnahme Orbis + une analyse clinique assistée.
+
+**Formulaire d'entrée** :
+- Sexe, âge
+- Symptomatik / Beschwerden (Leitsymptom + détails)
+- Anamnèse (aktuelle Anamnese, Vorerkrankungen, Medikation, Allergien, Sozialanamnese)
+- Körperliche Untersuchung (par systèmes ou prose libre)
+- Vitale Parameter (RR, HF, SpO₂, Temp, AF, BZ, Schmerzen NRS)
+- Examens complémentaires : champs texte + **uploads photos** (Labor, EKG, Röntgen, Sono, CT)
+- Medikation / Hausmedikation + donnée en Notaufnahme
+
+**Sortie IA** (double) :
+1. **Texte Orbis** prêt à copier — Aufnahmebrief court, format hospitalier allemand standard
+2. **Analyse clinique** : DD (diagnostics différentiels) classés par probabilité, Procedere proposé, **"Was fehlt noch?"** — liste de ce qui n'a pas été vérifié/documenté (labos manquants, examens à compléter, red flags non adressés)
+
+**Pourquoi** : Assistenzärzte aux urgences passent ~30% de leur temps en documentation. C'est la cible la plus douloureuse → *killer feature* pour Arvis.
+
+### Onglets EKG et Röntgen dans Scan (priorité moyenne)
+
+Prompts spécialisés par modalité (plutôt que le prompt Scan générique) :
+- **EKG** : rythme, axe, intervalles (PQ, QRS, QT), ischémie/infarctus, blocs, hypertrophie
+- **Röntgen Thorax** : infiltrats, épanchement, silhouette cardiaque, os, corps étrangers, position sondes/cathéters
+
+Peut aussi être intégré comme sections "Befunde" dans la Notaufnahme-Seite (uploads avec analyse ciblée), évitant la duplication.
 
 ---
 

@@ -145,7 +145,7 @@ export default function LoginPage() {
           ].map((f, i) => (
             <div key={i} className="login-feature">
               <div className="login-feature-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{f.icon}</svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{f.icon}</svg>
               </div>
               <span>{f.text}</span>
             </div>

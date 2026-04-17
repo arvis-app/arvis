@@ -82,6 +82,15 @@ export default function Profil() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [portalLoading, setPortalLoading] = useState(false)
 
+  // Sous-onglets Profil
+  const [profilTab, setProfilTab] = useState(() => sessionStorage.getItem('arvis_profil_tab') || 'profil')
+  useEffect(() => { sessionStorage.setItem('arvis_profil_tab', profilTab) }, [profilTab])
+  const PROFIL_TABS = [
+    { key: 'profil', label: 'Profil' },
+    { key: 'abonnement', label: 'Abonnement' },
+    { key: 'sicherheit', label: 'Sicherheit' },
+  ]
+
   async function handleCheckout() {
     setCheckoutLoading(true)
     try {
@@ -271,24 +280,33 @@ export default function Profil() {
 
   return (
     <div className="page active">
-      <div className="page-header">
-        <div>
-          <div className="page-title">Mein Profil</div>
-          <div className="page-date">Profileinstellungen & Abonnement</div>
-        </div>
+      {/* Sous-onglets centrés */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 0, borderBottom: '1px solid var(--border)', marginBottom: 28 }}>
+        {PROFIL_TABS.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setProfilTab(t.key)}
+            style={{
+              padding: '9px 18px', margin: '0 14px -1px',
+              border: 'none', borderBottom: `2px solid ${profilTab === t.key ? 'var(--orange)' : 'transparent'}`,
+              background: 'transparent',
+              fontSize: 13, fontWeight: profilTab === t.key ? 600 : 500,
+              color: profilTab === t.key ? 'var(--text)' : 'var(--text-3)',
+              fontFamily: 'DM Sans,sans-serif', cursor: 'pointer',
+              transition: 'color 0.15s, border-color 0.15s',
+            }}>
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      <div className="profil-layout">
-
-        {/* ── Linke Spalte: Persönliche Infos ── */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-          <div className="card-header" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 14, marginBottom: 4 }}>
-            <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 10, height: 18 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-              <span style={{ lineHeight: '18px' }}>Persönliche Informationen</span>
-            </div>
+      {/* ── Tab 1: Profil (Persönliche Infos + Rechnungsadresse) ── */}
+      {profilTab === 'profil' && (
+        <div className="profil-section" style={{ display: 'flex', flexDirection: 'column', maxWidth: 680, margin: '0 auto' }}>
+          <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: 10, marginBottom: 20, textAlign: 'center' }}>
+            <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Persönliche Informationen</div>
           </div>
-          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 20, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, flex: 1 }}>
 
             {/* Avatar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -299,12 +317,12 @@ export default function Profil() {
               <div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button className="btn-secondary" style={{ fontSize: 14 }} onClick={() => photoInputRef.current?.click()}>Foto ändern</button>
-                  <button 
+                  <button
                     className="btn-secondary"
-                    style={{ fontSize: 14, color: 'var(--error)', borderColor: 'var(--error)', transition: 'background 0.2s' }}
+                    style={{ fontSize: 14, color: 'var(--text-2)', transition: 'color 0.15s, border-color 0.15s' }}
                     onClick={() => { setPhoto(null); setPhotoFile(null) }}
-                    onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
-                    onMouseOut={e=>e.target.style.background=''}
+                    onMouseOver={e=>{e.target.style.color='var(--error)'; e.target.style.borderColor='var(--error)'}}
+                    onMouseOut={e=>{e.target.style.color='var(--text-2)'; e.target.style.borderColor=''}}
                   >
                     Foto löschen
                   </button>
@@ -359,7 +377,7 @@ export default function Profil() {
             </div>
 
             <div style={{ height: 1, background: 'var(--border)' }} />
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Rechnungsadresse</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center' }}>Rechnungsadresse</div>
 
             {/* Straße + Hausnummer */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12 }}>
@@ -391,45 +409,44 @@ export default function Profil() {
             </div>
           </div>
         </div>
+      )}
 
-        {/* ── Rechte Spalte: Abo + Passwort ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, height: '100%' }}>
+      {/* ── Tab 2: Abonnement ── */}
+      {profilTab === 'abonnement' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 560, margin: '0 auto' }}>
 
           {/* Abonnement */}
-          <div className="card">
-            <div className="card-header" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 14, marginBottom: 4 }}>
-              <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 10, height: 18 }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>
-                <span style={{ lineHeight: '18px' }}>Abonnement &amp; Zahlung</span>
-              </div>
+          <div className="profil-section">
+            <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: 10, marginBottom: 20, textAlign: 'center' }}>
+              <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Abonnement &amp; Zahlung</div>
             </div>
-            <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
               {/* Plan badge */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: planInfo.canceledPending ? 'rgba(245,158,11,0.08)' : planInfo.expired ? 'rgba(229,62,62,0.06)' : 'rgba(22,163,74,0.08)', border: planInfo.canceledPending ? '1px solid rgba(245,158,11,0.3)' : planInfo.expired ? '1px solid rgba(229,62,62,0.2)' : '1px solid rgba(22,163,74,0.3)', borderRadius: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', border: '1px solid ' + (planInfo.canceledPending ? 'rgba(184,126,30,0.25)' : planInfo.expired ? 'rgba(193,58,43,0.25)' : 'rgba(58,139,92,0.25)'), borderRadius: 5, background: planInfo.canceledPending ? 'rgba(184,126,30,0.06)' : planInfo.expired ? 'rgba(193,58,43,0.05)' : 'rgba(58,139,92,0.06)' }}>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
                     {planInfo.plan === 'pro' ? 'Plan Pro' : planInfo.expired ? 'Testversion abgelaufen' : 'Testversion'}
                   </div>
                   {planInfo.canceledPending && (
-                    <div style={{ fontSize: 14, color: 'var(--error)', marginTop: 2 }}>
+                    <div style={{ fontSize: 13, color: 'var(--error)', marginTop: 2 }}>
                       Gekündigt · Noch {planInfo.daysLeft} Tag{planInfo.daysLeft !== 1 ? 'e' : ''} verbleibend
                     </div>
                   )}
                   {planInfo.plan !== 'pro' && (
-                    <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 2 }}>
+                    <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 2 }}>
                       {planInfo.expired ? 'Abonnement erforderlich' : `Noch ${planInfo.daysLeft} Tag${planInfo.daysLeft !== 1 ? 'e' : ''} verbleibend`}
                     </div>
                   )}
                 </div>
-                <span data-testid="plan-badge" style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? '#f59e0b' : planInfo.expired ? 'var(--error)' : '#16a34a', color: 'white', fontSize: 13, fontWeight: 600 }}>
+                <span data-testid="plan-badge" style={{ padding: '4px 12px', borderRadius: 999, background: planInfo.canceledPending ? 'var(--warning)' : planInfo.expired ? 'var(--error)' : 'var(--success)', color: 'white', fontSize: 13, fontWeight: 600 }}>
                   {planInfo.canceledPending ? 'Gekündigt' : planInfo.plan === 'pro' ? 'Aktiv' : planInfo.expired ? 'Abgelaufen' : 'Trial'}
                 </span>
               </div>
 
               {/* Zahlungsmittel */}
               <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>Zahlungsmittel</div>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10, textAlign: 'center' }}>Zahlungsmittel</div>
                 {paymentMethod ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     {['paypal', 'sepa', 'sepa_debit', 'apple_pay', 'applepay', 'apple pay'].includes(paymentMethod.brand?.toLowerCase()) ? (
@@ -488,33 +505,31 @@ export default function Profil() {
               {/* Trial section */}
               {planInfo.plan !== 'pro' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {/* Promo badge */}
-                  {!yearly && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '6px 12px', background: 'var(--orange-ghost)', border: '1px solid rgba(217,75,10,0.2)', borderRadius: 6 }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--orange)' }}>Einführungsangebot –34% · erste 3 Monate</span>
-                    </div>
-                  )}
                   {/* Toggle Monatlich / Jährlich */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 10, background: 'var(--bg-2)', borderRadius: 6, border: '1px solid var(--border)' }}>
-                    <div onClick={() => setYearly(false)} style={{ fontSize: 15, fontWeight: 600, color: yearly ? 'var(--text-3)' : 'var(--text)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 5 }}>
+                    <div onClick={() => setYearly(false)} style={{ fontSize: 14, fontWeight: yearly ? 500 : 600, color: yearly ? 'var(--text-3)' : 'var(--text)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <span>Monatlich</span>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-3)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-3)', marginTop: 1 }}>
                         <span style={{ fontWeight: 600, color: yearly ? 'var(--text-3)' : 'var(--orange)' }}>19 €</span> <span style={{ textDecoration: 'line-through' }}>29 €</span>
                       </div>
                     </div>
-                    <div onClick={() => setYearly(v => !v)} style={{ width: 44, height: 24, borderRadius: 999, background: 'var(--orange)', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
-                      <div style={{ position: 'absolute', top: 3, left: 3, width: 18, height: 18, borderRadius: '50%', background: 'white', transition: 'transform 0.2s', transform: yearly ? 'translateX(20px)' : 'translateX(0)' }} />
+                    <div onClick={() => setYearly(v => !v)} style={{ width: 40, height: 22, borderRadius: 999, background: 'var(--bg-3)', border: '1px solid var(--border)', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+                      <div style={{ position: 'absolute', top: 2, left: 2, width: 16, height: 16, borderRadius: '50%', background: 'var(--text-2)', transition: 'transform 0.2s', transform: yearly ? 'translateX(18px)' : 'translateX(0)' }} />
                     </div>
-                    <div onClick={() => setYearly(true)} style={{ fontSize: 15, fontWeight: 600, color: yearly ? 'var(--text)' : 'var(--text-3)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div onClick={() => setYearly(true)} style={{ fontSize: 14, fontWeight: yearly ? 600 : 500, color: yearly ? 'var(--text)' : 'var(--text-3)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <span>Jährlich</span>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: yearly ? 'var(--orange)' : 'var(--text-3)' }}>
-                        249 € <span style={{ color: '#16a34a' }}>–28%</span>
+                      <div style={{ fontSize: 12, fontWeight: 500, color: yearly ? 'var(--orange)' : 'var(--text-3)', marginTop: 1 }}>
+                        <span style={{ fontWeight: 600 }}>249 €</span> <span style={{ color: 'var(--success)' }}>–28%</span>
                       </div>
                     </div>
                   </div>
+                  {!yearly && (
+                    <div style={{ fontSize: 12.5, color: 'var(--orange)', fontWeight: 500, textAlign: 'center' }}>
+                      Einführungsangebot –34 % in den ersten 3 Monaten.
+                    </div>
+                  )}
                   <button onClick={handleCheckout} disabled={checkoutLoading}
-                    style={{ alignSelf: 'flex-start', padding: '8px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.15s, border-color 0.15s' }}
+                    style={{ alignSelf: 'center', padding: '8px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.15s, border-color 0.15s' }}
                     onMouseOver={e => { e.target.style.background = 'var(--orange-dark)'; e.target.style.borderColor = 'var(--orange-dark)' }} onMouseOut={e => { e.target.style.background = 'var(--orange)'; e.target.style.borderColor = 'var(--orange)' }}>
                     {checkoutLoading ? 'Laden...' : yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
                   </button>
@@ -540,16 +555,19 @@ export default function Profil() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Tab 3: Sicherheit (Passwort + Konto löschen) ── */}
+      {profilTab === 'sicherheit' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 560, margin: '0 auto' }}>
 
           {/* Passwort */}
-          <div className="card" id="passwortCard">
-            <div className="card-header" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 14, marginBottom: 4 }}>
-              <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 10, height: 18 }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-                <span style={{ lineHeight: '18px' }}>Passwort ändern</span>
-              </div>
+          <div className="profil-section" id="passwortCard">
+            <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: 10, marginBottom: 20, textAlign: 'center' }}>
+              <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Passwort ändern</div>
             </div>
-            <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {[
                 { id: 'old', label: 'Aktuelles Passwort', val: pwOld, set: setPwOld, ph: '••••••••' },
                 { id: 'new', label: 'Neues Passwort', val: pwNew, set: setPwNew, ph: 'Min. 6 Zeichen' },
@@ -578,22 +596,22 @@ export default function Profil() {
           </div>
 
           {/* Konto löschen */}
-          <div style={{ padding: '14px 16px', background: 'rgba(229,62,62,0.04)', border: '1px solid rgba(229,62,62,0.15)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ padding: '12px 0', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--error)' }}>Konto löschen</div>
-              <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 2 }}>Alle Daten werden unwiderruflich gelöscht.</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-2)' }}>Konto löschen</div>
+              <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 2 }}>Alle Daten werden unwiderruflich gelöscht.</div>
             </div>
             <button
               onClick={() => { setDeleteConfirmText(''); setShowDeleteModal(true) }}
-              style={{ padding: '7px 16px', borderRadius: 6, border: '1px solid var(--error)', background: 'transparent', color: 'var(--error)', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', whiteSpace: 'nowrap', transition: 'background 0.2s' }}
-              onMouseOver={e => e.target.style.background = 'rgba(229,62,62,0.08)'}
-              onMouseOut={e => e.target.style.background = 'transparent'}
+              style={{ padding: '6px 14px', borderRadius: 5, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-2)', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', whiteSpace: 'nowrap', transition: 'color 0.15s, border-color 0.15s' }}
+              onMouseOver={e => { e.target.style.color = 'var(--error)'; e.target.style.borderColor = 'var(--error)' }}
+              onMouseOut={e => { e.target.style.color = 'var(--text-2)'; e.target.style.borderColor = 'var(--border)' }}
             >
               Konto löschen
             </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Cancel modal */}
       {showCancelModal && (

@@ -1,31 +1,143 @@
 import { useState, useRef, useEffect } from 'react'
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase, invokeEdgeFunction } from '../supabaseClient'
 import { preloadPage } from '../App'
+import { getHistory, requestRestore } from '../utils/history'
 
 const navItems = [
   {
-    to: '/scan', label: 'Scan & Analyse',
+    to: '/scan', label: 'Scan & Analyse', shortcut: '⌘1',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
   },
   {
-    to: '/briefassistent', label: 'Briefassistent',
+    to: '/briefassistent', label: 'Briefassistent', shortcut: '⌘2',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
   },
   {
-    to: '/chat', label: 'Chat',
+    to: '/chat', label: 'Chat', shortcut: '⌘3',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   },
   {
-    to: '/bausteine', label: 'Bausteine',
+    to: '/bausteine', label: 'Bausteine', shortcut: '⌘4',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="11" height="4" rx="1"/><rect x="3" y="17" width="14" height="4" rx="1"/></svg>
   },
   {
-    to: '/uebersetzung', label: 'Übersetzung',
+    to: '/uebersetzung', label: 'Übersetzung', shortcut: '⌘5',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
   },
 ]
+
+const PAGE_TITLES = {
+  '/scan': 'Scan & Analyse',
+  '/briefassistent': 'Briefassistent',
+  '/chat': 'Chat',
+  '/bausteine': 'Bausteine',
+  '/uebersetzung': 'Übersetzung',
+  '/profil': 'Mein Profil',
+}
+
+const TAB_FROM_PATH = {
+  '/scan': 'scan',
+  '/briefassistent': 'briefassistent',
+  '/chat': 'chat',
+  '/bausteine': 'bausteine',
+  '/uebersetzung': 'uebersetzung',
+}
+
+const HISTORY_LABELS = {
+  scan:           'Letzte Scans',
+  briefassistent: 'Letzte Briefe',
+  chat:           'Gespräche',
+  bausteine:      'Zuletzt verwendet',
+  uebersetzung:   'Zuletzt angesehen',
+}
+
+function SidebarHistory({ pathname, navigate, user }) {
+  const tab = TAB_FROM_PATH[pathname]
+  const [items, setItems] = useState([])
+  const [activeId, setActiveId] = useState(null)
+
+  // Chat : charger depuis Supabase. Autres : sessionStorage.
+  useEffect(() => {
+    if (!tab) { setItems([]); return }
+    let cancelled = false
+
+    async function load() {
+      if (tab === 'chat') {
+        if (!user) { setItems([]); return }
+        const { data } = await supabase
+          .from('chat_conversations')
+          .select('id, title, updated_at')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(8)
+        if (!cancelled) setItems((data || []).map(c => ({ id: c.id, label: c.title || 'Chat' })))
+      } else {
+        setItems(getHistory(tab))
+      }
+    }
+
+    load()
+    const onChange = (e) => { if (!e.detail || e.detail.tab === tab) load() }
+    window.addEventListener('arvis:history-change', onChange)
+    // Chat : rafraîchir sur focus window (cas où Chat a créé/renommé une conversation)
+    if (tab === 'chat') window.addEventListener('focus', load)
+    return () => {
+      cancelled = true
+      window.removeEventListener('arvis:history-change', onChange)
+      if (tab === 'chat') window.removeEventListener('focus', load)
+    }
+  }, [tab, user])
+
+  // Suivre l'item "actif" selon l'URL/session
+  useEffect(() => {
+    if (!tab) return
+    if (tab === 'chat') {
+      const id = sessionStorage.getItem('arvis_chat_active_id')
+      setActiveId(id || null)
+    } else {
+      setActiveId(null)
+    }
+  }, [tab, pathname])
+
+  if (!tab) return null
+
+  function handleClick(item) {
+    if (tab === 'chat') {
+      sessionStorage.setItem('arvis_chat_active_id', item.id)
+      window.dispatchEvent(new CustomEvent('arvis:chat-load', { detail: { id: item.id } }))
+      navigate('/chat')
+      return
+    }
+    requestRestore(tab, item.id)
+    window.dispatchEvent(new CustomEvent('arvis:restore-request', { detail: { tab, id: item.id } }))
+    navigate(pathname.startsWith('/' + tab) ? pathname : '/' + tab)
+  }
+
+  return (
+    <div style={{ marginTop: 4 }}>
+      <div className="sidebar-section-heading">
+        <span>{HISTORY_LABELS[tab]}</span>
+      </div>
+      {items.length === 0 ? (
+        <div className="sidebar-history-empty">Noch keine Einträge</div>
+      ) : (
+        <div className="sidebar-history-list">
+          {items.map(it => (
+            <button
+              key={it.id}
+              className={`sidebar-history-item${activeId === it.id ? ' active' : ''}`}
+              onClick={() => handleClick(it)}
+              title={it.label}>
+              <span className="sidebar-history-item-label">{it.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function AppLayout() {
   const { user, profile, getInitials, getDisplayName, logout, isPro } = useAuth()
@@ -43,6 +155,23 @@ export default function AppLayout() {
   const avatarRef = useRef(null)
   const bugFileRef = useRef(null)
   const navigate  = useNavigate()
+  const location  = useLocation()
+  const pageTitle = PAGE_TITLES[location.pathname] || ''
+
+  // Raccourcis clavier globaux : ⌘1..5 → navigation
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.metaKey || e.ctrlKey)) return
+      if (e.shiftKey || e.altKey) return
+      const idx = parseInt(e.key, 10)
+      if (!Number.isNaN(idx) && idx >= 1 && idx <= navItems.length) {
+        e.preventDefault()
+        navigate(navItems[idx - 1].to)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [navigate])
 
   // Fermeture modale par ESC
   useEffect(() => {
@@ -134,31 +263,19 @@ export default function AppLayout() {
         </div>
       )}
 
-      {/* Topbar — grid-column 1/-1 */}
+      {/* Topbar — only above main content, sidebar is full height on col 1 */}
       <header className="topbar">
         <button className="mobile-menu-btn" onClick={() => { setSidebarCollapsed(false); setMobileOpen(v => !v) }} aria-label="Menu">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
 
-        {/* Left slot: wrapper animates width, inner logo stays fixed 240px */}
-        <div className="topbar-logo-wrap">
-          <div className="topbar-logo">
-            <img src="/arvis-icon.svg" alt="Arvis" style={{ height: 57, display: 'block' }} />
-          </div>
-        </div>
-
         <button className="topbar-btn" aria-label="Sidebar ein-/ausblenden" onClick={() => setSidebarCollapsed(v => !v)} title="Sidebar ein-/ausblenden">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
         </button>
 
-        {/* Center slot */}
-        <div className="topbar-center-slot">
-          <img src="/arvis-icon.svg" alt="" className="topbar-center-icon" style={{ height: 57 }} />
-          <span style={{
-            fontFamily: "'Bricolage Grotesque', sans-serif",
-            fontWeight: 800, fontSize: 40, color: 'var(--text)',
-            letterSpacing: '-0.02em', userSelect: 'none', marginTop: 3
-          }}>Arvis</span>
+        {/* Page title — flex:1, pushes right-side to the end */}
+        <div className="topbar-page-title">
+          {pageTitle && <span>{pageTitle}</span>}
         </div>
 
         <div className="topbar-right">
@@ -205,13 +322,19 @@ export default function AppLayout() {
       {/* Sidebar */}
       <div className="sidebar-col">
       <aside className="sidebar">
-        <div className="sidebar-section-title">Hauptmenü</div>
+        <div className="sidebar-brand">
+          <img src="/arvis-icon.svg" alt="" />
+          <span className="sidebar-brand-name">Arvis</span>
+        </div>
         {navItems.map(item => (
           <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)} onMouseEnter={() => preloadPage(item.to)}>
             <span className="nav-item-icon">{item.icon}</span>
-            {item.label}
+            <span style={{flex:1, minWidth:0, overflow:'hidden', textOverflow:'ellipsis'}}>{item.label}</span>
+            <span className="nav-item-shortcut">{item.shortcut}</span>
           </NavLink>
         ))}
+
+        <SidebarHistory pathname={location.pathname} navigate={navigate} user={user} />
 
         {!isPro && (
           <div

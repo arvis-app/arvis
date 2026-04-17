@@ -91,6 +91,7 @@ export default function Chat() {
 
   async function loadConversation(id) {
     setActiveId(id)
+    sessionStorage.setItem('arvis_chat_active_id', id)
     setError('')
     const { data, error: err } = await supabase.from('chat_conversations')
       .select('messages').eq('id', id).eq('user_id', user.id).single()
@@ -99,11 +100,26 @@ export default function Chat() {
     inputRef.current?.focus()
   }
 
+  // Sidebar dispatches arvis:chat-load when a conversation is clicked
+  useEffect(() => {
+    function onLoad(e) {
+      const id = e.detail?.id
+      if (id) loadConversation(id)
+    }
+    window.addEventListener('arvis:chat-load', onLoad)
+    // Sur mount, consommer arvis_chat_active_id si posé par sidebar
+    const pending = sessionStorage.getItem('arvis_chat_active_id')
+    if (pending && pending !== activeId) loadConversation(pending)
+    return () => window.removeEventListener('arvis:chat-load', onLoad)
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+
   async function startNewChat() {
     setActiveId(null)
+    sessionStorage.removeItem('arvis_chat_active_id')
     setMessages([])
     setError('')
     inputRef.current?.focus()
+    window.dispatchEvent(new CustomEvent('arvis:history-change', { detail: { tab: 'chat' } }))
   }
 
   async function handleSend() {
@@ -127,7 +143,9 @@ export default function Chat() {
         if (err) throw err
         convId = data.id
         setActiveId(convId)
+        sessionStorage.setItem('arvis_chat_active_id', convId)
         setConversations(prev => [{ id: convId, title: text.slice(0, 60), updated_at: new Date().toISOString() }, ...prev])
+        window.dispatchEvent(new CustomEvent('arvis:history-change', { detail: { tab: 'chat' } }))
       } catch (err) {
         logError('Chat:create', err)
       }
@@ -178,7 +196,8 @@ export default function Chat() {
     e.stopPropagation()
     await supabase.from('chat_conversations').delete().eq('id', id).eq('user_id', user.id)
     setConversations(prev => prev.filter(c => c.id !== id))
-    if (activeId === id) { setActiveId(null); setMessages([]) }
+    if (activeId === id) { setActiveId(null); setMessages([]); sessionStorage.removeItem('arvis_chat_active_id') }
+    window.dispatchEvent(new CustomEvent('arvis:history-change', { detail: { tab: 'chat' } }))
   }
 
   // Check if arrows should show
@@ -235,11 +254,8 @@ export default function Chat() {
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, maxWidth: 820, width: '100%', margin: '0 auto', padding: '0 16px', overflow: 'hidden' }}>
 
       {/* Header */}
-      <div style={{ padding: '20px 0 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 600, fontFamily: "'DM Sans', sans-serif", color: 'var(--text)', margin: 0 }}>Chat</h1>
-          <p style={{ fontSize: 12, color: 'var(--text-3)', margin: '3px 0 0' }}>Medizinischer KI-Assistent</p>
-        </div>
+      <div style={{ padding: '16px 0 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ fontSize: 12.5, color: 'var(--text-3)' }}>Medizinischer KI-Assistent · Facharztniveau</div>
         <button onClick={startNewChat} className="chat-new-btn"
           style={{ padding: '6px 12px', fontSize: 13, fontWeight: 500, border: '1px solid var(--border)', borderRadius: 5, background: 'var(--bg-2)', color: 'var(--text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s, border-color 0.15s' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -247,59 +263,48 @@ export default function Chat() {
         </button>
       </div>
 
-      {/* Conversation chips */}
-      {conversations.length > 0 && (
-        <div style={{ position: 'relative', flexShrink: 0, paddingBottom: 10 }}>
-          {showLeftArrow && (
-            <button onClick={() => scrollChips(-1)} aria-label="Zurück"
-              style={{ position: 'absolute', left: -2, top: 0, bottom: 10, width: 64, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: 4, background: 'linear-gradient(to right, var(--bg) 40%, transparent)', borderRadius: 0 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-          )}
-          {showRightArrow && (
-            <button onClick={() => scrollChips(1)} aria-label="Weiter"
-              style={{ position: 'absolute', right: -2, top: 0, bottom: 10, width: 64, zIndex: 2, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 4, background: 'linear-gradient(to left, var(--bg) 40%, transparent)', borderRadius: 0 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          )}
-          <div ref={chipsRef} onScroll={updateArrows} onMouseDown={onDragStart}
-            style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', cursor: 'grab', padding: '0 2px' }}>
-            {conversations.map(c => (
-              <div key={c.id} onClick={() => { if (!isDragging.current) loadConversation(c.id) }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '5px 10px', borderRadius: 5, fontSize: 12.5, fontWeight: 500,
-                  whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0,
-                  background: activeId === c.id ? 'var(--orange-ghost)' : 'var(--bg-2)',
-                  color: activeId === c.id ? 'var(--orange)' : 'var(--text-2)',
-                  border: `1px solid ${activeId === c.id ? 'var(--orange)' : 'var(--border)'}`,
-                  transition: 'all 0.15s',
-                  maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis'
-                }}>
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title || 'Chat'}</span>
-                <svg onClick={(e) => handleDelete(c.id, e)} width="12" height="12" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ flexShrink: 0, opacity: 0.4, cursor: 'pointer' }}
-                  onMouseOver={e => e.currentTarget.style.opacity = 1} onMouseOut={e => e.currentTarget.style.opacity = 0.4}>
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Messages area */}
       <div ref={messagesRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: 16, paddingRight: 12 }}>
 
         {/* Empty state */}
         {messages.length === 0 && !loading && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-3)', textAlign: 'center', padding: '40px 20px' }}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>Stellen Sie Ihre Frage</div>
-            <div style={{ fontSize: 14, maxWidth: 360, lineHeight: 1.5 }}>Medizinische Fragen, Differentialdiagnosen, Leitlinien, Pharmakologie — auf Facharztniveau.</div>
+          <div style={{ maxWidth: 620, margin: '48px auto 0', padding: '0 20px' }}>
+            <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 14 }}>
+              Beispielfragen
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {[
+                'CHA₂DS₂-VASc-Score: Grenzwert für orale Antikoagulation bei VHF?',
+                'Differentialdiagnose Thoraxschmerz — strukturiert nach Dringlichkeit',
+                'Enoxaparin prophylaktisch bei GFR 25 ml/min — welche Anpassung?',
+                'Sepsis-3-Kriterien: qSOFA vs. SOFA — wann anwenden?',
+              ].map((q, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setInput(q); setTimeout(() => inputRef.current?.focus(), 50) }}
+                  style={{
+                    textAlign: 'left', width: '100%', padding: '12px 0',
+                    background: 'transparent', border: 'none',
+                    borderTop: i === 0 ? '1px solid var(--border)' : 'none',
+                    borderBottom: '1px solid var(--border)',
+                    color: 'var(--text)', fontSize: 14, fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 500, cursor: 'pointer', lineHeight: 1.5,
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    transition: 'color 0.15s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.color = 'var(--orange)'}
+                  onMouseOut={e => e.currentTarget.style.color = 'var(--text)'}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.5 }}>
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                  <span>{q}</span>
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 20, lineHeight: 1.6 }}>
+              Fachsprache erwünscht — der Assistent antwortet auf Facharztniveau. Antworten dienen ausschließlich der Orientierung und ersetzen keine klinische Beurteilung.
+            </div>
           </div>
         )}
 

@@ -262,7 +262,34 @@ export default function Scan() {
   useEffect(() => { sessionStorage.setItem('arvis_scan_aiHtml', aiHtml) }, [aiHtml])
   useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
   useEffect(() => { sessionStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
-  useEffect(() => { sessionStorage.setItem('arvis_scan_history', JSON.stringify(scanHistory)) }, [scanHistory])
+  useEffect(() => {
+    sessionStorage.setItem('arvis_scan_history', JSON.stringify(scanHistory))
+    window.dispatchEvent(new CustomEvent('arvis:history-change', { detail: { tab: 'scan' } }))
+  }, [scanHistory])
+
+  // Restauration via sidebar : écoute arvis:restore-request pour 'scan' + click direct
+  useEffect(() => {
+    function onRestore(e) {
+      if (e.detail?.tab !== 'scan') return
+      const item = scanHistory.find(x => x.id === e.detail.id)
+      if (!item) return
+      restoreScanHistoryItem(item)
+    }
+    window.addEventListener('arvis:restore-request', onRestore)
+    return () => window.removeEventListener('arvis:restore-request', onRestore)
+  }, [scanHistory]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function restoreScanHistoryItem(item) {
+    if (item.thumb) {
+      imgDataRef.current = item.thumb
+      if (imgRef.current) imgRef.current.src = item.thumb
+      setPanel('crop')
+    }
+    setAiHtml(item.aiHtml || '')
+    setOcrText(item.ocrText || '')
+    setMode(item.mode || 'ai')
+    goStep(4)
+  }
 
   // Nettoyage des flags d'analyse interrompue (les images ne sont pas sauvegardées en sessionStorage)
   useEffect(() => {
@@ -688,14 +715,15 @@ export default function Scan() {
       if (mode === 'ocr') {
         const txt = await runVisionOCR(imageDataUrls)
         setOcrText(txt)
-        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: 'OCR Text', aiHtml: '', ocrText: txt, mode: 'ocr', thumb }, ...prev].slice(0, 5))
+        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: `${time} · OCR`, aiHtml: '', ocrText: txt, mode: 'ocr', thumb }, ...prev].slice(0, 5))
       } else {
         const analysis = await runAIAnalysis(imageDataUrls)
         const html = markdownToHtml(analysis)
         setAiHtml(html)
         // Pas de texte OCR séparé en mode Vision — le texte est intégré dans l'analyse
         setOcrText('')
-        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: extractScanLabel(analysis), aiHtml: html, ocrText: '', mode: 'ai', thumb }, ...prev].slice(0, 5))
+        const rawLabel = extractScanLabel(analysis)
+        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: `${time} · ${rawLabel}`, aiHtml: html, ocrText: '', mode: 'ai', thumb }, ...prev].slice(0, 5))
       }
       goStep(4)
     } catch (err) {
@@ -886,13 +914,11 @@ export default function Scan() {
         {/* LEFT */}
         <div className="scan-left" ref={leftRef}>
 
-          {/* Left-panel top row: title + Zurücksetzen */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexShrink: 0 }}>
-            <div>
-              <div className="page-title" style={{ fontSize: 17 }}>Scan & Analyse</div>
-            </div>
-            <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+          {/* Left-panel top row: panel label left + Zurücksetzen right (fusionnés) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexShrink: 0 }}>
+            <span className="scan-panel-title">{panel === 'crop' ? 'Anonymisieren' : 'Dokument laden'}</span>
+            <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, padding: '5px 10px', fontSize: 12 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
               <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
             </button>
           </div>
@@ -905,27 +931,7 @@ export default function Scan() {
             </div>
           )}
 
-          {/* Historique de session */}
-          {scanHistory.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2, flexShrink: 0 }}>
-              <span style={{ fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap', flexShrink: 0 }}>Verlauf:</span>
-              {scanHistory.map(item => (
-                <button key={item.id} onClick={() => {
-                  if (item.thumb) {
-                    imgDataRef.current = item.thumb
-                    if (imgRef.current) imgRef.current.src = item.thumb
-                    setPanel('crop')
-                  }
-                  setAiHtml(item.aiHtml); setOcrText(item.ocrText); setMode(item.mode); goStep(4)
-                }}
-                  style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text-2)', fontSize: 12, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                  title={item.label}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  {item.time}{item.label !== 'OCR Text' ? ` — ${item.label.slice(0, 28)}${item.label.length > 28 ? '…' : ''}` : ' — OCR'}
-                </button>
-              ))}
-            </div>
-          )}
+
 
           {/* Upload panel */}
           {panel === 'upload' && (
@@ -936,10 +942,6 @@ export default function Scan() {
                   <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-2)' }}>Foto wird übertragen…</div>
                 </div>
               )}
-              <div className="scan-panel-header">
-                <span className="scan-panel-title">Dokument laden</span>
-                <span className="scan-panel-sub">Foto aufnehmen oder Datei hochladen</span>
-              </div>
               <div className="scan-drop-zone" onClick={() => fileInputRef.current.click()}
                 onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('drag-over') }}
                 onDragLeave={e => e.currentTarget.classList.remove('drag-over')}
@@ -986,10 +988,6 @@ export default function Scan() {
           {/* Crop panel */}
           {panel === 'crop' && (
             <div className="scan-panel" id="panelCrop">
-              <div className="scan-panel-header">
-                <span className="scan-panel-title">Anonymisieren</span>
-                <span className="scan-panel-sub">Patientendaten mit dem Schwärzungs-Tool entfernen</span>
-              </div>
               {/* Warning */}
               <div id="anonWarning" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(193,58,43,0.07)', borderBottom: '1px solid rgba(193,58,43,0.2)', padding: '10px 16px', marginTop: 0 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import DOMPurify from 'dompurify'
 import { supabase, invokeEdgeFunction } from '../supabaseClient'
 import { downloadAsWord } from '../utils/downloadWord'
+import { addHistory, consumeRestore } from '../utils/history'
 
 function escHtml(s) {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -100,6 +101,31 @@ export default function Briefassistent() {
       setChars(getBriefText(inputRef.current).length)
       sessionStorage.removeItem('arvis_brief_input')
     }
+  }, [])
+
+  // Restauration via sidebar history
+  useEffect(() => {
+    function applyItem(id) {
+      try {
+        const list = JSON.parse(sessionStorage.getItem('arvis_history_brief') || '[]')
+        const item = list.find(x => x.id === id)
+        if (!item) return
+        if (item.mode) setMode(item.mode)
+        if (inputRef.current && item.input) {
+          inputRef.current.innerHTML = DOMPurify.sanitize(renderPlaceholders(item.input))
+          setChars(getBriefText(inputRef.current).length)
+        }
+        if (item.result) { setResult(item.result); setOrig(item.orig || item.input || ''); setState('result'); setDiffMode('result') }
+      } catch {}
+    }
+    const restoreId = consumeRestore('briefassistent')
+    if (restoreId) applyItem(restoreId)
+    function onRestore(e) {
+      if (e.detail?.tab !== 'briefassistent') return
+      applyItem(String(e.detail.id))
+    }
+    window.addEventListener('arvis:restore-request', onRestore)
+    return () => window.removeEventListener('arvis:restore-request', onRestore)
   }, [])
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 2200) }
@@ -344,8 +370,14 @@ export default function Briefassistent() {
       if (data?.error === 'limit_reached') { setState('empty'); setLimitReached(true); return }
       const content = data?.content
       if (!content) throw new Error('Leere Antwort.')
-      setResult(formatMedTabs(content.trim())); setState('result'); setDiffMode('result')
-      showToast({ korrektur: 'Korrektur', umformulierung: 'Umformulierung', zusammenfassung: 'Zusammenfassung' }[mode] + ' abgeschlossen')
+      const formatted = formatMedTabs(content.trim())
+      setResult(formatted); setState('result'); setDiffMode('result')
+      // Historique sidebar : préfixe mode + premiers mots de l'input
+      const modeLabel = { korrektur: 'Korrektur', umformulierung: 'Umformulierung', zusammenfassung: 'Zusammenfassung' }[mode]
+      const preview = input.replace(/\s+/g, ' ').slice(0, 60)
+      const id = crypto.randomUUID()
+      addHistory('briefassistent', { id, label: `${modeLabel} · ${preview}`, mode, input, result: formatted, orig: input })
+      showToast(modeLabel + ' abgeschlossen')
     } catch (e) { setState('empty'); showToast('Fehler: ' + e.message) }
   }
 
@@ -382,19 +414,9 @@ export default function Briefassistent() {
         {/* LEFT */}
         <div className="brief-panel">
 
-          {/* Top row: title + Zurücksetzen — comme Scan */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexShrink: 0 }}>
-            <div>
-              <div className="page-title" style={{ fontSize: 17 }}>Briefassistent</div>
-            </div>
-            <button className="btn-secondary" id="briefResetBtn" onClick={clearAll} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
-              <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
-            </button>
-          </div>
-
-          <div className="brief-panel-header">
-            <div className="brief-modes" style={{ margin: '0 0 -10px -0px', borderBottom: 'none' }}>
+          {/* Top row: modes left + Zurücksetzen right (fusionnés pour gagner de l'espace) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexShrink: 0 }}>
+            <div className="brief-modes" style={{ margin: 0, borderBottom: 'none' }}>
               {modes.map(m => (
                 <button key={m.key} className={`brief-mode-btn${mode === m.key ? ' active' : ''}`} onClick={() => setMode(m.key)}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{m.icon}</svg>
@@ -402,12 +424,10 @@ export default function Briefassistent() {
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-              <span className="brief-char-count">{chars} Zeichen</span>
-              <button className="result-action-btn" aria-label="Eingabe leeren" onClick={clearInput} title="Leeren">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /></svg>
-              </button>
-            </div>
+            <button className="btn-secondary" id="briefResetBtn" onClick={clearAll} style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, padding: '5px 10px', fontSize: 12 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+              <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
+            </button>
           </div>
 
           {limitReached && (
@@ -420,7 +440,8 @@ export default function Briefassistent() {
 
           <div ref={inputRef} className="brief-textarea" contentEditable suppressContentEditableWarning spellCheck={false}
             data-placeholder="Diktieren, Text eingeben oder Bausteine hinzufügen…"
-            onInput={updateCount} onClick={handleInputClick} />
+            onInput={updateCount} onClick={handleInputClick}
+            onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); runAI() } }} />
 
           {recording && (
             <div style={{ margin: '4px 0 0', padding: '6px 10px', background: 'var(--bg)', borderRadius: 6, border: '1px solid var(--border)', minHeight: 30, fontSize: 12.5, color: interimText ? 'var(--text)' : 'var(--text-3)', fontStyle: 'italic', lineHeight: 1.5, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -484,10 +505,25 @@ export default function Briefassistent() {
           </div>
 
           {state === 'empty' && (
-            <div className="brief-output-empty">
-              <img src="/arvis-icon-light.svg" width="90" height="90" alt="" style={{ display: 'block', filter: 'grayscale(1) opacity(0.35)' }} />
-              <div style={{ fontSize: 15, color: 'var(--text-3)', marginTop: 12 }}>Ergebnis erscheint hier</div>
-              <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 4 }}>Text eingeben und analysieren</div>
+            <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 440 }}>
+              <div style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6 }}>
+                Tippen, diktieren oder <strong>Bausteine</strong> einfügen — die KI bringt den Text auf Facharzt-Niveau. Drei Modi stehen zur Verfügung:
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {[
+                  { name: 'Korrektur', desc: 'Rechtschreibung, Grammatik, Fachterminologie.' },
+                  { name: 'Umformulierung', desc: 'Stil (telegrafisch · präzise · narrativ · Aufzählung) und Länge anpassen.' },
+                  { name: 'Zusammenfassung', desc: 'Kernaussagen in kompakter Form.' },
+                ].map((m, i) => (
+                  <div key={m.name} style={{ padding: '10px 0', borderTop: i === 0 ? '1px solid var(--border)' : 'none', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{m.name}</div>
+                    <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 2, lineHeight: 1.5 }}>{m.desc}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 12.5, color: 'var(--text-3)', lineHeight: 1.55 }}>
+                Tastenkürzel: <strong style={{ color: 'var(--text-2)' }}>⌘ + Enter</strong> startet die Analyse.
+              </div>
             </div>
           )}
 

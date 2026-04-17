@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 import { logError } from '../utils/logger'
+import { addHistory, consumeRestore } from '../utils/history'
 
 const SPECIAL_FIRST = ['Notaufnahme','Aufnahme','Befunde','OP-Berichte','Verlauf','Entlassung','Sozialmedizin/Gutachten','Diverses']
 
@@ -180,6 +181,19 @@ export default function Bausteine() {
   const [toast, setToast]               = useState('')
   const [suggestion, setSuggestion]     = useState('')
   const [baudataVersion, setBaudataVersion] = useState(0)
+
+  // Raccourci / : focus la recherche (sauf si déjà dans un input)
+  useEffect(() => {
+    const onKey = e => {
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return
+      const t = e.target
+      if (t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.isContentEditable) return
+      const input = document.querySelector('#bausteineSearchBox input')
+      if (input) { e.preventDefault(); input.focus() }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
   const rightRef                        = useRef(null)
   const [rightH, setRightH]             = useState(0)
   const previewRef                      = useRef(null)
@@ -221,6 +235,18 @@ export default function Bausteine() {
     const found = allData.find(b => b.id === _pendingSelectedId)
     if (found) { setSelected(found); _setPendingSelectedId(null) }
   }, [allData, _pendingSelectedId])
+
+  // Restauration via sidebar history : évènement + consommation de la clé
+  useEffect(() => {
+    const restoreId = consumeRestore('bausteine')
+    if (restoreId) _setPendingSelectedId(restoreId)
+    function onRestore(e) {
+      if (e.detail?.tab !== 'bausteine') return
+      _setPendingSelectedId(String(e.detail.id))
+    }
+    window.addEventListener('arvis:restore-request', onRestore)
+    return () => window.removeEventListener('arvis:restore-request', onRestore)
+  }, [])
 
   // Persist selected id + render placeholders in preview
   useEffect(() => {
@@ -444,14 +470,14 @@ export default function Bausteine() {
 
   return (
     <div className="page active" id="page-bausteine">
-      {/* Header */}
-      <div className="page-header">
-        <div>
-          <div className="page-title">Bausteine</div>
-          <div className="page-date">Vorgefertigte Textbausteine - einfügen per Klick</div>
-        </div>
-        <button className="btn-action" onClick={()=>{setEditingB(null);setNeuOpen(true)}} style={{gap:6,display:'flex',alignItems:'center'}}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      {/* Header row: subtitle left, new-button right */}
+      <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14}}>
+        <div style={{fontSize:12.5, color:'var(--text-3)'}}>Vorgefertigte Textbausteine · Einfügen per Klick</div>
+        <button onClick={()=>{setEditingB(null);setNeuOpen(true)}}
+          style={{padding:'5px 11px',fontSize:13,fontWeight:500,border:'1px solid var(--border)',borderRadius:5,background:'var(--bg-2)',color:'var(--text-2)',cursor:'pointer',fontFamily:'DM Sans,sans-serif',display:'flex',alignItems:'center',gap:6,transition:'background 0.15s'}}
+          onMouseOver={e=>e.currentTarget.style.background='var(--bg-3)'}
+          onMouseOut={e=>e.currentTarget.style.background='var(--bg-2)'}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Neu
         </button>
       </div>
@@ -499,7 +525,7 @@ export default function Bausteine() {
             {filtered.map(b=>(
               <div key={b.id}
                 className={`baustein-item${selected?.id===b.id?' selected':''}`}
-                onClick={()=>setSelected(b)}>
+                onClick={()=>{ setSelected(b); addHistory('bausteine', { id: b.id, label: b.title }) }}>
                 <div className="baustein-item-title" style={{display:'flex',alignItems:'center',gap:4}}>
                   {b.title}
                   {favs.includes(b.id) && <span style={{color:'var(--orange)',fontSize:12}} title="Favorit">★</span>}
@@ -517,7 +543,26 @@ export default function Bausteine() {
           {/* Preview */}
           <div style={{padding:'0 0 16px 0',display:'flex',flexDirection:'column',flex:1,minHeight:0,borderBottom:'1px solid var(--border)'}}>
             {!selected && (
-              <div style={{minHeight:218,color:'var(--text-2)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>Baustein auswählen</div>
+              <div style={{padding:'32px 0',minHeight:260,display:'flex',flexDirection:'column',gap:20,maxWidth:420}}>
+                <div style={{fontSize:14,color:'var(--text-2)',lineHeight:1.6}}>
+                  Wählen Sie links einen Baustein — Platzhalter wie <span style={{color:'var(--orange)',background:'var(--orange-ghost)',padding:'1px 6px',borderRadius:3,fontWeight:500}}>[Zeitangabe]</span> werden im Vorschautext ausgefüllt. Danach <strong>Kopieren</strong> oder direkt <strong>An Briefassistent</strong> senden.
+                </div>
+                <div>
+                  <div style={{fontSize:10.5,fontWeight:600,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.12em',marginBottom:10}}>Schnellzugriff</div>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                    {['Favoriten','Aufnahme','Procedere','Entlassung','Anamnese'].map(c => (
+                      <button
+                        key={c}
+                        onClick={() => setActiveCat(c === 'Favoriten' ? 'Favoriten' : c)}
+                        style={{padding:'5px 11px',borderRadius:4,border:'1px solid var(--border)',background:'transparent',color:'var(--text-2)',fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'DM Sans,sans-serif',transition:'color 0.15s, border-color 0.15s'}}
+                        onMouseOver={e=>{e.currentTarget.style.color='var(--orange)'; e.currentTarget.style.borderColor='var(--orange)'}}
+                        onMouseOut={e=>{e.currentTarget.style.color='var(--text-2)'; e.currentTarget.style.borderColor='var(--border)'}}>
+                        {c === 'Favoriten' ? '★ Favoriten' : c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
             {selected && (
               <div style={{display:'flex',flexDirection:'column',flex:1,minHeight:0}}>
