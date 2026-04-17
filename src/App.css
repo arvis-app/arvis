@@ -994,7 +994,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .baustein-preview-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
 .baustein-preview-title { font-family:'DM Sans',sans-serif; font-size:16px; font-weight:600; color:var(--text); }
 .baustein-preview-cat { font-size: 13px; font-weight:600; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; margin-top:3px; }
-.baustein-preview-text { font-size: 15px; line-height:1.75; color:var(--text); white-space:pre-wrap; flex:1; margin-top:12px; }
+.baustein-preview-text { font-size: 15px; line-height:1.75; color:var(--text); white-space:pre-wrap; margin-top:12px; }
 
 /* ═══════════════════════════════════
    BRIEF SCHREIBER PAGE

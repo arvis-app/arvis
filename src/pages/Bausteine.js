@@ -538,7 +538,7 @@ export default function Bausteine() {
         <div ref={rightRef} className="bausteine-right">
 
           {/* Preview */}
-          <div style={{padding:'0 0 16px 0',display:'flex',flexDirection:'column',flex:1,minHeight:0}}>
+          <div style={{padding:'0 0 16px 0',flex:1,minHeight:0,overflowY:'auto'}}>
             {!selected && (
               <div style={{padding:'32px 0',minHeight:260,display:'flex',flexDirection:'column',gap:20,maxWidth:420}}>
                 <div style={{fontSize:14,color:'var(--text-2)',lineHeight:1.6}}>
@@ -562,7 +562,7 @@ export default function Bausteine() {
               </div>
             )}
             {selected && (
-              <div style={{display:'flex',flexDirection:'column',flex:1,minHeight:0}}>
+              <div>
                 <div className="baustein-preview-header">
                   <div>
                     <div className="baustein-preview-title">{selected.title}</div>
@@ -584,7 +584,7 @@ export default function Bausteine() {
                 </div>
                 <div ref={previewRef} className="baustein-preview-text" contentEditable suppressContentEditableWarning spellCheck={false}
                   onClick={handlePreviewClick}
-                  style={{overflowY:'auto',flex:1,outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)'}} />
+                  style={{outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)'}} />
                 <div style={{display:'flex',gap:8,marginTop:16,justifyContent:'center'}}>
                   <button className="btn-secondary btn-secondary-orange" onClick={copyBaustein} style={{justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
                     {copied
