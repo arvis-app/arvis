@@ -474,7 +474,7 @@ export default function Bausteine() {
       <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14}}>
         <div style={{fontSize:12.5, color:'var(--text-3)'}}>Vorgefertigte Textbausteine · Einfügen per Klick</div>
         <button onClick={()=>{setEditingB(null);setNeuOpen(true)}}
-          style={{padding:'5px 11px',fontSize:13,fontWeight:500,border:'1px solid var(--border)',borderRadius:5,background:'var(--bg-2)',color:'var(--text-2)',cursor:'pointer',fontFamily:'DM Sans,sans-serif',display:'flex',alignItems:'center',gap:6,transition:'background 0.15s'}}
+          style={{padding:'6px 12px',fontSize:13,fontWeight:500,border:'1px solid var(--border)',borderRadius:5,background:'var(--bg-2)',color:'var(--text-2)',cursor:'pointer',fontFamily:'DM Sans,sans-serif',display:'flex',alignItems:'center',gap:6,transition:'background 0.15s'}}
           onMouseOver={e=>e.currentTarget.style.background='var(--bg-3)'}
           onMouseOut={e=>e.currentTarget.style.background='var(--bg-2)'}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -494,10 +494,10 @@ export default function Bausteine() {
               value={search}
               onChange={handleSearchInput}
               onKeyDown={handleSearchKeydown}
-              style={{position:'relative',zIndex:1,width:'100%',padding:'10px 14px',border:'none',outline:'none',fontSize:17,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',background:'transparent',color:'var(--text)',boxSizing:'border-box'}}
+              style={{position:'relative',zIndex:1,width:'100%',padding:'10px 14px',border:'none',outline:'none',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',background:'transparent',color:'var(--text)',boxSizing:'border-box'}}
             />
             {suggestion && search && (
-              <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,padding:'10px 14px',fontSize:17,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text-3)',pointerEvents:'none',whiteSpace:'pre',overflow:'hidden',boxSizing:'border-box',zIndex:2}}>
+              <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,padding:'10px 14px',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text-3)',pointerEvents:'none',whiteSpace:'pre',overflow:'hidden',boxSizing:'border-box',zIndex:2}}>
                 <span style={{visibility:'hidden'}}>{search}</span>{suggestion.slice(search.length)}
               </div>
             )}
@@ -554,7 +554,7 @@ export default function Bausteine() {
                       <button
                         key={c}
                         onClick={() => setActiveCat(c === 'Favoriten' ? 'Favoriten' : c)}
-                        style={{padding:'5px 11px',borderRadius:4,border:'1px solid var(--border)',background:'transparent',color:'var(--text-2)',fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'DM Sans,sans-serif',transition:'color 0.15s, border-color 0.15s'}}
+                        style={{padding:'6px 12px',borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--text-2)',fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'DM Sans,sans-serif',transition:'color 0.15s, border-color 0.15s'}}
                         onMouseOver={e=>{e.currentTarget.style.color='var(--orange)'; e.currentTarget.style.borderColor='var(--orange)'}}
                         onMouseOut={e=>{e.currentTarget.style.color='var(--text-2)'; e.currentTarget.style.borderColor='var(--border)'}}>
                         {c === 'Favoriten' ? '★ Favoriten' : c}

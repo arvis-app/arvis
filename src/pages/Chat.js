@@ -324,7 +324,7 @@ export default function Chat() {
             <div style={{
               maxWidth: '85%',
               padding: '10px 14px',
-              borderRadius: 6,
+              borderRadius: 5,
               background: msg.role === 'user' ? 'var(--orange)' : 'var(--bg-2)',
               color: msg.role === 'user' ? 'white' : 'var(--text)',
               fontFamily: "'DM Sans', sans-serif",
@@ -355,7 +355,7 @@ export default function Chat() {
         {loading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
             <div style={{
-              padding: '10px 16px', borderRadius: 6,
+              padding: '10px 16px', borderRadius: 5,
               background: 'var(--bg-2)', border: '1px solid var(--border)',
               display: 'flex', gap: 6, alignItems: 'center'
             }}>
@@ -380,7 +380,7 @@ export default function Chat() {
         <div style={{
           display: 'flex', gap: 8, alignItems: 'flex-end',
           background: 'var(--bg-2)', border: '1px solid var(--border)',
-          borderRadius: 6, padding: '8px 8px 8px 14px',
+          borderRadius: 5, padding: '8px 8px 8px 14px',
         }}>
           <textarea
             ref={inputRef}
@@ -391,7 +391,7 @@ export default function Chat() {
             rows={1}
             style={{
               flex: 1, border: 'none', outline: 'none', resize: 'none',
-              fontSize: 15, fontFamily: 'Inter, sans-serif', color: 'var(--text)',
+              fontSize: 14, fontFamily: 'Inter, sans-serif', color: 'var(--text)',
               background: 'transparent', padding: '6px 0', maxHeight: 120,
               lineHeight: 1.5
             }}
@@ -404,7 +404,7 @@ export default function Chat() {
             onClick={handleSend}
             disabled={!input.trim() || loading}
             style={{
-              width: 36, height: 36, borderRadius: 6, border: 'none',
+              width: 36, height: 36, borderRadius: 5, border: 'none',
               background: input.trim() && !loading ? 'var(--orange)' : 'var(--bg-3)',
               color: input.trim() && !loading ? 'white' : 'var(--text-3)',
               cursor: input.trim() && !loading ? 'pointer' : 'default',

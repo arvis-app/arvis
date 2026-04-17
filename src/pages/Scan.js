@@ -917,7 +917,7 @@ export default function Scan() {
           {/* Left-panel top row: panel label left + Zurücksetzen right (fusionnés) */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexShrink: 0 }}>
             <span className="scan-panel-title">{panel === 'crop' ? 'Anonymisieren' : 'Dokument laden'}</span>
-            <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, padding: '5px 10px', fontSize: 12 }}>
+            <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, padding: '6px 12px', fontSize: 13 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
               <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
             </button>

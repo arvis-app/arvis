@@ -316,10 +316,10 @@ export default function Profil() {
               </div>
               <div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button className="btn-secondary" style={{ fontSize: 14 }} onClick={() => photoInputRef.current?.click()}>Foto ändern</button>
+                  <button className="btn-secondary" onClick={() => photoInputRef.current?.click()}>Foto ändern</button>
                   <button
                     className="btn-secondary"
-                    style={{ fontSize: 14, color: 'var(--text-2)', transition: 'color 0.15s, border-color 0.15s' }}
+                    style={{ color: 'var(--text-2)', transition: 'color 0.15s, border-color 0.15s' }}
                     onClick={() => { setPhoto(null); setPhotoFile(null) }}
                     onMouseOver={e=>{e.target.style.color='var(--error)'; e.target.style.borderColor='var(--error)'}}
                     onMouseOut={e=>{e.target.style.color='var(--text-2)'; e.target.style.borderColor=''}}
@@ -377,7 +377,7 @@ export default function Profil() {
             </div>
 
             <div style={{ height: 1, background: 'var(--border)' }} />
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center' }}>Rechnungsadresse</div>
+            <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', textAlign: 'center' }}>Rechnungsadresse</div>
 
             {/* Straße + Hausnummer */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12 }}>
@@ -405,7 +405,7 @@ export default function Profil() {
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border)', marginTop: -6 }}>
               <div style={{ fontSize: 13, color: 'var(--text-3)' }}><span style={{ color: 'var(--orange)' }}>*</span> Pflichtfeld</div>
-              <button className="btn-action" onClick={saveProfile} style={{ padding: '10px 24px' }}>Speichern</button>
+              <button className="btn-action" onClick={saveProfile}>Speichern</button>
             </div>
           </div>
         </div>
@@ -446,7 +446,7 @@ export default function Profil() {
 
               {/* Zahlungsmittel */}
               <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10, textAlign: 'center' }}>Zahlungsmittel</div>
+                <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10, textAlign: 'center' }}>Zahlungsmittel</div>
                 {paymentMethod ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     {['paypal', 'sepa', 'sepa_debit', 'apple_pay', 'applepay', 'apple pay'].includes(paymentMethod.brand?.toLowerCase()) ? (
@@ -495,7 +495,7 @@ export default function Profil() {
                       </div>
                       <div style={{ fontSize: 15, color: 'var(--text-3)' }}>Kein Zahlungsmittel hinterlegt</div>
                     </div>
-                    <button onClick={manageSubscription} disabled={portalLoading} style={{ padding: '6px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}>
+                    <button onClick={manageSubscription} disabled={portalLoading} style={{ padding: '8px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}>
                       {portalLoading ? '...' : 'Hinzufügen'}
                     </button>
                   </div>
