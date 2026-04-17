@@ -7,7 +7,6 @@ const KEYS = {
   scan:           'arvis_scan_history',
   briefassistent: 'arvis_history_brief',
   bausteine:      'arvis_history_bausteine',
-  uebersetzung:   'arvis_history_uebersetzung',
 }
 
 const MAX = 8

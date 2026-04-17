@@ -49,7 +49,6 @@ export default function AGB() {
           <li style={S.li}>KI-gestützte Erstellung und Korrektur medizinischer Schreiben</li>
           <li style={S.li}>Scan und Analyse medizinischer Dokumente</li>
           <li style={S.li}>Verwaltung wiederverwendbarer Textbausteine</li>
-          <li style={S.li}>Medizinische Übersetzungen</li>
           <li style={S.li}>Dateiverwaltung</li>
         </ul>
         <p style={S.p}>

@@ -133,14 +133,13 @@ export default function LoginPage() {
         </div>
         <div className="login-headline">
           <h2>Effizienter.<br/>Präziser.<br/>Sicherer.</h2>
-          <p>Arvis unterstützt Sie bei Dokumentation, Briefanalyse und Übersetzung — damit Sie mehr Zeit für Ihre Patienten haben.</p>
+          <p>Arvis unterstützt Sie bei Dokumentation und Briefanalyse — damit Sie mehr Zeit für Ihre Patienten haben.</p>
         </div>
         <div className="login-features">
           {[
             { icon: <><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>, text: 'Scan & KI-Analyse in Sekunden' },
             { icon: <><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></>, text: 'KI-Briefkorrektur auf Profiniveau' },
             { icon: <><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="11" height="4" rx="1"/><rect x="3" y="17" width="14" height="4" rx="1"/></>, text: '1.550 vorgefertigte Textbausteine' },
-            { icon: <><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>, text: '1.585 Begriffe in 6 Sprachen' },
             { icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>, text: '100% DSGVO-konform' },
           ].map((f, i) => (
             <div key={i} className="login-feature">

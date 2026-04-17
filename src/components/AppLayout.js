@@ -22,10 +22,6 @@ const navItems = [
     to: '/bausteine', label: 'Bausteine', shortcut: '⌘4',
     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="11" height="4" rx="1"/><rect x="3" y="17" width="14" height="4" rx="1"/></svg>
   },
-  {
-    to: '/uebersetzung', label: 'Übersetzung', shortcut: '⌘5',
-    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-  },
 ]
 
 const PAGE_TITLES = {
@@ -33,7 +29,6 @@ const PAGE_TITLES = {
   '/briefassistent': 'Briefassistent',
   '/chat': 'Chat',
   '/bausteine': 'Bausteine',
-  '/uebersetzung': 'Übersetzung',
   '/profil': 'Mein Profil',
 }
 
@@ -42,7 +37,6 @@ const TAB_FROM_PATH = {
   '/briefassistent': 'briefassistent',
   '/chat': 'chat',
   '/bausteine': 'bausteine',
-  '/uebersetzung': 'uebersetzung',
 }
 
 const HISTORY_LABELS = {
@@ -50,7 +44,6 @@ const HISTORY_LABELS = {
   briefassistent: 'Letzte Briefe',
   chat:           'Gespräche',
   bausteine:      'Zuletzt verwendet',
-  uebersetzung:   'Zuletzt angesehen',
 }
 
 function SidebarHistory({ pathname, navigate, user }) {

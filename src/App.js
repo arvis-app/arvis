@@ -14,14 +14,12 @@ const pageImports = {
   '/scan':           () => import('./pages/Scan'),
   '/briefassistent': () => import('./pages/Briefassistent'),
   '/bausteine':      () => import('./pages/Bausteine'),
-  '/uebersetzung':   () => import('./pages/Uebersetzung'),
   '/chat':           () => import('./pages/Chat'),
   '/profil':         () => import('./pages/Profil'),
 }
 const Scan           = lazy(pageImports['/scan'])
 const Briefassistent = lazy(pageImports['/briefassistent'])
 const Bausteine      = lazy(pageImports['/bausteine'])
-const Uebersetzung   = lazy(pageImports['/uebersetzung'])
 const Chat           = lazy(pageImports['/chat'])
 const Profil         = lazy(pageImports['/profil'])
 const MobileScan     = lazy(() => import('./pages/MobileScan'))
@@ -81,7 +79,6 @@ function AppRoutes() {
         <Route path="scan"           element={<Paywall><ErrorBoundary><Scan /></ErrorBoundary></Paywall>} />
         <Route path="briefassistent" element={<Paywall><ErrorBoundary><Briefassistent /></ErrorBoundary></Paywall>} />
         <Route path="bausteine"      element={<Paywall><ErrorBoundary><Bausteine /></ErrorBoundary></Paywall>} />
-        <Route path="uebersetzung"   element={<Paywall><ErrorBoundary><Uebersetzung /></ErrorBoundary></Paywall>} />
         <Route path="chat"           element={<Paywall><ErrorBoundary><Chat /></ErrorBoundary></Paywall>} />
         <Route path="profil"         element={<ErrorBoundary><Profil /></ErrorBoundary>} />
         <Route path="mobile-scan/:token" element={<ErrorBoundary><MobileScan /></ErrorBoundary>} />

@@ -470,36 +470,34 @@ export default function Bausteine() {
 
   return (
     <div className="page active" id="page-bausteine">
-      {/* Header row: new-button right */}
-      <div style={{display:'flex', justifyContent:'flex-end', marginBottom:8}}>
-        <button onClick={()=>{setEditingB(null);setNeuOpen(true)}}
-          style={{padding:'6px 12px',fontSize:13,fontWeight:500,border:'1px solid var(--border)',borderRadius:5,background:'var(--bg-2)',color:'var(--text-2)',cursor:'pointer',fontFamily:'DM Sans,sans-serif',display:'flex',alignItems:'center',gap:6,transition:'background 0.15s'}}
-          onMouseOver={e=>e.currentTarget.style.background='var(--bg-3)'}
-          onMouseOut={e=>e.currentTarget.style.background='var(--bg-2)'}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Neu
-        </button>
-      </div>
-
-      <div className="bausteine-layout" style={{paddingTop:4}}>
+      <div className="bausteine-layout">
 
         {/* LEFT: Search + List */}
         <div className="bausteine-left bausteine-left-col">
 
-          {/* Search */}
-          <div id="bausteineSearchBox" style={{position:'relative',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:5,overflow:'hidden'}}>
-            <input
-              type="text" placeholder="Suchen…" autoComplete="off"
-              value={search}
-              onChange={handleSearchInput}
-              onKeyDown={handleSearchKeydown}
-              style={{position:'relative',zIndex:1,width:'100%',padding:'10px 14px',border:'none',outline:'none',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',background:'transparent',color:'var(--text)',boxSizing:'border-box'}}
-            />
-            {suggestion && search && (
-              <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,padding:'10px 14px',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text-3)',pointerEvents:'none',whiteSpace:'pre',overflow:'hidden',boxSizing:'border-box',zIndex:2}}>
-                <span style={{visibility:'hidden'}}>{search}</span>{suggestion.slice(search.length)}
-              </div>
-            )}
+          {/* Search + Neu button row */}
+          <div style={{display:'flex', gap:8, alignItems:'center', flexShrink:0}}>
+            <div id="bausteineSearchBox" style={{flex:1,position:'relative',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:5,overflow:'hidden'}}>
+              <input
+                type="text" placeholder="Suchen…" autoComplete="off"
+                value={search}
+                onChange={handleSearchInput}
+                onKeyDown={handleSearchKeydown}
+                style={{position:'relative',zIndex:1,width:'100%',padding:'8px 14px',border:'none',outline:'none',fontSize:14,fontFamily:'DM Sans,sans-serif',background:'transparent',color:'var(--text)',boxSizing:'border-box'}}
+              />
+              {suggestion && search && (
+                <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,padding:'8px 14px',fontSize:14,fontFamily:'DM Sans,sans-serif',color:'var(--text-3)',pointerEvents:'none',whiteSpace:'pre',overflow:'hidden',boxSizing:'border-box',zIndex:2}}>
+                  <span style={{visibility:'hidden'}}>{search}</span>{suggestion.slice(search.length)}
+                </div>
+              )}
+            </div>
+            <button onClick={()=>{setEditingB(null);setNeuOpen(true)}}
+              style={{padding:'8px 14px',fontSize:13,fontWeight:500,border:'1px solid var(--border)',borderRadius:5,background:'var(--bg-2)',color:'var(--text-2)',cursor:'pointer',fontFamily:'DM Sans,sans-serif',display:'flex',alignItems:'center',gap:6,transition:'background 0.15s',flexShrink:0}}
+              onMouseOver={e=>e.currentTarget.style.background='var(--bg-3)'}
+              onMouseOut={e=>e.currentTarget.style.background='var(--bg-2)'}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Neu
+            </button>
           </div>
 
           {/* Category select */}
@@ -507,7 +505,7 @@ export default function Bausteine() {
             <select
               value={activeCat||''}
               onChange={e=>{setActiveCat(e.target.value||null); e.target.blur()}}
-              style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'8px 40px 8px 14px',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text)',fontWeight:600,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
+              style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'6px 40px 6px 14px',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text)',fontWeight:600,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
               <option value="">Alle Kategorien</option>
               <option value="Favoriten">★ Favoriten</option>
               <option value="MeineBausteine">✎ Meine Bausteine</option>
@@ -517,7 +515,7 @@ export default function Bausteine() {
           </div>
 
           {/* List */}
-          <div className="bausteine-list" style={{height:'calc(100vh - 200px)',minHeight:280,overflowY:'auto',display:'flex',flexDirection:'column',borderTop:'1px solid var(--border)'}}>
+          <div className="bausteine-list" style={{flex:1,minHeight:0,minHeight:280,overflowY:'auto',display:'flex',flexDirection:'column',borderTop:'1px solid var(--border)'}}>
             {filtered.length===0 && (
               <div style={{padding:32,textAlign:'center',color:'var(--text-3)',fontSize:15}}>Keine Ergebnisse</div>
             )}
@@ -540,7 +538,7 @@ export default function Bausteine() {
         <div ref={rightRef} className="bausteine-right">
 
           {/* Preview */}
-          <div style={{padding:'0 0 16px 0',display:'flex',flexDirection:'column',flex:1,minHeight:0,borderBottom:'1px solid var(--border)'}}>
+          <div style={{padding:'0 0 16px 0',display:'flex',flexDirection:'column',flex:1,minHeight:0}}>
             {!selected && (
               <div style={{padding:'32px 0',minHeight:260,display:'flex',flexDirection:'column',gap:20,maxWidth:420}}>
                 <div style={{fontSize:14,color:'var(--text-2)',lineHeight:1.6}}>
