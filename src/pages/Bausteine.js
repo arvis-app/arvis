@@ -587,7 +587,7 @@ export default function Bausteine() {
                 <div ref={previewRef} className="baustein-preview-text" contentEditable suppressContentEditableWarning spellCheck={false}
                   onClick={handlePreviewClick}
                   style={{overflowY:'auto',flex:1,outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)'}} />
-                <div style={{display:'flex',gap:8,marginTop:16}}>
+                <div style={{display:'flex',gap:8,marginTop:16,justifyContent:'center'}}>
                   <button className="btn-secondary btn-secondary-orange" onClick={copyBaustein} style={{justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
                     {copied
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
