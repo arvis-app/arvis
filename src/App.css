@@ -502,7 +502,9 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .sidebar-history-item.active { background: rgba(0,0,0,0.055); color: var(--text); }
 .sidebar-history-item-label {
   flex: 1; min-width: 0;
-  overflow: hidden; text-overflow: ellipsis;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, black calc(100% - 20px), transparent);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent);
 }
 .sidebar-history-empty {
   padding: 4px 16px 0;
