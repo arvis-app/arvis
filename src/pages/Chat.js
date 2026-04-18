@@ -302,7 +302,7 @@ export default function Chat() {
                 </button>
               ))}
             </div>
-            <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 20, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 20, lineHeight: 1.6, textAlign: 'center' }}>
               Der Assistent antwortet auf Facharztniveau. Antworten dienen ausschließlich der Orientierung und ersetzen keine klinische Beurteilung.
             </div>
           </div>
