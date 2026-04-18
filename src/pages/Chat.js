@@ -275,9 +275,9 @@ export default function Chat() {
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {[
                 'CHA₂DS₂-VASc-Score: Grenzwert für orale Antikoagulation bei VHF?',
-                'Differentialdiagnose Thoraxschmerz — strukturiert nach Dringlichkeit',
-                'Enoxaparin prophylaktisch bei GFR 25 ml/min — welche Anpassung?',
-                'Sepsis-3-Kriterien: qSOFA vs. SOFA — wann anwenden?',
+                'Differentialdiagnose Thoraxschmerz, strukturiert nach Dringlichkeit',
+                'Enoxaparin prophylaktisch bei GFR 25 ml/min, welche Anpassung?',
+                'Sepsis-3-Kriterien: qSOFA vs. SOFA, wann anwenden?',
               ].map((q, i) => (
                 <button
                   key={i}
