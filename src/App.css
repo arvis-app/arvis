@@ -919,7 +919,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .scan-tools-overlay > .scan-toolbar-zoom { height:28px; }
 .scan-tools-overlay > .scan-toolbar-zoom > button { height:28px; min-width:28px; font-size:12px; }
 .scan-tools-overlay > .scan-toolbar-zoom > button.seg-label { min-width:42px; }
-.scan-analyze-cta { align-self:flex-start; height:35px; padding:0 14px; background:var(--orange); color:white; border:1px solid var(--orange); border-radius:5px; font-size:13px; font-weight:500; font-family:'Inter',sans-serif; cursor:pointer; margin-top:10px; margin-bottom:12px; flex-shrink:0; transition:opacity 0.15s, background 0.15s; box-sizing:border-box; }
+.scan-analyze-cta { align-self:center; height:35px; padding:0 14px; background:var(--orange); color:white; border:1px solid var(--orange); border-radius:5px; font-size:13px; font-weight:500; font-family:'Inter',sans-serif; cursor:pointer; margin-top:10px; margin-bottom:12px; flex-shrink:0; transition:opacity 0.15s, background 0.15s; box-sizing:border-box; }
 .scan-analyze-cta:hover:not(:disabled) { background:var(--orange-dark); border-color:var(--orange-dark); }
 .scan-analyze-cta:disabled { opacity:0.4; cursor:not-allowed; }
 .scan-toolbar-zoom { display:inline-flex; align-items:center; height:32px; border:1px solid var(--border); border-radius:5px; overflow:hidden; background:var(--bg-2); box-sizing:border-box; }
