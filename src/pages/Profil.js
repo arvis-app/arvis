@@ -292,7 +292,7 @@ export default function Profil() {
               background: 'transparent',
               fontSize: 13, fontWeight: profilTab === t.key ? 600 : 500,
               color: profilTab === t.key ? 'var(--text)' : 'var(--text-3)',
-              fontFamily: 'DM Sans,sans-serif', cursor: 'pointer',
+              fontFamily: 'Inter,sans-serif', cursor: 'pointer',
               transition: 'color 0.15s, border-color 0.15s',
             }}>
             {t.label}
@@ -480,7 +480,7 @@ export default function Profil() {
                     <button
                       onClick={manageSubscription}
                       disabled={portalLoading}
-                      style={{ padding: '6px 14px', borderRadius: 5, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 13, fontWeight: 500, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1, transition: 'all 0.2s' }}
+                      style={{ padding: '6px 14px', borderRadius: 5, border: '1px solid var(--border)', background: 'var(--bg-2)', color: 'var(--text)', fontSize: 13, fontWeight: 500, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'Inter,sans-serif', opacity: portalLoading ? 0.6 : 1, transition: 'all 0.2s' }}
                       onMouseOver={e => { if (!portalLoading) { e.target.style.background = 'var(--orange-ghost)'; e.target.style.color = 'var(--orange)'; e.target.style.borderColor = 'var(--orange-dark)'; } }}
                       onMouseOut={e => { if (!portalLoading) { e.target.style.background = 'var(--bg-2)'; e.target.style.color = 'var(--text)'; e.target.style.borderColor = 'var(--border)'; } }}
                     >
@@ -495,7 +495,7 @@ export default function Profil() {
                       </div>
                       <div style={{ fontSize: 15, color: 'var(--text-3)' }}>Kein Zahlungsmittel hinterlegt</div>
                     </div>
-                    <button onClick={manageSubscription} disabled={portalLoading} style={{ padding: '8px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}>
+                    <button onClick={manageSubscription} disabled={portalLoading} style={{ padding: '8px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'Inter,sans-serif', opacity: portalLoading ? 0.6 : 1 }}>
                       {portalLoading ? '...' : 'Hinzufügen'}
                     </button>
                   </div>
@@ -529,7 +529,7 @@ export default function Profil() {
                     </div>
                   )}
                   <button onClick={handleCheckout} disabled={checkoutLoading}
-                    style={{ alignSelf: 'center', padding: '8px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition: 'background 0.15s, border-color 0.15s' }}
+                    style={{ alignSelf: 'center', padding: '8px 14px', borderRadius: 5, border: '1px solid var(--orange)', background: 'var(--orange)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter,sans-serif', transition: 'background 0.15s, border-color 0.15s' }}
                     onMouseOver={e => { e.target.style.background = 'var(--orange-dark)'; e.target.style.borderColor = 'var(--orange-dark)' }} onMouseOut={e => { e.target.style.background = 'var(--orange)'; e.target.style.borderColor = 'var(--orange)' }}>
                     {checkoutLoading ? 'Laden...' : yearly ? 'Jetzt Pro starten – 249 €/Jahr' : 'Jetzt Pro starten – 19 €/Monat'}
                   </button>
@@ -544,7 +544,7 @@ export default function Profil() {
                     <div style={{ fontSize: 14, color: 'var(--text-3)', marginBottom: 12 }}>Ihr Zugang bleibt bis zum Ende des aktuellen Abrechnungszeitraums aktiv.</div>
                     <button 
                       onClick={() => setShowCancelModal(true)} 
-                      style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid var(--error)', background: 'transparent', color: 'var(--error)', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', transition:'background 0.2s' }}
+                      style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid var(--error)', background: 'transparent', color: 'var(--error)', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter,sans-serif', transition:'background 0.2s' }}
                       onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
                       onMouseOut={e=>e.target.style.background='transparent'}
                     >
@@ -603,7 +603,7 @@ export default function Profil() {
             </div>
             <button
               onClick={() => { setDeleteConfirmText(''); setShowDeleteModal(true) }}
-              style={{ padding: '6px 14px', borderRadius: 5, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-2)', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', whiteSpace: 'nowrap', transition: 'color 0.15s, border-color 0.15s' }}
+              style={{ padding: '6px 14px', borderRadius: 5, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-2)', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter,sans-serif', whiteSpace: 'nowrap', transition: 'color 0.15s, border-color 0.15s' }}
               onMouseOver={e => { e.target.style.color = 'var(--error)'; e.target.style.borderColor = 'var(--error)' }}
               onMouseOut={e => { e.target.style.color = 'var(--text-2)'; e.target.style.borderColor = 'var(--border)' }}
             >
@@ -632,7 +632,7 @@ export default function Profil() {
               <button
                 onClick={manageSubscription}
                 disabled={portalLoading}
-                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: 'var(--error)', color: 'white', cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: portalLoading ? 0.6 : 1 }}
+                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: 'var(--error)', color: 'white', cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'Inter,sans-serif', opacity: portalLoading ? 0.6 : 1 }}
               >
                 {portalLoading ? 'Lädt...' : 'Kündigen'}
               </button>
@@ -671,7 +671,7 @@ export default function Profil() {
               <button
                 onClick={handleDeleteAccount}
                 disabled={deleteLoading || deleteConfirmText !== 'LÖSCHEN'}
-                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: deleteConfirmText === 'LÖSCHEN' ? 'var(--error)' : 'var(--text-3)', color: 'white', cursor: (deleteLoading || deleteConfirmText !== 'LÖSCHEN') ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans,sans-serif', opacity: deleteLoading ? 0.6 : 1 }}
+                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: deleteConfirmText === 'LÖSCHEN' ? 'var(--error)' : 'var(--text-3)', color: 'white', cursor: (deleteLoading || deleteConfirmText !== 'LÖSCHEN') ? 'not-allowed' : 'pointer', fontFamily: 'Inter,sans-serif', opacity: deleteLoading ? 0.6 : 1 }}
               >
                 {deleteLoading ? 'Wird gelöscht...' : 'Endgültig löschen'}
               </button>

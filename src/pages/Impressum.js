@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 const S = {
   page:    { minHeight: '100vh', background: '#fff', fontFamily: "'Inter', sans-serif", color: '#1a1a1a' },
   header:  { borderBottom: '1px solid #eee', padding: '16px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  logo:    { fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 24, color: '#1a1a1a', textDecoration: 'none' },
+  logo:    { fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', color: '#1a1a1a', textDecoration: 'none' },
   back:    { fontSize: 15, color: '#888', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 },
   body:    { maxWidth: 720, margin: '0 auto', padding: '48px 24px 80px' },
   h1:      { fontSize: 32, fontWeight: 800, marginBottom: 8 },

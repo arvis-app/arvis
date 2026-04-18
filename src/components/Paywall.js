@@ -81,7 +81,7 @@ export default function Paywall({ children }) {
             fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',
             opacity: loading ? 0.7 : 1,
-            fontFamily: 'DM Sans, sans-serif'
+            fontFamily: 'Inter, sans-serif'
           }}
         >
           {loading ? 'Laden...' : 'Jetzt upgraden'}

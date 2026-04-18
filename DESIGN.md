@@ -65,8 +65,8 @@ Source de vérité : `src/App.css` `:root`. Ne jamais hardcoder une couleur — 
 ### Typographie
 
 ```css
-body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
-/* 'Bricolage Grotesque' réservé à la hero de public/landing_page.html */
+body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+/* Unique font partout — chargée via Google Fonts CDN dans index.html + landing_page.html */
 ```
 
 Échelle pratique (pas de `clamp()` agressifs, pas de "fluid type") :
@@ -79,7 +79,7 @@ body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
 | Inputs, textes denses | 14px | 500 | |
 | Titres de panneau | 15px | 600 | |
 | Titres de page | 20–24px | 600 | |
-| Hero landing (exception) | 48–72px | 600 | Bricolage Grotesque, uniquement `landing_page.html` |
+| Hero landing | 48–72px | 700 | Inter 700, `letter-spacing:-0.02em` |
 
 **Hiérarchie par weight + taille + espace**, jamais par couleur saturée ou décoration. Pas de weight 700 agressif.
 

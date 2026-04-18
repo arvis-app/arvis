@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 const S = {
   page:    { minHeight: '100vh', background: '#fff', fontFamily: "'Inter', sans-serif", color: '#1a1a1a' },
   header:  { borderBottom: '1px solid #eee', padding: '16px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  logo:    { fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 24, color: '#1a1a1a', textDecoration: 'none' },
+  logo:    { fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', color: '#1a1a1a', textDecoration: 'none' },
   back:    { fontSize: 15, color: '#888', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 },
   body:    { maxWidth: 720, margin: '0 auto', padding: '48px 24px 80px' },
   h1:      { fontSize: 32, fontWeight: 800, marginBottom: 8 },
@@ -367,9 +367,10 @@ export default function Datenschutz() {
         {/* ── 13. SCHRIFTARTEN (LOKAL) ── */}
         <h2 style={S.h2}>13. Schriftarten</h2>
         <p style={S.p}>
-          Diese Website verwendet Schriftarten (Bricolage Grotesque, DM Sans), die lokal auf unserem
-          Server gespeichert sind. Es findet keine Verbindung zu externen Servern (z. B. Google) statt.
-          Ihre IP-Adresse wird beim Laden der Schriftarten nicht an Dritte übermittelt.
+          Diese Website verwendet die Schriftart Inter, die über Google Fonts geladen wird.
+          Beim Laden der Schriftarten wird Ihre IP-Adresse kurzzeitig an Google übertragen.
+          Weitere Informationen finden Sie in der Datenschutzerklärung von Google:{' '}
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={S.a}>https://policies.google.com/privacy</a>.
         </p>
 
       </div>

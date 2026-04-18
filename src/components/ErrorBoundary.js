@@ -40,7 +40,7 @@ export default class ErrorBoundary extends React.Component {
             style={{
               background: 'var(--accent)', color: '#000', border: 'none',
               padding: '10px 22px', borderRadius: 8, fontWeight: 700,
-              fontSize: 16, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif'
+              fontSize: 16, cursor: 'pointer', fontFamily: 'Inter, sans-serif'
             }}
           >
             Erneut versuchen

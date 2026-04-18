@@ -71,7 +71,7 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 | Analytics | `@vercel/analytics` + `@vercel/speed-insights` — injectés dans `src/index.js` via `<Analytics />` et `<SpeedInsights />` |
 | Monitoring | Sentry (`VITE_SENTRY_DSN`) |
 
-**Couleur** : `#D94B0A` (orange) — **Fonts** : Inter + Bricolage Grotesque (titres)
+**Couleur** : `#D94B0A` (orange) — **Font** : Inter (partout, via Google Fonts CDN)
 
 ## Identité visuelle
 
@@ -81,8 +81,9 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 - **Teal/bleu** : présent dans le logo et le panneau gauche de la LoginPage (fond sombre teal/brun)
 
 ### Typographie
-- **Inter** — font principale, texte courant
-- **Bricolage Grotesque** — titres et en-têtes
+- **Inter** — **unique font** (partout — app + landing + pages légales). Weights 400/500/600/700. Chargée via Google Fonts CDN (lien dans `index.html` + `landing_page.html`).
+- **Plus de DM Sans ni Bricolage Grotesque** (suppression avril 2026 — cf. refonte sober).
+- Weight 800 **proscrit** (ancien usage Bricolage hero).
 
 ### Logo
 - Robot avec tête circulaire, couleur **orange `#D94B0A`**

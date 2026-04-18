@@ -56,7 +56,7 @@ export default function NotFound() {
           fontWeight: 500,
           cursor: 'pointer',
           transition: 'background 0.15s',
-          fontFamily: 'DM Sans, sans-serif',
+          fontFamily: 'Inter, sans-serif',
         }}
         onMouseEnter={e => e.currentTarget.style.background = 'var(--orange-dark)'}
         onMouseLeave={e => e.currentTarget.style.background = 'var(--orange)'}

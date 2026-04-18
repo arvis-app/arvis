@@ -17,7 +17,9 @@
 <title>Arvis</title>
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-v2.png">
 <meta name="theme-color" content="#D94B0A">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --orange: #D94B0A;
@@ -48,7 +50,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
@@ -70,8 +72,8 @@ nav {
 }
 
 .nav-logo {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 20px; font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  font-size: 20px; font-weight: 700;
   color: var(--text);
   text-decoration: none;
   display: flex; align-items: center; gap: 8px;
@@ -107,7 +109,7 @@ nav {
   color: var(--text);
   font-size: 14px; font-weight: 500;
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   transition: all 0.2s;
 }
 .btn-login:hover { background: var(--bg-2); }
@@ -120,7 +122,7 @@ nav {
   color: white;
   font-size: 14px; font-weight: 600;
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   transition: all 0.2s;
   box-shadow: 0 4px 14px rgba(217,75,10,0.35);
 }
@@ -158,9 +160,9 @@ nav {
 }
 
 .hero h1 {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: clamp(40px, 6vw, 76px);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.03em;
   color: var(--text);
@@ -198,7 +200,7 @@ nav {
   color: white;
   font-size: 16px; font-weight: 700;
   border: none; cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   box-shadow: 0 8px 30px rgba(217,75,10,0.4);
   transition: all 0.2s;
   display: flex; align-items: center; gap: 8px;
@@ -216,7 +218,7 @@ nav {
   font-size: 16px; font-weight: 600;
   border: 1px solid var(--border);
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   transition: all 0.2s;
 }
 .btn-hero-secondary:hover { background: var(--bg-3); }
@@ -232,8 +234,8 @@ nav {
 }
 .stat-item { text-align: center; }
 .stat-num {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 32px; font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  font-size: 32px; font-weight: 700;
   color: var(--orange);
 }
 .stat-label { font-size: 13px; color: var(--text-3); margin-top: 4px; }
@@ -286,8 +288,8 @@ nav {
   flex-direction: column;
 }
 .mockup-sidebar-logo {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 15px; font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px; font-weight: 700;
   padding: 0 20px 20px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
@@ -312,7 +314,7 @@ nav {
   background: var(--bg);
 }
 .mockup-main-title {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 18px; font-weight: 700;
   margin-bottom: 16px; color: var(--text);
 }
@@ -379,9 +381,9 @@ section { padding: 100px 40px; }
 }
 
 .section-title {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: clamp(32px, 4vw, 52px);
-  font-weight: 800; line-height: 1.1;
+  font-weight: 700; line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--text);
   max-width: 700px; margin-bottom: 20px;
@@ -437,7 +439,7 @@ section { padding: 100px 40px; }
 }
 
 .feature-card h3 {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 19px; font-weight: 700;
   color: var(--text); margin-bottom: 10px;
 }
@@ -575,7 +577,7 @@ section { padding: 100px 40px; }
   border: 1.5px solid var(--border);
   background: var(--bg-2);
   color: var(--text); font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   outline: none;
   transition: border-color 0.2s;
 }
@@ -642,12 +644,12 @@ section { padding: 100px 40px; }
   background: var(--orange-ghost);
   border: 3px solid var(--orange);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 22px; font-weight: 800; color: var(--orange);
+  font-family: 'Inter', sans-serif;
+  font-size: 22px; font-weight: 700; color: var(--orange);
   margin: 0 auto 20px;
 }
 .step h4 {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px; font-weight: 700;
   color: var(--text); margin-bottom: 8px;
 }
@@ -672,7 +674,7 @@ section { padding: 100px 40px; }
 }
 .dsgvo-badge-icon { font-size: 28px; margin-bottom: 10px; }
 .dsgvo-badge-title {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px;
 }
 .dsgvo-badge-text { font-size: 12px; color: var(--text-3); line-height: 1.5; }
@@ -686,8 +688,8 @@ section { padding: 100px 40px; }
 }
 .dsgvo-shield { font-size: 80px; margin-bottom: 20px; display: block; }
 .dsgvo-visual h3 {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 12px;
 }
 .dsgvo-visual p { font-size: 14px; color: var(--text-3); line-height: 1.7; }
 .section-dark .dsgvo-visual { background: var(--card); }
@@ -724,8 +726,8 @@ section { padding: 100px 40px; }
 }
 .pricing-card.featured .pricing-plan { color: rgba(255,255,255,0.7); }
 .pricing-price {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 48px; font-weight: 800; color: var(--text); margin-bottom: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 48px; font-weight: 700; color: var(--text); margin-bottom: 4px;
 }
 .pricing-card.featured .pricing-price { color: white; }
 .pricing-period { font-size: 14px; color: var(--text-3); margin-bottom: 28px; }
@@ -742,7 +744,7 @@ section { padding: 100px 40px; }
   margin-top: 32px; width: 100%; padding: 14px;
   border-radius: 8px; border: none;
   font-size: 15px; font-weight: 700;
-  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; font-family: 'Inter', sans-serif;
   transition: all 0.2s;
 }
 .pricing-cta-default {
@@ -767,9 +769,9 @@ section { padding: 100px 40px; }
   box-shadow: 0 30px 80px rgba(217,75,10,0.4);
 }
 .cta-inner h2 {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: clamp(28px, 4vw, 44px);
-  font-weight: 800; color: white; margin-bottom: 16px;
+  font-weight: 700; color: white; margin-bottom: 16px;
   line-height: 1.15;
 }
 .cta-inner p { font-size: 18px; color: rgba(255,255,255,0.8); margin-bottom: 40px; }
@@ -778,7 +780,7 @@ section { padding: 100px 40px; }
   background: white; color: var(--orange);
   border: none; border-radius: 8px;
   font-size: 16px; font-weight: 700;
-  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; font-family: 'Inter', sans-serif;
   box-shadow: 0 8px 30px rgba(0,0,0,0.15);
   transition: all 0.2s;
 }
@@ -792,8 +794,8 @@ footer {
   flex-wrap: wrap; gap: 20px; position: relative;
 }
 .footer-logo {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 28px; font-weight: 800; color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 28px; font-weight: 700; color: var(--text);
 }
 .footer-logo span { color: var(--orange); }
 .footer-links { display: flex; gap: 24px; position: absolute; left: 50%; transform: translateX(-50%); }
@@ -972,7 +974,7 @@ footer {
 
       <!-- Topbar -->
       <div style="display:flex;align-items:center;gap:12px;padding:0 16px;height:44px;background:var(--bg-2);border-bottom:1px solid var(--border);">
-        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;color:var(--text);width:160px;display:flex;align-items:center;gap:6px;">
+        <div style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--text);width:160px;display:flex;align-items:center;gap:6px;">
           <img src="/arvis-icon.svg" style="height:30px;display:block;" />
           Arvis
         </div>
@@ -1023,10 +1025,10 @@ footer {
           <!-- Header row -->
           <div style="display:flex;align-items:flex-start;justify-content:space-between;">
             <div>
-              <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:var(--text);">Guten Abend, Müller</div>
+              <div style="font-family:'Inter',sans-serif;font-size:20px;font-weight:700;color:var(--text);">Guten Abend, Müller</div>
               <div style="font-size:12px;color:var(--text-3);margin-top:3px;">Samstag, 14. März 2026</div>
             </div>
-            <button style="background:var(--orange);color:white;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Scan starten</button>
+            <button style="background:var(--orange);color:white;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">Scan starten</button>
           </div>
 
           <!-- Two column grid: Kalender + Patienten -->
@@ -1126,13 +1128,13 @@ footer {
 
   <!-- RANGÉE 1 : Scan | Briefassistent -->
   <div style="background:var(--card);border:1px solid var(--border);border-radius: 12px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Scan & Analyse</h3></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><h3 style="font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Scan & Analyse</h3></div>
     <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">Fotografieren Sie einen Arztbrief, schwärzen Sie sensible Daten —<br>KI-Analyse mit 🔴🟡🟢 Prioritäten oder OCR-Text in Sekunden.</p>
     <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">KI-gestützt · DSGVO-konform</span>
     <div class="feat-demo-wrap" style="background:var(--bg-2);border:1px solid var(--border);border-radius: 8px;overflow:hidden;margin-top:16px;flex:1;">
   <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:9px 12px;display:flex;align-items:center;gap:6px;">
     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-    <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:13.0px;font-weight:700;color:var(--text);">Scan &amp; Analyse</span>
+    <span style="font-family:'Inter',sans-serif;font-size:13.0px;font-weight:700;color:var(--text);">Scan &amp; Analyse</span>
   </div>
   <!-- scan-steps exact -->
   <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap;row-gap:4px;">
@@ -1172,10 +1174,10 @@ footer {
       </div>
       <!-- résultat KI avec vrais bullets -->
       <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
-        <div style="font-size:12.0px;font-weight:800;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin-bottom:2px;">Hauptdiagnose</div>
+        <div style="font-size:12.0px;font-weight:700;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin-bottom:2px;">Hauptdiagnose</div>
         <div style="font-size:11.0px;color:var(--text-2);">Herzinsuffizienz NYHA III, Z.n. STEMI</div>
         <div style="font-size:11.0px;color:var(--text-2);margin-bottom:1px;">Lap. Appendektomie (post-op Tag 2)</div>
-        <div style="font-size:12.0px;font-weight:800;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin:3px 0 2px;">⚠ Nicht übersehen</div>
+        <div style="font-size:12.0px;font-weight:700;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin:3px 0 2px;">⚠ Nicht übersehen</div>
         <div style="font-size:11.0px;color:#DC2626;background:rgba(220,38,38,0.15);border-left:2px solid rgba(220,38,38,0.5);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🔴 Antikoagulation fehlt bei VHF</div>
         <div style="font-size:11.0px;color:#B45309;background:rgba(217,119,6,0.12);border-left:2px solid rgba(217,119,6,0.4);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🟡 ACE-Hemmer nicht dokumentiert</div>
         <div style="font-size:11.0px;color:#15803D;background:rgba(22,163,74,0.1);border-left:2px solid rgba(22,163,74,0.35);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🟢 Nierenwerte kontrollieren</div>
@@ -1187,7 +1189,7 @@ footer {
   </div>
 
   <div style="background:var(--card);border:1px solid var(--border);border-radius: 12px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">AI Briefassistent</h3></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><h3 style="font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">AI Briefassistent</h3></div>
     <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">KI korrigiert, reformuliert und optimiert Ihre medizinischen Briefe auf professionellem Niveau.</p>
     <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">Korrektur · Umformulierung · Zusammenfassung</span>
     <div class="feat-demo-wrap" style="background:var(--bg-2);border:1px solid var(--border);border-radius: 8px;overflow:hidden;margin-top:16px;flex:1;">
@@ -1255,7 +1257,7 @@ footer {
 
   <!-- RANGÉE 2 : Bausteine -->
   <div style="background:var(--card);border:1px solid var(--border);border-radius: 12px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="11" height="4" rx="1"/><rect x="3" y="17" width="14" height="4" rx="1"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Bausteine</h3></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="11" height="4" rx="1"/><rect x="3" y="17" width="14" height="4" rx="1"/></svg></div><h3 style="font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Bausteine</h3></div>
     <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">1.550+ vorgefertigte medizinische Textbausteine — suchen, auswählen, anpassen und per Klick einfügen.</p>
     <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">1.550+ Bausteine · Personalisierbar</span>
     <div class="feat-demo-wrap" style="background:var(--bg-2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:12px;flex:1;display:flex;gap:8px;padding:8px;">
@@ -1364,13 +1366,13 @@ footer {
   <div class="features-row-3" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;">
 
     <div style="background:var(--card);border:1px solid var(--border);border-radius: 12px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Meine Dateien</h3></div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><h3 style="font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Meine Dateien</h3></div>
       <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">Persönlicher digitaler Speicher — Dokumente, Notizen und Dateien in Ordnern organisieren.</p>
       <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">Ende-zu-Ende verschlüsselt</span>
       <div class="feat-demo-wrap" style="background:var(--bg-2);border:1px solid var(--border);border-radius: 8px;overflow:hidden;margin-top:12px;flex:1;">
   <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:9px 12px;display:flex;align-items:center;gap:8px;">
     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:13.0px;font-weight:700;color:var(--text);">Meine Dateien</span>
+    <span style="font-family:'Inter',sans-serif;font-size:13.0px;font-weight:700;color:var(--text);">Meine Dateien</span>
   </div>
   <div style="padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:1;align-content:start;min-width:0;overflow:hidden;">
     <!-- folder orange-ghost -->
@@ -1414,13 +1416,13 @@ footer {
     </div>
 
     <div style="background:var(--card);border:1px solid var(--border);border-radius: 12px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Agenda</h3></div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><h3 style="font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Agenda</h3></div>
       <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">Kalender für Termine und Kontrolluntersuchungen — direkt im Dashboard.</p>
       <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">Persönlich</span>
       <div class="feat-demo-wrap" style="background:var(--bg-2);border:1px solid var(--border);border-radius: 8px;overflow:hidden;margin-top:12px;flex:1;">
   <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:9px 12px;display:flex;align-items:center;gap:8px;">
     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:13.0px;font-weight:700;color:var(--text);">Agenda</span>
+    <span style="font-family:'Inter',sans-serif;font-size:13.0px;font-weight:700;color:var(--text);">Agenda</span>
     <span style="font-size:13.0px;font-weight:600;color:var(--text-3);margin-left:auto;">März 2026</span>
   </div>
   <div style="padding:10px 12px;display:flex;flex-direction:column;flex:1;">
@@ -1450,7 +1452,7 @@ footer {
     </div>
 
     <div style="background:var(--card);border:1px solid var(--border);border-radius: 12px;padding:24px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--card-shadow);color:var(--text);display:flex;flex-direction:column;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Patientenliste</h3></div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;"><div style="width:44px;height:44px;flex-shrink:0;border-radius: 8px;background:#FDEAE0;border:1px solid rgba(217,75,10,0.2);display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><h3 style="font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">Patientenliste</h3></div>
       <p style="font-size:13px;color:var(--text-3);line-height:1.6;margin-bottom:14px;">Übersicht mit Zimmer, Name und Notizen — immer dabei, auf jedem Gerät.</p>
       <span style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FDEAE0;color:#B83208;border:1px solid rgba(217,75,10,0.2);">Überall verfügbar</span>
       <div class="feat-demo-wrap" style="background:var(--bg-2);border:1px solid var(--border);border-radius: 8px;overflow:hidden;margin-top:12px;flex:1;">
@@ -1502,15 +1504,15 @@ footer {
       <p class="section-sub">Nehmen Sie ein Foto eines Arztbriefs, schwärzen Sie sensible Patientendaten mit einem Rechteck — und erhalten Sie in Sekunden eine vollständige KI-Analyse oder den reinen Text.</p>
       <div style="margin-top:32px;display:flex;flex-direction:column;gap:16px;">
         <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">1</div>
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;">1</div>
           <div><strong style="color:var(--text);">Foto aufnehmen</strong><br/><span style="font-size:14px;color:var(--text-3);">Direkt vom Smartphone oder Datei hochladen</span></div>
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">2</div>
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;">2</div>
           <div><strong style="color:var(--text);">Anonymisieren</strong><br/><span style="font-size:14px;color:var(--text-3);">Rechteck über sensible Daten ziehen — automatisch geschwärzt</span></div>
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">3</div>
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;">3</div>
           <div><strong style="color:var(--text);">KI oder OCR wählen</strong><br/><span style="font-size:14px;color:var(--text-3);">Intelligente Analyse oder reiner Text-Export</span></div>
         </div>
       </div>
@@ -1618,9 +1620,9 @@ footer {
           </div>
           <div class="scan-mock-right" style="pointer-events:none;">
             <div class="scan-mock-result-label">KI-Analyse</div>
-            <div style="font-size:12.0px;font-weight:800;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin-bottom:4px;">Hauptdiagnose</div>
+            <div style="font-size:12.0px;font-weight:700;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin-bottom:4px;">Hauptdiagnose</div>
             <div style="font-size:11.0px;color:var(--text-2);margin-bottom:8px;line-height:1.5;">Herzinsuffizienz NYHA III, Z.n. STEMI<br/>Lap. Appendektomie (post-op Tag 2)</div>
-            <div style="font-size:12.0px;font-weight:800;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin-bottom:5px;">⚠ Nicht übersehen</div>
+            <div style="font-size:12.0px;font-weight:700;color:var(--text);border-bottom:1.5px solid var(--orange);padding-bottom:2px;margin-bottom:5px;">⚠ Nicht übersehen</div>
             <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;">
               <div style="font-size:11.0px;color:#DC2626;background:rgba(220,38,38,0.12);border-left:2px solid rgba(220,38,38,0.5);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🔴 Antikoagulation fehlt bei VHF</div>
               <div style="font-size:11.0px;color:#B45309;background:rgba(217,119,6,0.10);border-left:2px solid rgba(217,119,6,0.4);border-radius:0 4px 4px 0;padding:3px 5px;line-height:1.4;">🟡 ACE-Hemmer nicht dokumentiert</div>
@@ -1652,7 +1654,7 @@ footer {
       <!-- App header -->
       <div style="background:var(--bg-3);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
         <div>
-          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;color:var(--text);">AI Briefassistent</div>
+          <div style="font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:var(--text);">AI Briefassistent</div>
           <div style="font-size:12.0px;color:var(--text-3);margin-top:1px;">KI korrigiert und reformuliert Ihre medizinischen Briefe</div>
         </div>
         <div style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--border);border-radius:8px;font-size:12.0px;font-weight:600;color:var(--text-3);background:var(--bg);">
@@ -1683,7 +1685,7 @@ footer {
         <!-- Left: Ihr Text -->
         <div style="background:var(--bg);border:1px solid var(--border);border-radius: 8px;display:flex;flex-direction:column;overflow:hidden;">
           <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:11px;font-weight:700;color:var(--text);">Ihr Text</span>
+            <span style="font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:var(--text);">Ihr Text</span>
             <span style="font-size:11.0px;color:var(--text-3);">147 Zeichen</span>
           </div>
           <div style="padding:10px 12px;font-size:11.5px;color:var(--text-2);line-height:1.65;flex:1;">Pat. 72J. w. Diab. typ2, Htn. Aufnahme wegen Sturz, Hüfte schmerzt re. Rö angeordnet. Kein Fraktur. BZ 14.2 erhöht. Metformin weiter. Ortho konsil.</div>
@@ -1702,7 +1704,7 @@ footer {
         <!-- Right: KI-Ergebnis -->
         <div style="background:var(--bg);border:1px solid var(--border);border-radius: 8px;display:flex;flex-direction:column;overflow:hidden;">
           <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:11px;font-weight:700;color:var(--text);">KI-Ergebnis</span>
+            <span style="font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:var(--text);">KI-Ergebnis</span>
           </div>
           <div style="padding:10px 12px;font-size:11.5px;color:var(--text-2);line-height:1.65;flex:1;">72-jährige Patientin mit bekanntem Diabetes mellitus Typ 2 und arterieller Hypertonie. Stationäre Aufnahme nach Sturzereignis mit Schmerzen im Bereich der rechten Hüfte. Radiologisch kein Frakturnachweis. Blutzucker bei Aufnahme erhöht (14,2 mmol/l), Metformin wird fortgeführt. Orthopädisches Konsil angefordert.</div>
           <div style="padding:8px 10px;border-top:1px solid var(--border);display:flex;gap:6px;">
@@ -1849,7 +1851,7 @@ footer {
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div class="pricing-price" id="pricingPrice">19€</div>
           <div id="pricingOldPrice" style="font-size:18px;color:#f4a261;text-decoration:line-through;font-weight:600;">29€</div>
-          <span id="pricingDiscountBadge" style="background:white;color:var(--orange);font-size:13px;font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:0.02em;">–34%</span>
+          <span id="pricingDiscountBadge" style="background:white;color:var(--orange);font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;letter-spacing:0.02em;">–34%</span>
         </div>
         <div class="pricing-period" id="pricingPeriod">/ Monat für 3 Monate · danach 29 €<br>14 Tage kostenlos testen</div>
         <ul class="pricing-features">

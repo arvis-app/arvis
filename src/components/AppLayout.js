@@ -256,58 +256,11 @@ export default function AppLayout() {
         </div>
       )}
 
-      {/* Topbar — only above main content, sidebar is full height on col 1 */}
-      <header className="topbar">
-        <button className="mobile-menu-btn" onClick={() => { setSidebarCollapsed(false); setMobileOpen(v => !v) }} aria-label="Menu">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
+      {/* Mobile hamburger — fixe, visible uniquement ≤1100px */}
+      <button className="mobile-menu-btn" onClick={() => { setSidebarCollapsed(false); setMobileOpen(v => !v) }} aria-label="Menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
 
-        <button className="topbar-btn" aria-label="Sidebar ein-/ausblenden" onClick={() => setSidebarCollapsed(v => !v)} title="Sidebar ein-/ausblenden">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-        </button>
-
-        {/* Page title — flex:1, pushes right-side to the end */}
-        <div className="topbar-page-title">
-          {pageTitle && <span>{pageTitle}</span>}
-        </div>
-
-        <div className="topbar-right">
-          <div style={{position:'relative',display:'flex',alignItems:'center',gap:6,cursor:'pointer'}} ref={avatarRef} onClick={() => setAvatarOpen(v => !v)}>
-            <svg width="10" height="7" viewBox="0 0 10 7" fill="none" style={{transition:'transform 0.15s',transform:avatarOpen?'rotate(180deg)':'none'}}>
-              <path d="M1 1.5L5 5.5L9 1.5" stroke="var(--text-3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div className="topbar-avatar" title="Menü">
-              {profile?.avatar_url
-                ? <img src={profile.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}} alt="" />
-                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-            </div>
-            {avatarOpen && (
-              <div style={{position:'absolute',right:0,top:'calc(100% + 6px)',minWidth:160,background:'var(--card)',border:'1px solid var(--border)',borderRadius:6,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
-                <div onClick={() => { setAvatarOpen(false); navigate('/profil') }}
-                  style={{padding:'9px 14px',fontSize:12.5,fontWeight:500,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:9,transition:'background 0.12s'}}
-                  onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  Mein Profil
-                </div>
-                <div style={{height:1,background:'var(--border)',margin:'0 12px'}}/>
-                <div onClick={() => { setAvatarOpen(false); setBugModalOpen(true) }}
-                  style={{padding:'9px 14px',fontSize:12.5,fontWeight:500,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:9,transition:'background 0.12s'}}
-                  onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  Bug melden
-                </div>
-                <div style={{height:1,background:'var(--border)',margin:'0 12px'}}/>
-                <div onClick={handleLogout}
-                  style={{padding:'9px 14px',fontSize:12.5,fontWeight:500,color:'var(--orange)',cursor:'pointer',display:'flex',alignItems:'center',gap:9,transition:'background 0.12s'}}
-                  onMouseOver={e=>e.currentTarget.style.background='var(--orange-ghost)'} onMouseOut={e=>e.currentTarget.style.background=''}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                  Abmelden
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
 
       {/* Mobile overlay */}
       {mobileOpen && <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />}
@@ -318,6 +271,9 @@ export default function AppLayout() {
         <div className="sidebar-brand">
           <img src="/arvis-icon.svg" alt="" />
           <span className="sidebar-brand-name">Arvis</span>
+          <button className="topbar-btn" aria-label="Sidebar ein-/ausblenden" onClick={() => setSidebarCollapsed(v => !v)} title="Sidebar ein-/ausblenden" style={{ marginLeft: 'auto', flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          </button>
         </div>
         {navItems.map(item => (
           <NavLink key={item.to} to={item.to} className={({isActive}) => `nav-item${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)} onMouseEnter={() => preloadPage(item.to)}>
@@ -349,17 +305,42 @@ export default function AppLayout() {
         )}
 
         <div className="sidebar-footer">
-          <div className="sidebar-user" style={{cursor:'default'}}>
-            <div className="sidebar-avatar" onClick={() => { setMobileOpen(false); navigate('/profil') }} style={{cursor:'pointer'}}>
+          <div className="sidebar-user" ref={avatarRef} onClick={() => setAvatarOpen(v => !v)} style={{cursor:'pointer', position:'relative', userSelect:'none'}}>
+            <div className="sidebar-avatar">
               {profile?.avatar_url
                 ? <img src={profile.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}} alt="" />
                 : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
             </div>
-            <div className="sidebar-user-info" onClick={() => { setMobileOpen(false); navigate('/profil') }} style={{cursor:'pointer'}}>
-              <div className="sidebar-user-name">{displayName}</div>
-              <div className="sidebar-user-role">{clinic}</div>
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">{displayName || profile?.first_name || profile?.email?.split('@')[0] || ''}</div>
             </div>
-            <svg onClick={handleLogout} style={{cursor:'pointer', flexShrink:0}} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <svg style={{flexShrink:0,transition:'transform 0.15s',transform:avatarOpen?'rotate(180deg)':'none'}} width="10" height="7" viewBox="0 0 10 7" fill="none">
+              <path d="M1 1.5L5 5.5L9 1.5" stroke="var(--text-3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {avatarOpen && (
+              <div style={{position:'absolute',bottom:'calc(100% + 8px)',left:0,right:0,background:'var(--card)',border:'1px solid var(--border)',borderRadius:6,boxShadow:'var(--shadow-lg)',zIndex:9999,overflow:'hidden'}}>
+                <div onClick={(e) => { e.stopPropagation(); setAvatarOpen(false); setMobileOpen(false); navigate('/profil') }}
+                  style={{padding:'9px 14px',fontSize:12.5,fontWeight:500,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:9,transition:'background 0.12s'}}
+                  onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Mein Profil
+                </div>
+                <div style={{height:1,background:'var(--border)',margin:'0 12px'}}/>
+                <div onClick={(e) => { e.stopPropagation(); setAvatarOpen(false); setBugModalOpen(true) }}
+                  style={{padding:'9px 14px',fontSize:12.5,fontWeight:500,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:9,transition:'background 0.12s'}}
+                  onMouseOver={e=>e.currentTarget.style.background='var(--bg)'} onMouseOut={e=>e.currentTarget.style.background=''}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Bug melden
+                </div>
+                <div style={{height:1,background:'var(--border)',margin:'0 12px'}}/>
+                <div onClick={(e) => { e.stopPropagation(); handleLogout() }}
+                  style={{padding:'9px 14px',fontSize:12.5,fontWeight:500,color:'var(--orange)',cursor:'pointer',display:'flex',alignItems:'center',gap:9,transition:'background 0.12s'}}
+                  onMouseOver={e=>e.currentTarget.style.background='var(--orange-ghost)'} onMouseOut={e=>e.currentTarget.style.background=''}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Abmelden
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </aside>
@@ -386,17 +367,17 @@ export default function AppLayout() {
               </div>
             ) : (
               <>
-                <div style={{fontSize:20,fontWeight:800,color:'var(--text)',marginBottom:18,fontFamily:"'Bricolage Grotesque', sans-serif"}}>Bug melden</div>
+                <div style={{fontSize:18,fontWeight:700,color:'var(--text)',marginBottom:18,letterSpacing:'-0.01em'}}>Bug melden</div>
 
                 {/* Email */}
                 <label style={{fontSize:13,fontWeight:600,color:'var(--text-2)',display:'block',marginBottom:6}}>E-Mail</label>
                 <input value={bugEmail} onChange={e => setBugEmail(e.target.value)} type="email"
-                  style={{width:'100%',padding:'10px 12px',fontSize:15,border:'1px solid var(--border)',borderRadius:8,fontFamily:'Inter, sans-serif',background:'var(--bg)',color:'var(--text)',boxSizing:'border-box',marginBottom:14}} />
+                  style={{width:'100%',padding:'10px 12px',fontSize:15,border:'1px solid var(--border)',borderRadius:8,background:'var(--bg)',color:'var(--text)',boxSizing:'border-box',marginBottom:14}} />
 
                 {/* Description */}
                 <label style={{fontSize:13,fontWeight:600,color:'var(--text-2)',display:'block',marginBottom:6}}>Fehlerbeschreibung</label>
                 <textarea value={bugText} onChange={e => setBugText(e.target.value)} rows={5} placeholder="Beschreiben Sie den Fehler möglichst genau..."
-                  style={{width:'100%',padding:'10px 12px',fontSize:15,border:'1px solid var(--border)',borderRadius:8,fontFamily:'Inter, sans-serif',background:'var(--bg)',color:'var(--text)',boxSizing:'border-box',resize:'vertical',minHeight:100,marginBottom:14}} />
+                  style={{width:'100%',padding:'10px 12px',fontSize:15,border:'1px solid var(--border)',borderRadius:8,background:'var(--bg)',color:'var(--text)',boxSizing:'border-box',resize:'vertical',minHeight:100,marginBottom:14}} />
 
                 {/* Photos */}
                 <label style={{fontSize:13,fontWeight:600,color:'var(--text-2)',display:'block',marginBottom:6}}>Screenshots <span style={{fontWeight:400}}>(optional, max. 5 Fotos, 10 MB)</span></label>

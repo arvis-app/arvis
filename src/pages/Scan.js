@@ -1013,7 +1013,7 @@ export default function Scan() {
               )}
               {/* Toolbar */}
               <div className="scan-viewer-toolbar">
-                <button onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 6, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, cursor: 'pointer' }}>
+                <button onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 6, fontFamily: "'Inter', sans-serif", fontWeight: 600, cursor: 'pointer' }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
                   Schwärzen
                 </button>
@@ -1135,7 +1135,7 @@ export default function Scan() {
                         }
                       </button>
                       <button onClick={downloadResult} title="Als Word herunterladen"
-                        style={{ height: 28, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#2B579A', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', fontWeight: 600, fontSize: 14, flexShrink: 0 }}>
+                        style={{ height: 28, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#2B579A', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: 14, flexShrink: 0 }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                         Word
                       </button>
@@ -1167,7 +1167,7 @@ export default function Scan() {
                       }
                     </button>
                     <button onClick={downloadResult} title="Als Word herunterladen"
-                      style={{ height: 28, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#2B579A', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif', fontWeight: 600, fontSize: 14, flexShrink: 0 }}>
+                      style={{ height: 28, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#2B579A', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: 14, flexShrink: 0 }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                       Word
                     </button>
