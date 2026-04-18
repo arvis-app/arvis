@@ -44,8 +44,6 @@ export default function Profil() {
   useEffect(() => { isProRef.current = isPro }, [isPro])
   const [toast, setToast] = useState(null)
   const [errors, setErrors] = useState({})
-  const photoInputRef = useRef(null)
-
   // Plan
   const planInfo = getPlanInfo()
   const [yearly, setYearly] = useState(false)
@@ -61,9 +59,6 @@ export default function Profil() {
   const [hausnummer, setHausnummer] = useState('')
   const [plz, setPlz] = useState('')
   const [stadt, setStadt] = useState('')
-  const [photo, setPhoto] = useState(null)
-  const [photoFile, setPhotoFile] = useState(null)
-
   // Password fields
   const [pwOld, setPwOld] = useState('')
   const [pwNew, setPwNew] = useState('')
@@ -165,7 +160,6 @@ export default function Profil() {
     setHausnummer(profile.hausnummer || '')
     setPlz(profile.plz || '')
     setStadt(profile.stadt || '')
-    if (profile.avatar_url) setPhoto(profile.avatar_url)
   }, [profile])
 
   function showToast(msg, light = true) { setToast({ msg, light }); setTimeout(() => setToast(null), 2500) }
@@ -176,19 +170,6 @@ export default function Profil() {
     document.addEventListener('keydown', handleEsc)
     return () => document.removeEventListener('keydown', handleEsc)
   }, [])
-
-  // ── Photo ──────────────────────────────────────────────────────────────────
-  function handlePhoto(e) {
-    const file = e.target.files[0]; if (!file) return
-    if (file.size > 2 * 1024 * 1024) {
-      showToast('Bild zu groß – max. 2 MB', false)
-      e.target.value = ''
-      return
-    }
-    // Store the raw File for upload, use a local object URL as preview
-    setPhotoFile(file)
-    setPhoto(URL.createObjectURL(file))
-  }
 
   // ── Save profile ───────────────────────────────────────────────────────────
   async function saveProfile() {
@@ -209,24 +190,6 @@ export default function Profil() {
       emailChanged = true
     }
 
-    // Upload new avatar to Supabase Storage if a new file was selected
-    let avatarUrl = photo  // default: keep existing URL (or null if deleted)
-    if (photoFile) {
-      const ext = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' })[photoFile.type] ?? 'jpg'
-      const path = `${user.id}/avatar.${ext}`
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(path, photoFile, { upsert: true, contentType: photoFile.type })
-      if (uploadError) {
-        showToast('Foto-Upload fehlgeschlagen: ' + uploadError.message, false)
-        return
-      }
-      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
-      // Append cache-busting timestamp so the browser loads the new image
-      avatarUrl = urlData.publicUrl + '?t=' + Date.now()
-      setPhotoFile(null)
-    }
-
     const { error } = await updateProfile({
       title: titel,
       first_name: vorname.trim(),
@@ -237,7 +200,6 @@ export default function Profil() {
       hausnummer: hausnummer.trim(),
       plz: plz.trim(),
       stadt: stadt.trim(),
-      avatar_url: avatarUrl,
     })
     
     if (error) { 
@@ -307,30 +269,6 @@ export default function Profil() {
             <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Persönliche Informationen</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20, flex: 1 }}>
-
-            {/* Avatar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-              <div id="profilAvatar" onClick={() => photoInputRef.current?.click()}
-                style={{ width: 100, height: 100, borderRadius: '50%', background: 'var(--bg-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 700, color: 'white', flexShrink: 0, cursor: 'pointer', overflow: 'hidden' }}>
-                {photo ? <img src={photo} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="" /> : <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-              </div>
-              <div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button className="btn-secondary" onClick={() => photoInputRef.current?.click()}>Foto ändern</button>
-                  <button
-                    className="btn-secondary"
-                    style={{ color: 'var(--text-2)', transition: 'color 0.15s, border-color 0.15s' }}
-                    onClick={() => { setPhoto(null); setPhotoFile(null) }}
-                    onMouseOver={e=>{e.target.style.color='var(--error)'; e.target.style.borderColor='var(--error)'}}
-                    onMouseOut={e=>{e.target.style.color='var(--text-2)'; e.target.style.borderColor=''}}
-                  >
-                    Foto löschen
-                  </button>
-                </div>
-                <input ref={photoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhoto} />
-                <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>JPG oder PNG, max. 2 MB</div>
-              </div>
-            </div>
 
             {/* Titel + Vorname + Nachname */}
             <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr 1fr', gap: 12 }}>
@@ -544,7 +482,7 @@ export default function Profil() {
                     <div style={{ fontSize: 14, color: 'var(--text-3)', marginBottom: 12 }}>Ihr Zugang bleibt bis zum Ende des aktuellen Abrechnungszeitraums aktiv.</div>
                     <button 
                       onClick={() => setShowCancelModal(true)} 
-                      style={{ padding: '9px 18px', borderRadius: 6, border: '1px solid var(--error)', background: 'transparent', color: 'var(--error)', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter,sans-serif', transition:'background 0.2s' }}
+                      style={{ padding: '8px 14px', borderRadius: 5, border: '1px solid var(--error)', background: 'transparent', color: 'var(--error)', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter,sans-serif', transition:'background 0.2s' }}
                       onMouseOver={e=>e.target.style.background='rgba(229,62,62,0.08)'}
                       onMouseOut={e=>e.target.style.background='transparent'}
                     >
@@ -628,11 +566,11 @@ export default function Profil() {
               Ihr Zugang bleibt bis zum <strong>Ende des Abrechnungszeitraums</strong> aktiv.
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <button className="btn-secondary" onClick={() => setShowCancelModal(false)} style={{ height: 38, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
+              <button className="btn-secondary" onClick={() => setShowCancelModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
               <button
                 onClick={manageSubscription}
                 disabled={portalLoading}
-                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: 'var(--error)', color: 'white', cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'Inter,sans-serif', opacity: portalLoading ? 0.6 : 1 }}
+                style={{ padding: '8px 14px', fontSize: 13, fontWeight: 500, borderRadius: 5, border: 'none', background: 'var(--error)', color: 'white', cursor: portalLoading ? 'wait' : 'pointer', fontFamily: 'Inter,sans-serif', opacity: portalLoading ? 0.6 : 1 }}
               >
                 {portalLoading ? 'Lädt...' : 'Kündigen'}
               </button>
@@ -667,11 +605,11 @@ export default function Profil() {
               autoFocus
             />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <button className="btn-secondary" onClick={() => setShowDeleteModal(false)} style={{ height: 38, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
+              <button className="btn-secondary" onClick={() => setShowDeleteModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Abbrechen</button>
               <button
                 onClick={handleDeleteAccount}
                 disabled={deleteLoading || deleteConfirmText !== 'LÖSCHEN'}
-                style={{ height: 38, fontSize: 15, fontWeight: 500, borderRadius: 6, border: 'none', background: deleteConfirmText === 'LÖSCHEN' ? 'var(--error)' : 'var(--text-3)', color: 'white', cursor: (deleteLoading || deleteConfirmText !== 'LÖSCHEN') ? 'not-allowed' : 'pointer', fontFamily: 'Inter,sans-serif', opacity: deleteLoading ? 0.6 : 1 }}
+                style={{ padding: '8px 14px', fontSize: 13, fontWeight: 500, borderRadius: 5, border: 'none', background: deleteConfirmText === 'LÖSCHEN' ? 'var(--error)' : 'var(--text-3)', color: 'white', cursor: (deleteLoading || deleteConfirmText !== 'LÖSCHEN') ? 'not-allowed' : 'pointer', fontFamily: 'Inter,sans-serif', opacity: deleteLoading ? 0.6 : 1 }}
               >
                 {deleteLoading ? 'Wird gelöscht...' : 'Endgültig löschen'}
               </button>
@@ -680,7 +618,7 @@ export default function Profil() {
         </div>
       )}
 
-      {toast && <div style={{ position: 'fixed', bottom: 28, left: 'calc(50% + 120px)', transform: 'translateX(-50%)', background: toast.light ? 'var(--orange-ghost)' : 'var(--orange)', color: toast.light ? 'var(--orange)' : 'white', border: 'none', padding: '10px 22px', borderRadius: 6, fontSize: 16, fontWeight: 600, zIndex: 99999 }}>{toast.msg}</div>}
+      {toast && <div style={{ position: 'fixed', bottom: 28, left: 'calc(50% + 120px)', transform: 'translateX(-50%)', background: toast.light ? 'var(--orange-ghost)' : 'var(--orange)', color: toast.light ? 'var(--orange)' : 'white', border: 'none', padding: '9px 18px', borderRadius: 5, fontSize: 14, fontWeight: 600, zIndex: 99999 }}>{toast.msg}</div>}
     </div>
   )
 }

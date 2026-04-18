@@ -106,39 +106,45 @@ function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }
   if (!open) return null
   return (
     <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{background:'var(--card)',borderRadius: 6,padding:24,width:'100%',maxWidth:880,margin:'0 16px',boxShadow:'0 8px 40px rgba(0,0,0,0.18)',display:'flex',flexDirection:'column',gap:14}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <span style={{fontSize:18,fontWeight:700,color:'var(--text)'}}>{editingBaustein ? 'Baustein bearbeiten' : 'Neuen Baustein erstellen'}</span>
-          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-3)',fontSize:22,lineHeight:1,padding:'2px 6px'}}>&times;</button>
+      <div style={{background:'var(--card)',borderRadius:6,padding:16,width:'100%',maxWidth:880,margin:'0 16px',boxShadow:'var(--shadow-lg)',display:'flex',flexDirection:'column',gap:10,maxHeight:'calc(100vh - 40px)',overflowY:'auto'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
+          <span style={{fontSize:15,fontWeight:600,color:'var(--text)'}}>{editingBaustein ? 'Baustein bearbeiten' : 'Neuen Baustein erstellen'}</span>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-3)',fontSize:20,lineHeight:1,padding:'2px 4px'}}>&times;</button>
         </div>
-        <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Titel *</label>
-          <input value={titel} onChange={e=>setTitel(e.target.value)} type="text" placeholder="z.B. Allgemeine Anamnese"
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:16,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
+        <div style={{display:'flex',gap:10}}>
+          <div style={{display:'flex',flexDirection:'column',gap:3,flex:1}}>
+            <label style={{fontSize:12,fontWeight:600,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.08em'}}>Titel *</label>
+            <input value={titel} onChange={e=>setTitel(e.target.value)} type="text" placeholder="z.B. Allgemeine Anamnese"
+              style={{padding:'7px 10px',border:'1px solid var(--border)',borderRadius:5,fontSize:14,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',height:34,boxSizing:'border-box'}}/>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:3,width:200,flexShrink:0}}>
+            <label style={{fontSize:12,fontWeight:600,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.08em'}}>Kategorie *</label>
+            <select value={category} onChange={e=>setCategory(e.target.value)}
+              style={{padding:'7px 10px',border:'1px solid var(--border)',borderRadius:5,fontSize:14,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',height:34,boxSizing:'border-box'}}>
+              {categories.map(c=><option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
         </div>
-        <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Kategorie *</label>
-          <select value={category} onChange={e=>setCategory(e.target.value)}
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:16,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}>
-            {categories.map(c=><option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-        <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Text *</label>
+        <div style={{display:'flex',flexDirection:'column',gap:3}}>
+          <label style={{fontSize:12,fontWeight:600,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.08em'}}>Text *</label>
           <textarea value={text} onChange={e=>setText(e.target.value)} rows={14} placeholder="Bausteintext eingeben…"
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:15,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',resize:'vertical',lineHeight:1.6}}/>
+            style={{padding:'7px 10px',border:'1px solid var(--border)',borderRadius:5,fontSize:13,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',resize:'vertical',lineHeight:1.6}}/>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:3,alignItems:'center'}}>
+            <span style={{fontSize:11,fontWeight:600,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.08em',flexShrink:0}}>Platzhalter:</span>
+            <span style={{fontSize:12,color:'var(--text-2)'}}><code style={{background:'var(--orange-ghost)',color:'var(--orange)',padding:'1px 5px',borderRadius:3,fontSize:11}}>(_)</code> Freitext</span>
+            <span style={{fontSize:12,color:'var(--text-2)'}}><code style={{background:'var(--orange-ghost)',color:'var(--orange)',padding:'1px 5px',borderRadius:3,fontSize:11}}>(A/B/C)</code> Auswahl</span>
+            <span style={{fontSize:12,color:'var(--text-2)'}}><code style={{background:'var(--orange-ghost)',color:'var(--orange)',padding:'1px 5px',borderRadius:3,fontSize:11}}>(A+B+C)</code> Mehrfach</span>
+          </div>
         </div>
-        <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Schlüsselwörter <span style={{fontWeight:400,color:'var(--text-3)'}}>(optional, durch Komma getrennt)</span></label>
+        <div style={{display:'flex',flexDirection:'column',gap:3}}>
+          <label style={{fontSize:12,fontWeight:600,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.08em'}}>Schlüsselwörter <span style={{fontWeight:400,textTransform:'none',letterSpacing:0}}>(optional, Komma getrennt)</span></label>
           <input value={keywords} onChange={e=>setKeywords(e.target.value)} type="text" placeholder="z.B. anamnese, aufnahme, patient"
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:16,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
+            style={{padding:'7px 10px',border:'1px solid var(--border)',borderRadius:5,fontSize:14,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
         </div>
-        {error && <div style={{fontSize:14,color:'var(--orange)',padding:'6px 10px',background:'rgba(217,75,10,0.07)',borderRadius:6}}>{error}</div>}
-        <div style={{display:'flex',gap:8,justifyContent:'flex-end',marginTop:4}}>
+        {error && <div style={{fontSize:13,color:'var(--orange)',padding:'5px 8px',background:'var(--orange-ghost)',borderRadius:5}}>{error}</div>}
+        <div style={{display:'flex',gap:8,justifyContent:'flex-end',paddingTop:4,borderTop:'1px solid var(--border)'}}>
           <button className="btn-secondary" onClick={onClose}>Abbrechen</button>
-          <button className="btn-action" onClick={handleSave}>
-            Speichern
-          </button>
+          <button className="btn-action" onClick={handleSave}>Speichern</button>
         </div>
       </div>
     </div>
@@ -198,6 +204,13 @@ export default function Bausteine() {
   const [rightH, setRightH]             = useState(0)
   const previewRef                      = useRef(null)
   const popupChipRef                    = useRef(null)
+  const historyRef                      = useRef([])
+  const redoRef                         = useRef([])
+  const lastTypingPushRef               = useRef(0)
+  const [historyLen, setHistoryLen]     = useState(0)
+  const [redoLen, setRedoLen]           = useState(0)
+  const canUndo = historyLen > 0
+  const canRedo = redoLen > 0
   const [popup, setPopup]               = useState({ visible: false, choices: [], x: 0, y: 0, multi: false, selected: [] })
 
   // Sync left panel height with right panel
@@ -257,8 +270,136 @@ export default function Bausteine() {
       sessionStorage.removeItem('arvis_bausteine_selected_id')
       if (previewRef.current) previewRef.current.innerHTML = ''
     }
+    historyRef.current = []
+    redoRef.current = []
+    lastTypingPushRef.current = 0
+    setHistoryLen(0)
+    setRedoLen(0)
     hidePopup()
   }, [selected])
+
+  // ── Undo / Formatting ─────────────────────────────────────
+  function getCharOffset(el) {
+    const sel = window.getSelection()
+    if (!sel || sel.rangeCount === 0) return null
+    try {
+      const range = sel.getRangeAt(0)
+      const pre = document.createRange()
+      pre.selectNodeContents(el)
+      pre.setEnd(range.startContainer, range.startOffset)
+      return pre.toString().length
+    } catch { return null }
+  }
+  function setCharOffset(el, offset) {
+    if (offset === null || offset === undefined) return false
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+    let count = 0, node
+    while ((node = walker.nextNode())) {
+      const len = node.textContent.length
+      if (count + len >= offset) {
+        const range = document.createRange()
+        range.setStart(node, offset - count)
+        range.collapse(true)
+        window.getSelection().removeAllRanges()
+        window.getSelection().addRange(range)
+        return true
+      }
+      count += len
+    }
+    return false
+  }
+  function pushHistory(chip = null) {
+    if (!previewRef.current) return
+    const chipIndex = chip
+      ? [...previewRef.current.querySelectorAll('.ph-chip')].indexOf(chip)
+      : -1
+    const cursorOffset = chipIndex === -1 ? getCharOffset(previewRef.current) : null
+    historyRef.current.push({ html: previewRef.current.innerHTML, chipIndex, cursorOffset })
+    if (historyRef.current.length > 50) historyRef.current.shift()
+    // Toute nouvelle action vide le redo
+    redoRef.current = []
+    setHistoryLen(historyRef.current.length)
+    setRedoLen(0)
+  }
+  function restoreSnapshot({ html, chipIndex, cursorOffset }) {
+    window.getSelection()?.removeAllRanges()
+    previewRef.current.innerHTML = html
+    lastTypingPushRef.current = 0
+    hidePopup()
+    setTimeout(() => {
+      if (!previewRef.current) return
+      previewRef.current.focus()
+      if (chipIndex >= 0) {
+        const chip = previewRef.current.querySelectorAll('.ph-chip')[chipIndex]
+        if (chip) {
+          const range = document.createRange()
+          range.setStartBefore(chip)
+          range.collapse(true)
+          window.getSelection().removeAllRanges()
+          window.getSelection().addRange(range)
+        }
+      } else {
+        const placed = setCharOffset(previewRef.current, cursorOffset)
+        if (!placed) {
+          const range = document.createRange()
+          range.selectNodeContents(previewRef.current)
+          range.collapse(false)
+          window.getSelection().removeAllRanges()
+          window.getSelection().addRange(range)
+        }
+      }
+    }, 0)
+  }
+  function undo() {
+    if (!previewRef.current || historyRef.current.length === 0) return
+    const snapshot = historyRef.current.pop()
+    // Sauvegarder l'état courant dans redo
+    const cursorOffset = getCharOffset(previewRef.current)
+    redoRef.current.push({ html: previewRef.current.innerHTML, chipIndex: -1, cursorOffset })
+    setHistoryLen(historyRef.current.length)
+    setRedoLen(redoRef.current.length)
+    restoreSnapshot(snapshot)
+  }
+  function redo() {
+    if (!previewRef.current || redoRef.current.length === 0) return
+    const snapshot = redoRef.current.pop()
+    // Sauvegarder l'état courant dans undo
+    const cursorOffset = getCharOffset(previewRef.current)
+    historyRef.current.push({ html: previewRef.current.innerHTML, chipIndex: -1, cursorOffset })
+    setHistoryLen(historyRef.current.length)
+    setRedoLen(redoRef.current.length)
+    restoreSnapshot(snapshot)
+  }
+  function formatBold() {
+    if (!previewRef.current) return
+    previewRef.current.focus()
+    pushHistory()
+    document.execCommand('bold')
+  }
+  function formatUnderline() {
+    if (!previewRef.current) return
+    previewRef.current.focus()
+    pushHistory()
+    document.execCommand('underline')
+  }
+  function handlePreviewKeydown(e) {
+    const ctrl = e.metaKey || e.ctrlKey
+    if (ctrl && !e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+      e.preventDefault(); undo(); return
+    }
+    if (ctrl && (e.key === 'y' || e.key === 'Y' || (e.shiftKey && (e.key === 'z' || e.key === 'Z')))) {
+      e.preventDefault(); redo(); return
+    }
+    if (ctrl && (e.key === 'b' || e.key === 'B')) { e.preventDefault(); formatBold(); return }
+    if (ctrl && (e.key === 'u' || e.key === 'U')) { e.preventDefault(); formatUnderline(); return }
+    const isText = e.key.length === 1 || e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter'
+    if (!isText) return
+    const now = Date.now()
+    if (now - lastTypingPushRef.current > 800) {
+      pushHistory()
+      lastTypingPushRef.current = now
+    }
+  }
 
   const categories = useMemo(() => {
     const allCats = [...new Set(allData.map(b=>b.category))]
@@ -381,6 +522,7 @@ export default function Bausteine() {
   function hidePopup() { popupChipRef.current = null; setPopup({ visible: false, choices: [], x: 0, y: 0, multi: false, selected: [] }) }
 
   function replaceChipWithCursor(chip) {
+    pushHistory(chip)
     const textNode = document.createTextNode('')
     chip.parentNode.replaceChild(textNode, chip)
     const range = document.createRange(), sel = window.getSelection()
@@ -390,6 +532,7 @@ export default function Bausteine() {
   }
 
   function replaceChipWithText(chip, text) {
+    pushHistory(chip)
     const textNode = document.createTextNode(text)
     chip.parentNode.replaceChild(textNode, chip)
     const range = document.createRange(), sel = window.getSelection()
@@ -453,10 +596,20 @@ export default function Bausteine() {
   }, [popup.visible])
 
   // ── Copy ───────────────────────────────────────────────────
-  function copyBaustein() {
-    if (!selected) return
+  async function copyBaustein() {
+    if (!selected || !previewRef.current) return
     const text = getPlainText(previewRef.current)
-    navigator.clipboard.writeText(text)
+    const html = previewRef.current.innerHTML
+    try {
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+        })])
+      } else {
+        await navigator.clipboard.writeText(text)
+      }
+    } catch { try { await navigator.clipboard.writeText(text) } catch {} }
     setCopied(true); setTimeout(()=>setCopied(false), 1500)
   }
 
@@ -508,7 +661,7 @@ export default function Bausteine() {
               style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'6px 40px 6px 14px',fontSize:14,lineHeight:1.5,fontFamily:'Inter,sans-serif',color:'var(--text)',fontWeight:600,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
               <option value="">Alle Kategorien</option>
               <option value="Favoriten">★ Favoriten</option>
-              <option value="MeineBausteine">✎ Meine Bausteine</option>
+              <option value="MeineBausteine">Meine Bausteine</option>
               {categories.map(c=><option key={c} value={c}>{c}</option>)}
             </select>
             <svg style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',pointerEvents:'none'}} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -582,8 +735,27 @@ export default function Bausteine() {
                     )}
                   </div>
                 </div>
+                <div style={{display:'flex',gap:6,alignItems:'center',padding:'6px 0',flexShrink:0}}>
+                  <button onClick={undo} disabled={!canUndo} title="Rückgängig (Ctrl+Z)"
+                    style={{padding:'5px 8px',border:'1px solid var(--border)',borderRadius:5,background:'transparent',color:canUndo?'var(--text-2)':'var(--text-3)',cursor:canUndo?'pointer':'not-allowed',display:'flex',alignItems:'center'}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>
+                  </button>
+                  <button onClick={redo} disabled={!canRedo} title="Wiederherstellen (Ctrl+Y)"
+                    style={{padding:'5px 8px',border:'1px solid var(--border)',borderRadius:5,background:'transparent',color:canRedo?'var(--text-2)':'var(--text-3)',cursor:canRedo?'pointer':'not-allowed',display:'flex',alignItems:'center'}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg>
+                  </button>
+                  <button onClick={formatBold} title="Fett (Ctrl+B)"
+                    style={{padding:'5px 10px',fontSize:13,fontWeight:700,border:'1px solid var(--border)',borderRadius:5,background:'transparent',color:'var(--text-2)',cursor:'pointer',fontFamily:'Inter,sans-serif',minWidth:28}}>
+                    F
+                  </button>
+                  <button onClick={formatUnderline} title="Unterstrichen (Ctrl+U)"
+                    style={{padding:'5px 10px',fontSize:13,fontWeight:500,textDecoration:'underline',border:'1px solid var(--border)',borderRadius:5,background:'transparent',color:'var(--text-2)',cursor:'pointer',fontFamily:'Inter,sans-serif',minWidth:28}}>
+                    U
+                  </button>
+                </div>
                 <div ref={previewRef} className="baustein-preview-text" contentEditable suppressContentEditableWarning spellCheck={false}
                   onClick={handlePreviewClick}
+                  onKeyDown={handlePreviewKeydown}
                   style={{outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)',flex:1,overflowY:'auto',minHeight:0}} />
                 <div style={{display:'flex',gap:8,paddingTop:16,justifyContent:'center',flexShrink:0,marginBottom:12}}>
                   <button className="btn-secondary btn-secondary-orange" onClick={copyBaustein} style={{justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
