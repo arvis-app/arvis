@@ -1020,7 +1020,41 @@ export default function Scan() {
                   </button>
                 )
               })()}
-              {/* Document viewer with floating tools overlay */}
+              {/* Tools bar above viewer */}
+              <div className="scan-tools-bar" onMouseDown={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
+                <button onClick={addBlackout} title="Schwärzen" style={{ height: 28, padding: '0 10px', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 4, fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
+                  Schwärzen
+                </button>
+                <button className="btn-secondary" aria-label="Schwärzung rückgängig machen" onClick={undoBlackout} title="Rückgängig" style={{ height: 28, width: 28, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: 4 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
+                </button>
+                {pdfDocRef.current && (
+                  <div className="scan-toolbar-zoom">
+                    <button aria-label="Vorherige Seite" title="Vorherige Seite" onClick={() => changePdfPage(-1)}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <button className="seg-label" style={{ cursor: 'default' }} tabIndex={-1}>
+                      Seite {pdfPage} / {pdfTotal}
+                    </button>
+                    <button aria-label="Nächste Seite" title="Nächste Seite" onClick={() => changePdfPage(1)}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                  </div>
+                )}
+                <div className="scan-toolbar-zoom">
+                  <button aria-label="Verkleinern" onClick={() => setZoom(z => Math.max(1, z - 0.25))} title="Verkleinern">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
+                  </button>
+                  <button onClick={() => setZoom(1)} title="Zoom zurücksetzen" className="seg-label">
+                    {Math.round(zoom * 100)}%
+                  </button>
+                  <button aria-label="Vergrößern" onClick={() => setZoom(z => Math.min(4, z + 0.25))} title="Vergrößern">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
+                  </button>
+                </div>
+              </div>
+              {/* Document viewer */}
               <div id="cropContainer" ref={viewerRef} onMouseDown={startPan} onTouchStart={startPan} style={{ height: viewerHeight > 0 ? viewerHeight : 'auto', cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none', position: 'relative' }}>
                 <div id="cropInner" ref={cropInnerRef} style={{ position: 'relative', width: '100%', transformOrigin: 'top left', transform: `translate(${panX}px,${panY}px) scale(${zoom})` }}>
                   <img ref={imgRef} style={{ width: '100%', display: 'block', background: 'var(--bg-2)' }} alt="" onLoad={handleImageLoad} onClick={() => setSelectedBk(null)} />
@@ -1043,40 +1077,6 @@ export default function Scan() {
                   ))}
                 </div>
                 <div className="crop-overlay" id="cropOverlay" style={{ display: 'none' }} />
-                {/* Floating tools overlay — top-right of viewer (edit + nav) */}
-                <div className="scan-tools-overlay" onMouseDown={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
-                  <button onClick={addBlackout} title="Schwärzen" style={{ height: 28, padding: '0 10px', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 4, fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer' }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
-                    Schwärzen
-                  </button>
-                  <button className="btn-secondary" aria-label="Schwärzung rückgängig machen" onClick={undoBlackout} title="Rückgängig" style={{ height: 28, width: 28, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: 4 }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
-                  </button>
-                  {pdfDocRef.current && (
-                    <div className="scan-toolbar-zoom">
-                      <button aria-label="Vorherige Seite" title="Vorherige Seite" onClick={() => changePdfPage(-1)}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                      </button>
-                      <button className="seg-label" style={{ cursor: 'default' }} tabIndex={-1}>
-                        Seite {pdfPage} / {pdfTotal}
-                      </button>
-                      <button aria-label="Nächste Seite" title="Nächste Seite" onClick={() => changePdfPage(1)}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                      </button>
-                    </div>
-                  )}
-                  <div className="scan-toolbar-zoom">
-                    <button aria-label="Verkleinern" onClick={() => setZoom(z => Math.max(1, z - 0.25))} title="Verkleinern">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
-                    </button>
-                    <button onClick={() => setZoom(1)} title="Zoom zurücksetzen" className="seg-label">
-                      {Math.round(zoom * 100)}%
-                    </button>
-                    <button aria-label="Vergrößern" onClick={() => setZoom(z => Math.min(4, z + 0.25))} title="Vergrößern">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           )}

@@ -914,11 +914,10 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .scan-right { min-width:0; padding-left:32px; border-left:1px solid var(--border); min-height:340px; display:flex; flex-direction:column; }
 .scan-panel { background:transparent; border:none; border-radius:0; overflow:visible; display:flex; flex-direction:column; flex:1; }
 .scan-viewer-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:8px 0; border-bottom:1px solid var(--border); border-top:none; margin-top:12px; }
-.scan-tools-overlay { position:absolute; top:10px; left:0; right:0; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; z-index:10; padding:0 10px; pointer-events:none; }
-.scan-tools-overlay > * { pointer-events:auto; }
-.scan-tools-overlay > .scan-toolbar-zoom { height:28px; }
-.scan-tools-overlay > .scan-toolbar-zoom > button { height:28px; min-width:28px; font-size:12px; }
-.scan-tools-overlay > .scan-toolbar-zoom > button.seg-label { min-width:42px; }
+.scan-tools-bar { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; align-items:center; padding:8px 0; margin-top:4px; }
+.scan-tools-bar > .scan-toolbar-zoom { height:28px; }
+.scan-tools-bar > .scan-toolbar-zoom > button { height:28px; min-width:28px; font-size:12px; }
+.scan-tools-bar > .scan-toolbar-zoom > button.seg-label { min-width:42px; }
 .scan-analyze-cta { align-self:center; height:35px; padding:0 14px; background:var(--orange); color:white; border:1px solid var(--orange); border-radius:5px; font-size:13px; font-weight:500; font-family:'Inter',sans-serif; cursor:pointer; margin-top:10px; margin-bottom:12px; flex-shrink:0; transition:opacity 0.15s, background 0.15s; box-sizing:border-box; }
 .scan-analyze-cta:hover:not(:disabled) { background:var(--orange-dark); border-color:var(--orange-dark); }
 .scan-analyze-cta:disabled { opacity:0.4; cursor:not-allowed; }
