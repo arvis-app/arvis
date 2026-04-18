@@ -988,21 +988,19 @@ export default function Scan() {
           {/* Crop panel */}
           {panel === 'crop' && (
             <div className="scan-panel" id="panelCrop">
-              {/* Warning */}
-              <div id="anonWarning" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(193,58,43,0.07)', borderBottom: '1px solid rgba(193,58,43,0.2)', padding: '10px 16px', marginTop: 0 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--error)' }}>Bitte alle Patientendaten schwärzen, bevor Sie fortfahren.</span>
-                  {pdfTotal > 1 && (
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--error)', textTransform: 'uppercase', letterSpacing: 0.3 }}>⚠ Auf ALLEN {pdfTotal} Seiten anwenden</span>
-                  )}
+              {/* Warning + checkbox (merged) */}
+              <div id="anonWarning" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: noDataConfirmed ? 'var(--bg-3)' : 'rgba(193,58,43,0.07)', borderBottom: `1px solid ${noDataConfirmed ? 'var(--border)' : 'rgba(193,58,43,0.2)'}`, padding: '10px 14px', transition: 'background 0.15s, border-color 0.15s' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={noDataConfirmed ? 'var(--text-3)' : 'var(--error)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2, transition: 'stroke 0.15s' }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: noDataConfirmed ? 'var(--text-2)' : 'var(--error)', lineHeight: 1.5, transition: 'color 0.15s' }}>
+                    Bitte alle Patientendaten schwärzen{pdfTotal > 1 ? ` — auf allen ${pdfTotal} Seiten anwenden` : ''}.
+                  </span>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', userSelect: 'none' }}>
+                    <input type="checkbox" checked={noDataConfirmed} onChange={e => setNoDataConfirmed(e.target.checked)} style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--orange)', margin: 0, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12.5, color: 'var(--text-2)' }}>oder bestätigen: Keine Patientendaten auf {pdfTotal > 1 ? 'allen Seiten' : 'dem Dokument'}.</span>
+                  </label>
                 </div>
               </div>
-              {/* No-data confirmation checkbox */}
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none' }}>
-                <input type="checkbox" checked={noDataConfirmed} onChange={e => setNoDataConfirmed(e.target.checked)} style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--orange)' }} />
-                <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Ich bestätige: Es gibt keine zu anonymisierenden Patientendaten auf {pdfTotal > 1 ? 'allen Seiten dieses Dokuments' : 'diesem Dokument'}.</span>
-              </label>
               {/* PDF nav */}
               {pdfDocRef.current && (
                 <div id="pdfNav" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, marginBottom: 10, justifyContent: 'center' }}>
@@ -1013,21 +1011,21 @@ export default function Scan() {
               )}
               {/* Toolbar */}
               <div className="scan-viewer-toolbar">
-                <button onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 6, fontFamily: "'Inter', sans-serif", fontWeight: 600, cursor: 'pointer' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
+                <button className="btn-secondary" onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 13 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
                   Schwärzen
                 </button>
                 <button className="btn-secondary" aria-label="Schwärzung rückgängig machen" onClick={undoBlackout} title="Rückgängig" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
                 </button>
                 <div className="scan-toolbar-zoom">
-                  <button className="btn-secondary" aria-label="Verkleinern" onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} title="Verkleinern" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <button aria-label="Verkleinern" onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} title="Verkleinern">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
                   </button>
-                  <button className="btn-secondary" onClick={() => setZoom(1)} title="Zurücksetzen" style={{ height: 32, minWidth: 42, padding: '0 6px', fontSize: 13, fontWeight: 600, color: 'var(--text-2)' }}>
+                  <button onClick={() => setZoom(1)} title="Zoom zurücksetzen" className="seg-label">
                     {Math.round(zoom * 100)}%
                   </button>
-                  <button className="btn-secondary" aria-label="Vergrößern" onClick={() => setZoom(z => Math.min(4, z + 0.25))} title="Vergrößern" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <button aria-label="Vergrößern" onClick={() => setZoom(z => Math.min(4, z + 0.25))} title="Vergrößern">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
                   </button>
                 </div>
@@ -1035,7 +1033,7 @@ export default function Scan() {
                   const hasAnyBlackout = blackouts.length > 0 || Object.values(blackoutsByPageRef.current).some(a => a && a.length > 0)
                   const canProceed = hasAnyBlackout || noDataConfirmed
                   return (
-                    <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} disabled={!canProceed} title={!canProceed ? 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind' : ''} style={{ background: canProceed ? 'var(--orange)' : 'var(--bg-2)', color: canProceed ? 'white' : 'var(--text-3)', border: `1px solid ${canProceed ? 'var(--orange)' : 'var(--border)'}`, borderRadius: 5, fontWeight: 500, cursor: canProceed ? 'pointer' : 'not-allowed', opacity: canProceed ? 1 : 0.7 }}>
+                    <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} disabled={!canProceed} title={!canProceed ? 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind' : ''} style={{ height: 32, padding: '0 16px', fontSize: 13, fontWeight: 500, background: 'var(--orange)', color: 'white', border: '1px solid var(--orange)', borderRadius: 5, cursor: canProceed ? 'pointer' : 'not-allowed', opacity: canProceed ? 1 : 0.4, transition: 'opacity 0.15s' }}>
                       Analysieren
                     </button>
                   )
