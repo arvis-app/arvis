@@ -918,7 +918,7 @@ export default function Scan() {
         <div className="scan-left" ref={leftRef}>
 
           {/* Left-panel top row: panel label left + Zurücksetzen right (fusionnés) */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexShrink: 0 }}>
+          <div className="scan-left-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexShrink: 0 }}>
             <span className="scan-panel-title">{panel === 'crop' ? 'Anonymisieren' : 'Dokument laden'}</span>
             <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, padding: '6px 12px', fontSize: 13 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
@@ -998,7 +998,7 @@ export default function Scan() {
                   <span style={{ fontSize: 13, fontWeight: 500, color: noDataConfirmed ? 'var(--text-2)' : 'var(--error)', lineHeight: 1.5, transition: 'color 0.15s' }}>
                     {fromMobileScan
                       ? 'Dokument wurde auf dem Smartphone geschwärzt. Bitte vor der Analyse final prüfen.'
-                      : `Bitte alle Patientendaten schwärzen${pdfTotal > 1 ? ` — auf allen ${pdfTotal} Seiten anwenden` : ''}.`}
+                      : (pdfTotal > 1 ? `Bitte auf allen ${pdfTotal} Seiten alle Patientendaten schwärzen.` : 'Bitte alle Patientendaten schwärzen.')}
                   </span>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', userSelect: 'none' }}>
                     <input type="checkbox" checked={noDataConfirmed} onChange={e => setNoDataConfirmed(e.target.checked)} style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--orange)', margin: 0, flexShrink: 0 }} />
