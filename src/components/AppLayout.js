@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase, invokeEdgeFunction } from '../supabaseClient'
@@ -44,6 +44,18 @@ const HISTORY_LABELS = {
   briefassistent: 'Letzte Briefe',
   chat:           'Gespräche',
   bausteine:      'Zuletzt verwendet',
+}
+
+function formatDateSep(ts) {
+  if (!ts) return null
+  const d = new Date(ts)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const itemDay = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  const diff = Math.round((today - itemDay) / 86400000)
+  if (diff === 0) return 'Heute'
+  if (diff === 1) return 'Gestern'
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function SidebarHistory({ pathname, navigate, user }) {
@@ -130,15 +142,22 @@ function SidebarHistory({ pathname, navigate, user }) {
         <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {showTop && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 20, background: 'linear-gradient(to bottom, var(--bg), transparent)', pointerEvents: 'none', zIndex: 1 }} />}
           <div ref={listRef} className="sidebar-history-list" onScroll={updateFades}>
-            {items.map(it => (
-              <button
-                key={it.id}
-                className={`sidebar-history-item${activeId === it.id ? ' active' : ''}`}
-                onClick={() => handleClick(it)}
-                title={it.label}>
-                <span className="sidebar-history-item-label">{it.label}</span>
-              </button>
-            ))}
+            {items.map((it, i) => {
+              const sep = tab === 'scan' ? formatDateSep(it.ts) : null
+              const prevSep = tab === 'scan' && i > 0 ? formatDateSep(items[i-1].ts) : null
+              const showSep = sep && sep !== prevSep
+              return (
+                <React.Fragment key={it.id}>
+                  {showSep && <div className="sidebar-history-date-sep">{sep}</div>}
+                  <button
+                    className={`sidebar-history-item${activeId === it.id ? ' active' : ''}`}
+                    onClick={() => handleClick(it)}
+                    title={it.label}>
+                    <span className="sidebar-history-item-label">{it.label}</span>
+                  </button>
+                </React.Fragment>
+              )
+            })}
           </div>
           {showBot && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 20, background: 'linear-gradient(to top, var(--bg), transparent)', pointerEvents: 'none', zIndex: 1 }} />}
         </div>

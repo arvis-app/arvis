@@ -713,12 +713,12 @@ export default function Scan() {
         imageDataUrls.push(await compressForVision(getAnonymizedDataUrl()))
       }
 
-      const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+      const ts = Date.now()
       const thumb = await createThumbnail(imgDataRef.current)
       if (mode === 'ocr') {
         const txt = await runVisionOCR(imageDataUrls)
         setOcrText(txt)
-        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: `${time} · OCR`, aiHtml: '', ocrText: txt, mode: 'ocr', thumb }, ...prev].slice(0, 5))
+        setScanHistory(prev => [{ id: crypto.randomUUID(), ts, label: 'OCR', aiHtml: '', ocrText: txt, mode: 'ocr', thumb }, ...prev].slice(0, 50))
       } else {
         const analysis = await runAIAnalysis(imageDataUrls)
         const html = markdownToHtml(analysis)
@@ -726,7 +726,7 @@ export default function Scan() {
         // Pas de texte OCR séparé en mode Vision — le texte est intégré dans l'analyse
         setOcrText('')
         const rawLabel = extractScanLabel(analysis)
-        setScanHistory(prev => [{ id: crypto.randomUUID(), time, label: `${time} · ${rawLabel}`, aiHtml: html, ocrText: '', mode: 'ai', thumb }, ...prev].slice(0, 5))
+        setScanHistory(prev => [{ id: crypto.randomUUID(), ts, label: rawLabel, aiHtml: html, ocrText: '', mode: 'ai', thumb }, ...prev].slice(0, 50))
       }
       goStep(4)
     } catch (err) {

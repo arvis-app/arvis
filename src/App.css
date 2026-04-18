@@ -506,6 +506,15 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   mask-image: linear-gradient(to right, black calc(100% - 20px), transparent);
   -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent);
 }
+.sidebar-history-date-sep {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 10px 8px 4px;
+  flex-shrink: 0;
+}
 .sidebar-history-empty {
   padding: 4px 16px 0;
   font-size: 12px;
