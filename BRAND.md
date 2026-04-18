@@ -717,7 +717,7 @@ Trimestriellement : auditer l'app avec `preview_inspect` sur un échantillon de 
 
 ### /briefassistent — refactor sober (✅ sessions avril 2026)
 
-**Avant** — panels avec `background: var(--card)`, `border-radius: 8px`, `box-shadow` décorative. Boutons modes (Korrektur / Umformulierung / Zusammenfassung) en style pill coloré. Pas de label de section.
+**Avant** — panels avec `background: var(--card)`, `border-radius: 8px`, `box-shadow` décorative. Boutons modes (Korrektur / Zusammenfassung) en style pill coloré. Pas de label de section.
 
 **Après** :
 - Panneaux transparents — `background: transparent; border: none; border-radius: 0`

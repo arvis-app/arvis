@@ -513,7 +513,7 @@ Le prompt Korrektur est dans `src/pages/Briefassistent.js` (`buildPrompt()`, mod
 ## Briefassistent — Modèle IA
 
 - **Modèle** : `gpt-5.4-mini` via edge function `ai-chat`
-- **Paramètres** : `max_completion_tokens: 3000` pour Korrektur/Umformulierung/Zusammenfassung
+- **Paramètres** : `max_completion_tokens: 3000` pour Korrektur/Zusammenfassung
 - **Vocal (Diktat)** : WebSocket OpenAI Realtime `gpt-4o-realtime-preview-2024-12-17` via token from `realtime-function` edge function
 
 ## Briefassistent — Layout (renommage 16/04/2026)

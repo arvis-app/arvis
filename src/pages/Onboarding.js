@@ -8,7 +8,7 @@ const STEPS = [
     number: 1,
     label: 'Briefassistent',
     title: 'KI korrigiert Ihre Briefe',
-    description: 'Fügen Sie einen Arztbrief ein — Arvis korrigiert Grammatik, Stil und Fachsprache in Sekunden. Auch Umformulierung und Zusammenfassung möglich.',
+    description: 'Fügen Sie einen Arztbrief ein — Arvis korrigiert Grammatik, Stil und Fachsprache in Sekunden. Auch Zusammenfassung möglich.',
     shortcut: { label: 'Jetzt ausprobieren', path: '/briefassistent' },
     icon: (
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

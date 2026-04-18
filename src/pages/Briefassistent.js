@@ -49,19 +49,14 @@ function formatMedTabs(text) {
 
 const SYS ='Du bist ein erfahrener klinischer Dokumentationsassistent für Krankenhausärzte in Deutschland. Gib AUSSCHLIESSLICH den fertigen Text zurück. Kein Kommentar, keine Erklärung.'
 
-function buildPrompt(mode, style, length, input) {
-  const si = mode === 'umformulierung' ? (style === 'Telegrafisch' ? ' Telegrafisch: kurze Sätze, keine Füllwörter.' : style === 'Präzise' ? ' Präzise und strukturiert.' : style === 'Narrativ' ? ' Narrativ: fließende Sätze.' : style === 'Aufzählung' ? ' Als Aufzählung mit Stichpunkten.' : '') : ''
-  const li = mode === 'umformulierung' ? (length === 'Kürzer' ? ' Kürze deutlich.' : length === 'Länger' ? ' Ergänze relevante Details.' : '') : ''
+function buildPrompt(mode, input) {
   const ph = 'PLATZHALTER FÜLLEN: [_Wert], [Wert_], [Wert1/Wert2] → Wert in Satz integrieren. Leere [_] → "[nicht angegeben]".'
   if (mode === 'korrektur') return `Überarbeite den folgenden medizinischen Text zu einem professionellen deutschen Arztbrief.\n\nSTIL:\n- Schreibe wie ein erfahrener Facharzt: prägnant, sachlich, professionell. Kein Roman, keine Überinterpretation.\n- Abkürzungen auflösen und Fachvokabular verwenden, aber NICHT über-erklären (kein "als Ausdruck einer…", kein "hinweisend auf…" — der Leser ist Arzt).\n- Datumsangaben im Originalformat belassen (z.B. "02.04." NICHT in "02. April" umschreiben).\n- Medizinische Abkürzungen korrekt auflösen: "KI" nach Medikament + Dosis = "Kurzinfusion" (NICHT Kontraindikation).\n\nFORMAT-REGELN:\n1. ${ph}\n2. PROSA für: Anamnese, Befunde, Bildgebung, Therapie/Procedere — vollständige verbundene Sätze, KEINE Aufzählung, KEINE Satzfragmente. Typische Konstruktionen:\n   - Anamnese: Informationen zu einem fließenden Absatz verbinden, nicht Satz für Satz auflisten. Z.B. "Der [Alter]-jährige Patient stellte sich am [Datum] über die ZNA vor. Er berichtet über…, begleitet von… Zudem bestehe…"\n   - Befunde: "Die körperliche Untersuchung ergab…", "Bei der Palpation zeigte sich…"\n   - Bildgebung: "Sonographisch stellte sich… dar."\n   - Procedere: "Es erfolgte die Anlage…", "Der Patient erhielt…", "Zusätzlich wurde… eingeleitet.", "Die Operation ist für… geplant."\n3. LISTE für: Medikation (IMMER vollständig: Wirkstoff + Dosis + Schema — z.B. "Metformin 1000 mg 1-0-1", "Ramipril 5 mg 0-0-1". NIEMALS Dosis oder Schema weglassen oder zusammenfassen. KEINE Startdaten, KEIN "ab dem", KEIN "seit", KEIN "neu" — NUR: Wirkstoff Dosis Schema), Diagnosen (wenn mehrere).\n4. LABORWERTE: Kompakt in 1–2 Sätzen zusammenfassen, Werte mit Einheiten nennen, keine Interpretation.\n5. ABSÄTZE: Thematisch getrennt durch Leerzeile (Anamnese, Vorerkrankungen, Medikation, Befunde, Labor, Bildgebung, Diagnose, Procedere).\n6. NUR was im Text steht: Nichts hinzufügen, nichts weglassen.\n7. Redundanzen entfernen.\n8. ZWEI-TEILE-REGEL: Wenn der Text zwei Teile enthält — ein bestehendes Brief-Muster (erster Teil, formatiert wie ein Arztbrief) und darunter neue Informationen (zweiter Teil, unformatiert oder durch Leerzeile / "---" getrennt) — dann: Behalte die Struktur und Formulierungen des Musters EXAKT bei. Integriere NUR die neuen Informationen in die passenden Abschnitte. Übernimm KEINE rohen Informationszeilen direkt in den Brief. Mische die beiden Teile NICHT.\n\nText:\n${input}`
-  if (mode === 'umformulierung') return `${ph}\nUMFORMULIEREN: jeden Satz neu schreiben, gleicher Inhalt. Alle Werte exakt beibehalten.${si}${li}\n\nText:\n${input}`
-  return `${ph}\nZUSAMMENFASSUNG in 5-10 Zeilen: Aufnahmegrund, Befunde, Diagnose(n), Maßnahmen, Weiteres. WICHTIG: Gib AUSSCHLIESSLICH den Zusammenfassungstext zurück. Kein Titel, keine Überschrift wie "Zusammenfassung:", kein Originaltext, keine Einleitung — nur der reine Text.${si}${li}\n\nText:\n${input}`
+  return `${ph}\nZUSAMMENFASSUNG in 5-10 Zeilen: Aufnahmegrund, Befunde, Diagnose(n), Maßnahmen, Weiteres. WICHTIG: Gib AUSSCHLIESSLICH den Zusammenfassungstext zurück. Kein Titel, keine Überschrift wie "Zusammenfassung:", kein Originaltext, keine Einleitung — nur der reine Text.\n\nText:\n${input}`
 }
 
 export default function Briefassistent() {
   const [mode, setMode] = useState('korrektur')
-  const [style, setStyle] = useState('Telegrafisch')
-  const [length, setLength] = useState('Original')
   const [chars, setChars] = useState(0)
   const [state, setState] = useState('empty') // empty|loading|result
   const [result, setResult] = useState('')
@@ -365,7 +360,7 @@ export default function Briefassistent() {
     try {
       const data = await invokeEdgeFunction('ai-chat', {
         model: 'gpt-5.4-mini', max_completion_tokens: 3000,
-        messages: [{ role: 'system', content: SYS }, { role: 'user', content: buildPrompt(mode, style, length, input) }]
+        messages: [{ role: 'system', content: SYS }, { role: 'user', content: buildPrompt(mode, input) }]
       })
       if (data?.error === 'limit_reached') { setState('empty'); setLimitReached(true); return }
       const content = data?.content
@@ -373,7 +368,7 @@ export default function Briefassistent() {
       const formatted = formatMedTabs(content.trim())
       setResult(formatted); setState('result'); setDiffMode('result')
       // Historique sidebar : préfixe mode + premiers mots de l'input
-      const modeLabel = { korrektur: 'Korrektur', umformulierung: 'Umformulierung', zusammenfassung: 'Zusammenfassung' }[mode]
+      const modeLabel = { korrektur: 'Korrektur', zusammenfassung: 'Zusammenfassung' }[mode]
       const preview = input.replace(/\s+/g, ' ').slice(0, 60)
       const id = crypto.randomUUID()
       addHistory('briefassistent', { id, label: `${modeLabel} · ${preview}`, mode, input, result: formatted, orig: input })
@@ -395,10 +390,6 @@ export default function Briefassistent() {
     {
       key: 'korrektur', label: 'Korrektur',
       icon: <><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></>
-    },
-    {
-      key: 'umformulierung', label: 'Umformulierung',
-      icon: <><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></>
     },
     {
       key: 'zusammenfassung', label: 'Zusammenfassung',
@@ -450,27 +441,6 @@ export default function Briefassistent() {
             </div>
           )}
 
-          {mode === 'umformulierung' && (
-            <div className="brief-options">
-              <div className="brief-option-group">
-                <label className="brief-option-label">Stil</label>
-                <div className="brief-option-btns">
-                  {['Telegrafisch', 'Präzise', 'Narrativ', 'Aufzählung'].map(s => (
-                    <button key={s} className={`brief-opt-btn${style === s ? ' active' : ''}`} onClick={() => setStyle(s)}>{s}</button>
-                  ))}
-                </div>
-              </div>
-              <div className="brief-option-group">
-                <label className="brief-option-label">Länge</label>
-                <div className="brief-option-btns">
-                  {['Original', 'Kürzer', 'Länger'].map(l => (
-                    <button key={l} className={`brief-opt-btn${length === l ? ' active' : ''}`} onClick={() => setLength(l)}>{l}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="brief-action-row" style={{ justifyContent: 'center', marginTop: 'auto' }}>
             <button className={`btn-diktieren${recording ? ' diktieren-recording' : ''}`} onClick={toggleDictation}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></svg>
@@ -507,12 +477,11 @@ export default function Briefassistent() {
           {state === 'empty' && (
             <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 440 }}>
               <div style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6 }}>
-                Tippen, diktieren oder <strong>Bausteine</strong> einfügen — die KI bringt den Text auf Facharzt-Niveau. Drei Modi stehen zur Verfügung:
+                Tippen, diktieren oder <strong>Bausteine</strong> einfügen — die KI bringt den Text auf Facharzt-Niveau. Zwei Modi stehen zur Verfügung:
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {[
                   { name: 'Korrektur', desc: 'Rechtschreibung, Grammatik, Fachterminologie.' },
-                  { name: 'Umformulierung', desc: 'Stil (telegrafisch · präzise · narrativ · Aufzählung) und Länge anpassen.' },
                   { name: 'Zusammenfassung', desc: 'Kernaussagen in kompakter Form.' },
                 ].map((m, i) => (
                   <div key={m.name} style={{ padding: '10px 0', borderTop: i === 0 ? '1px solid var(--border)' : 'none', borderBottom: '1px solid var(--border)' }}>
