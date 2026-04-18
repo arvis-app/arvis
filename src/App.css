@@ -876,7 +876,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 
   /* Brief — éviter overflow horizontal */
   .brief-panel, .brief-panel:last-child { height: auto !important; min-height: 480px; min-width: 0; max-width: 100%; overflow-x: hidden; }
-  .brief-options { flex-wrap: wrap; gap: 10px; padding: 12px; justify-content: flex-start; }
+  .brief-options { gap: 8px; padding: 12px; }
   .brief-option-btns { flex-wrap: wrap; }
   .brief-action-row { gap: 8px; flex-wrap: wrap; }
   .brief-action-row .btn-diktieren, .brief-action-row .brief-submit-btn { align-self: auto; }
@@ -1054,9 +1054,9 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .ph-popup-btn { display:block; width:100%; text-align:left; padding:7px 12px; border:none; background:transparent; color:var(--text); font-size: 15px; font-family:'Inter',sans-serif; cursor:pointer; border-radius:6px; transition:background 0.15s; }
 .ph-popup-btn:hover { background:var(--hover); }
 .ph-popup-btn.ph-andere { color:var(--text-muted); border-top:1px solid var(--border); margin-top:4px; padding-top:8px; }
-.brief-options { padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:20px; flex-shrink:0; background:var(--bg); justify-content:center; }
-.brief-option-group { display:flex; flex-direction:column; gap:6px; }
-.brief-option-label { font-size: 12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-3); }
+.brief-options { padding:12px 18px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px; flex-shrink:0; background:var(--bg); }
+.brief-option-group { display:flex; flex-direction:row; align-items:center; gap:10px; }
+.brief-option-label { font-size: 12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-3); min-width:46px; }
 .brief-option-btns { display:flex; gap:4px; }
 .brief-opt-btn { padding:4px 10px; border-radius:6px; border:1px solid var(--border); background:var(--bg-2); color:var(--text-3); font-size: 14px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.15s; }
 .brief-opt-btn:hover { border-color:var(--orange); color:var(--orange); }
