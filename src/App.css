@@ -858,6 +858,11 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   .brief-layout, .profil-layout { grid-template-columns: 1fr !important; max-width: 100%; overflow-x: hidden; }
   .profil-layout > * { min-width: 0; max-width: 100%; box-sizing: border-box; }
 
+  /* Brief — push left panel below hamburger, strip desktop column padding */
+  #page-brief .brief-panel:first-child { padding-top: 44px; padding-right: 0 !important; }
+  #page-brief #briefResetBtn { position: fixed !important; top: 12px !important; right: 12px !important; z-index: 150; }
+  .brief-panel:last-child { padding-left: 0 !important; border-left: none !important; border-top: 1px solid var(--border); margin-top: 12px; }
+
   /* Profil header */
   #page-profil .page-header { flex-direction: column; align-items: flex-start; }
 
@@ -865,8 +870,9 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   .page-header > *:nth-child(2) { margin-left: auto !important; }
 
   /* Brief modes gap filling */
-  .brief-modes { display: flex; width: 100%; gap: 8px; justify-content: space-between; margin-bottom: 16px; box-sizing: border-box; }
-  .brief-mode-btn { flex: 1; justify-content: center; padding: 10px 4px; font-size: 13px; text-align: center; }
+  .brief-modes { display: flex; width: 100% !important; gap: 0 !important; justify-content: space-between; margin-bottom: 16px; box-sizing: border-box; }
+  .brief-mode-btn { flex: 1; justify-content: center; padding: 10px 2px; font-size: 12px; text-align: center; margin-right: 0 !important; }
+  #page-brief .brief-mode-btn svg { display: none; }
 
   /* Brief — éviter overflow horizontal */
   .brief-panel, .brief-panel:last-child { height: auto !important; min-height: 480px; min-width: 0; max-width: 100%; overflow-x: hidden; }
@@ -1036,7 +1042,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .brief-panel { background:transparent; border-radius:0; border:none; box-shadow:none; display:flex; flex-direction:column; height:calc(100vh - 220px); min-height:380px; min-width:0; overflow:hidden; }
 .brief-panel:first-child { padding-right:32px; }
 .brief-panel:last-child { padding-left:32px; border-left:1px solid var(--border); min-height:340px; }
-.brief-panel-header { padding:0 0 10px; border-bottom:1px solid var(--border); margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+.brief-panel-header { padding:9px 0 10px; border-bottom:1px solid var(--border); margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
 .brief-panel-label { font-family:'Inter',sans-serif; font-size:10.5px; font-weight:600; color:var(--text-3); letter-spacing:0.12em; text-transform:uppercase; }
 .brief-char-count { font-size: 13px; color:var(--text-3); }
 .brief-textarea { flex:1; overflow-y:auto; padding:0 0 16px; border:none; background:transparent; color:var(--text); font-size:14px; font-family:'Inter',sans-serif; outline:none; line-height:1.8; white-space:pre-wrap; word-break:break-word; border-radius:0; transition:background 0.15s; cursor:text; }
