@@ -9,7 +9,7 @@ const KEYS = {
   bausteine:      'arvis_history_bausteine',
 }
 
-const MAX = 8
+const MAX = 50
 
 export function getHistory(tab) {
   const key = KEYS[tab]

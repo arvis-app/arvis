@@ -289,16 +289,12 @@ export default function Chat() {
                     borderBottom: '1px solid var(--border)',
                     color: 'var(--text)', fontSize: 14, fontFamily: "'Inter', sans-serif",
                     fontWeight: 500, cursor: 'pointer', lineHeight: 1.5,
-                    display: 'flex', alignItems: 'center', gap: 10,
                     transition: 'color 0.15s',
                   }}
                   onMouseOver={e => e.currentTarget.style.color = 'var(--orange)'}
                   onMouseOut={e => e.currentTarget.style.color = 'var(--text)'}
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.5 }}>
-                    <polyline points="9 18 15 12 9 6"/>
-                  </svg>
-                  <span>{q}</span>
+                  {q}
                 </button>
               ))}
             </div>

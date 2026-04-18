@@ -693,8 +693,8 @@ export default function Bausteine() {
           {/* Preview */}
           <div style={{padding:'0 0 12px 0',flex:1,minHeight:0,overflow:'hidden',display:'flex',flexDirection:'column'}}>
             {!selected && (
-              <div style={{padding:'32px 0',minHeight:260,display:'flex',flexDirection:'column',gap:20,maxWidth:420}}>
-                <div style={{fontSize:14,color:'var(--text-2)',lineHeight:1.6}}>
+              <div style={{padding:'32px 24px 32px 0',minHeight:260,display:'flex',flexDirection:'column',gap:20,maxWidth:560,opacity:0.6}}>
+                <div style={{fontSize:14,color:'var(--text)',lineHeight:1.6}}>
                   Wählen Sie links einen Baustein — Platzhalter wie <span style={{color:'var(--orange)',background:'var(--orange-ghost)',padding:'1px 6px',borderRadius:3,fontWeight:500}}>[Zeitangabe]</span> werden im Vorschautext ausgefüllt. Danach <strong>Kopieren</strong> oder direkt <strong>An Briefassistent</strong> senden.
                 </div>
                 <div>

@@ -445,7 +445,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 }
 .sidebar {
   padding: 10px 0 14px;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex; flex-direction: column;
   transition: transform 0.3s cubic-bezier(.4,0,.2,1);
   position: sticky;
@@ -457,6 +457,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   display: flex; align-items: center; gap: 9px;
   padding: 6px 16px 12px;
   user-select: none;
+  flex-shrink: 0;
 }
 .sidebar-brand img { height: 22px; display: block; }
 .sidebar-brand-name {
@@ -479,6 +480,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   display: flex; flex-direction: column;
   padding: 0 8px;
   gap: 1px;
+  flex: 1; min-height: 0; overflow-y: auto;
 }
 .sidebar-history-item {
   display: flex; align-items: center; gap: 8px;
@@ -515,7 +517,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   border-radius: 0; transition: background 0.12s, color 0.12s;
   font-size: 13px; font-weight: 500;
   color: var(--text-2); position: relative;
-  margin: 0;
+  margin: 0; flex-shrink: 0;
 }
 .nav-item:hover { background: rgba(0,0,0,0.035); color: var(--text); }
 .nav-item.active {
@@ -552,6 +554,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .sidebar-footer {
   margin-top: auto; padding: 12px 14px;
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .sidebar-user {
   display: flex; align-items: center; gap: 9px;

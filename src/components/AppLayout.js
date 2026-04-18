@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase, invokeEdgeFunction } from '../supabaseClient'
@@ -50,6 +50,16 @@ function SidebarHistory({ pathname, navigate, user }) {
   const tab = TAB_FROM_PATH[pathname]
   const [items, setItems] = useState([])
   const [activeId, setActiveId] = useState(null)
+  const listRef = useRef(null)
+  const [showTop, setShowTop] = useState(false)
+  const [showBot, setShowBot] = useState(false)
+
+  const updateFades = useCallback(() => {
+    const el = listRef.current
+    if (!el) return
+    setShowTop(el.scrollTop > 2)
+    setShowBot(el.scrollTop < el.scrollHeight - el.clientHeight - 2)
+  }, [])
 
   // Chat : charger depuis Supabase. Autres : sessionStorage.
   useEffect(() => {
@@ -64,11 +74,12 @@ function SidebarHistory({ pathname, navigate, user }) {
           .select('id, title, updated_at')
           .eq('user_id', user.id)
           .order('updated_at', { ascending: false })
-          .limit(8)
+          .limit(50)
         if (!cancelled) setItems((data || []).map(c => ({ id: c.id, label: c.title || 'Chat' })))
       } else {
         setItems(getHistory(tab))
       }
+      if (!cancelled) setTimeout(updateFades, 0)
     }
 
     load()
@@ -109,23 +120,27 @@ function SidebarHistory({ pathname, navigate, user }) {
   }
 
   return (
-    <div style={{ marginTop: 4 }}>
-      <div className="sidebar-section-heading">
+    <div style={{ marginTop: 4, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div className="sidebar-section-heading" style={{ flexShrink: 0 }}>
         <span>{HISTORY_LABELS[tab]}</span>
       </div>
       {items.length === 0 ? (
         <div className="sidebar-history-empty">Noch keine Einträge</div>
       ) : (
-        <div className="sidebar-history-list">
-          {items.map(it => (
-            <button
-              key={it.id}
-              className={`sidebar-history-item${activeId === it.id ? ' active' : ''}`}
-              onClick={() => handleClick(it)}
-              title={it.label}>
-              <span className="sidebar-history-item-label">{it.label}</span>
-            </button>
-          ))}
+        <div style={{ position: 'relative' }}>
+          {showTop && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 20, background: 'linear-gradient(to bottom, var(--bg), transparent)', pointerEvents: 'none', zIndex: 1 }} />}
+          <div ref={listRef} className="sidebar-history-list" onScroll={updateFades}>
+            {items.map(it => (
+              <button
+                key={it.id}
+                className={`sidebar-history-item${activeId === it.id ? ' active' : ''}`}
+                onClick={() => handleClick(it)}
+                title={it.label}>
+                <span className="sidebar-history-item-label">{it.label}</span>
+              </button>
+            ))}
+          </div>
+          {showBot && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 20, background: 'linear-gradient(to top, var(--bg), transparent)', pointerEvents: 'none', zIndex: 1 }} />}
         </div>
       )}
     </div>
@@ -297,7 +312,8 @@ export default function AppLayout() {
               color: 'var(--orange)',
               fontWeight: 600,
               textAlign: 'center',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flexShrink: 0
             }}
           >
             Trial abgelaufen — Jetzt Pro starten
