@@ -1098,6 +1098,25 @@ export default function Scan() {
 
           {/* Result card */}
           <div className="scan-result-card" id="resultCard">
+            {/* Header: ERGEBNIS label + action buttons */}
+            <div className="scan-result-card-header">
+              <span className="scan-result-label">Ergebnis</span>
+              {!isAnalyzing && ((mode === 'ai' && aiHtml) || (mode === 'ocr' && ocrText)) && (
+                <div className="result-actions">
+                  <button className="result-action-btn" aria-label="Ergebnis kopieren" onClick={copyResult} title="Kopieren" style={copied ? { color: 'var(--orange)' } : {}}>
+                    {copied
+                      ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                      : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                    }
+                  </button>
+                  <button onClick={downloadResult} title="Als Word herunterladen"
+                    style={{ height: 28, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#2B579A', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: 14, flexShrink: 0 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                    Word
+                  </button>
+                </div>
+              )}
+            </div>
             {/* Empty */}
             {!isAnalyzing && !errorMsg && ((mode === 'ai' && !aiHtml) || (mode === 'ocr' && !ocrText)) && (
               <div className="scan-result-empty">
@@ -1122,25 +1141,6 @@ export default function Scan() {
             {!isAnalyzing && mode === 'ai' && aiHtml && (
               <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-                  <div className="result-header">
-                    <div className="result-badge ai">
-                      <img src="/arvis-icon.svg" width="20" height="20" alt="" style={{ display: 'block' }} />
-                      KI-Analyse
-                    </div>
-                    <div className="result-actions">
-                      <button className="result-action-btn" aria-label="Ergebnis kopieren" onClick={copyResult} title="Kopieren" style={copied ? { color: 'var(--orange)' } : {}}>
-                        {copied
-                          ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                          : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                        }
-                      </button>
-                      <button onClick={downloadResult} title="Als Word herunterladen"
-                        style={{ height: 28, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#2B579A', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: 14, flexShrink: 0 }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                        Word
-                      </button>
-                    </div>
-                  </div>
                   <div className="result-section" style={{ marginBottom: 0 }}>
                     <div className="result-text" id="aiSummaryDiv" onClick={handleSectionCopy} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(aiHtml) }} />
                   </div>
@@ -1154,25 +1154,6 @@ export default function Scan() {
             {/* OCR result */}
             {!isAnalyzing && mode === 'ocr' && ocrText && (
               <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                <div className="result-header">
-                  <div className="result-badge ocr">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-                    OCR Text
-                  </div>
-                  <div className="result-actions">
-                    <button className="result-action-btn" aria-label="Ergebnis kopieren" onClick={copyResult} title="Kopieren" style={copied ? { color: 'var(--orange)' } : {}}>
-                      {copied
-                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                        : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                      }
-                    </button>
-                    <button onClick={downloadResult} title="Als Word herunterladen"
-                      style={{ height: 28, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#2B579A', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: 14, flexShrink: 0 }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                      Word
-                    </button>
-                  </div>
-                </div>
                 <textarea className="ocr-textarea" value={ocrText} onChange={e => setOcrText(e.target.value)} placeholder="OCR Text erscheint hier..." />
                 <button className="btn-send-briefassistent" onClick={sendToBrief} style={{ marginTop: 12 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
