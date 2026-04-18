@@ -989,7 +989,7 @@ export default function Scan() {
           {panel === 'crop' && (
             <div className="scan-panel" id="panelCrop">
               {/* Warning + checkbox (merged) */}
-              <div id="anonWarning" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: noDataConfirmed ? 'var(--bg-3)' : 'rgba(193,58,43,0.07)', borderBottom: `1px solid ${noDataConfirmed ? 'var(--border)' : 'rgba(193,58,43,0.2)'}`, padding: '10px 14px', transition: 'background 0.15s, border-color 0.15s' }}>
+              <div id="anonWarning" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: noDataConfirmed ? 'var(--bg-3)' : 'rgba(193,58,43,0.07)', borderTop: `1px solid ${noDataConfirmed ? 'var(--border)' : 'rgba(193,58,43,0.2)'}`, borderBottom: `1px solid ${noDataConfirmed ? 'var(--border)' : 'rgba(193,58,43,0.2)'}`, padding: '10px 14px', transition: 'background 0.15s, border-color 0.15s' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={noDataConfirmed ? 'var(--text-3)' : 'var(--error)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2, transition: 'stroke 0.15s' }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
                   <span style={{ fontSize: 13, fontWeight: 500, color: noDataConfirmed ? 'var(--text-2)' : 'var(--error)', lineHeight: 1.5, transition: 'color 0.15s' }}>
@@ -1004,22 +1004,26 @@ export default function Scan() {
               {/* PDF nav */}
               {pdfDocRef.current && (
                 <div id="pdfNav" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, marginBottom: 10, justifyContent: 'center' }}>
-                  <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => changePdfPage(-1)}>←</button>
-                  <span style={{ fontSize: 15, color: 'var(--text-2)' }}>Seite {pdfPage} / {pdfTotal}</span>
-                  <button className="btn-secondary" style={{ padding: '4px 12px', minWidth: 0 }} onClick={() => changePdfPage(1)}>→</button>
+                  <button className="btn-secondary" aria-label="Vorherige Seite" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => changePdfPage(-1)}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Seite {pdfPage} / {pdfTotal}</span>
+                  <button className="btn-secondary" aria-label="Nächste Seite" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => changePdfPage(1)}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
                 </div>
               )}
               {/* Toolbar */}
               <div className="scan-viewer-toolbar">
-                <button className="btn-secondary" onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 13 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
+                <button onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 5, fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
                   Schwärzen
                 </button>
                 <button className="btn-secondary" aria-label="Schwärzung rückgängig machen" onClick={undoBlackout} title="Rückgängig" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
                 </button>
                 <div className="scan-toolbar-zoom">
-                  <button aria-label="Verkleinern" onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} title="Verkleinern">
+                  <button aria-label="Verkleinern" onClick={() => setZoom(z => Math.max(1, z - 0.25))} title="Verkleinern">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
                   </button>
                   <button onClick={() => setZoom(1)} title="Zoom zurücksetzen" className="seg-label">
