@@ -766,6 +766,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
     overflow: visible;
   }
   .sidebar-col::before { display: none; }
+  .sidebar-col { background: transparent; border-right: none; box-shadow: none; }
 
   /* Topbar */
   .topbar, .app-layout.sidebar-collapsed .topbar { position: sticky; top: 0; z-index: 100; padding: 0 16px; gap: 10px; }
@@ -850,6 +851,7 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
   #cropContainer { height: auto !important; min-height: 300px; }
   /* Reset asymmetric padding/border so les colonnes sont centrées en stack mobile */
   .scan-left { padding-right: 0 !important; padding-left: 0 !important; }
+  #anonWarning { padding-left: 8px !important; padding-right: 8px !important; }
   .scan-right { padding-left: 0 !important; padding-right: 0 !important; border-left: none !important; padding-top: 24px; border-top: 1px solid var(--border); margin-top: 8px; }
 
   /* Brief & Profil strictly mobile stack */
