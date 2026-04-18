@@ -112,11 +112,11 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 
 **Priorités de refonte** :
 1. Landing page `public/landing_page.html` — premier trust signal
-2. Scan — pilote du design system (en cours, cf. case study dans DESIGN.md)
+2. Scan — pilote du design system (en cours, cf. case study dans BRAND.md)
 3. Briefassistent
 4. Chat, Bausteine, Uebersetzung, Profil
 
-**Tous les détails** (tokens CSS complets, patterns composants, anti-patterns, règles boutons, audit page par page) sont dans **[DESIGN.md](./DESIGN.md)** — source de vérité du système visuel. À ouvrir avant toute modification de style.
+**Tous les détails** (tokens CSS complets, patterns composants, anti-patterns, règles boutons, historique des refontes par page) sont dans **[BRAND.md](./BRAND.md)** — source de vérité du système visuel. À ouvrir avant toute modification de style.
 
 ## Commandes essentielles
 
