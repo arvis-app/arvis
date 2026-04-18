@@ -208,7 +208,14 @@ export default function Scan() {
   const [copied, setCopied] = useState(false)
   const [limitReached, setLimitReached] = useState(() => sessionStorage.getItem('arvis_scan_limitReached') === 'true')
   const [scanHistory, setScanHistory] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem('arvis_scan_history') || '[]') } catch { return [] }
+    try {
+      const raw = JSON.parse(sessionStorage.getItem('arvis_scan_history') || '[]')
+      return raw.map(it => ({
+        ...it,
+        ts: it.ts || Date.now(),
+        label: (it.label || '').replace(/^\d{1,2}:\d{2}\s*·\s*/, '').trim() || (it.mode === 'ocr' ? 'OCR' : 'Scan'),
+      }))
+    } catch { return [] }
   })
 
   // Mobile multi-photo state
