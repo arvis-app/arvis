@@ -127,7 +127,7 @@ function SidebarHistory({ pathname, navigate, user }) {
       {items.length === 0 ? (
         <div className="sidebar-history-empty">Noch keine Einträge</div>
       ) : (
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {showTop && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 20, background: 'linear-gradient(to bottom, var(--bg), transparent)', pointerEvents: 'none', zIndex: 1 }} />}
           <div ref={listRef} className="sidebar-history-list" onScroll={updateFades}>
             {items.map(it => (
