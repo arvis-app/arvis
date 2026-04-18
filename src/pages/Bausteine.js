@@ -114,24 +114,24 @@ function NeuBausteinModal({ open, editingBaustein, categories, onSave, onClose }
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
           <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Titel *</label>
           <input value={titel} onChange={e=>setTitel(e.target.value)} type="text" placeholder="z.B. Allgemeine Anamnese"
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:16,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:16,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
           <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Kategorie *</label>
           <select value={category} onChange={e=>setCategory(e.target.value)}
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:16,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}>
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:16,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}>
             {categories.map(c=><option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
           <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Text *</label>
           <textarea value={text} onChange={e=>setText(e.target.value)} rows={14} placeholder="Bausteintext eingeben…"
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:15,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',resize:'vertical',lineHeight:1.6}}/>
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:15,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none',resize:'vertical',lineHeight:1.6}}/>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:4}}>
           <label style={{fontSize:14,fontWeight:600,color:'var(--text-2)'}}>Schlüsselwörter <span style={{fontWeight:400,color:'var(--text-3)'}}>(optional, durch Komma getrennt)</span></label>
           <input value={keywords} onChange={e=>setKeywords(e.target.value)} type="text" placeholder="z.B. anamnese, aufnahme, patient"
-            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:16,fontFamily:'DM Sans,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
+            style={{padding:'9px 12px',border:'1px solid var(--border)',borderRadius:5,fontSize:16,fontFamily:'Inter,sans-serif',background:'var(--bg)',color:'var(--text)',outline:'none'}}/>
         </div>
         {error && <div style={{fontSize:14,color:'var(--orange)',padding:'6px 10px',background:'rgba(217,75,10,0.07)',borderRadius:6}}>{error}</div>}
         <div style={{display:'flex',gap:8,justifyContent:'flex-end',marginTop:4}}>
@@ -483,16 +483,16 @@ export default function Bausteine() {
                 value={search}
                 onChange={handleSearchInput}
                 onKeyDown={handleSearchKeydown}
-                style={{position:'relative',zIndex:1,width:'100%',padding:'8px 14px',border:'none',outline:'none',fontSize:14,fontFamily:'DM Sans,sans-serif',background:'transparent',color:'var(--text)',boxSizing:'border-box'}}
+                style={{position:'relative',zIndex:1,width:'100%',padding:'8px 14px',border:'none',outline:'none',fontSize:14,fontFamily:'Inter,sans-serif',background:'transparent',color:'var(--text)',boxSizing:'border-box'}}
               />
               {suggestion && search && (
-                <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,padding:'8px 14px',fontSize:14,fontFamily:'DM Sans,sans-serif',color:'var(--text-3)',pointerEvents:'none',whiteSpace:'pre',overflow:'hidden',boxSizing:'border-box',zIndex:2}}>
+                <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,padding:'8px 14px',fontSize:14,fontFamily:'Inter,sans-serif',color:'var(--text-3)',pointerEvents:'none',whiteSpace:'pre',overflow:'hidden',boxSizing:'border-box',zIndex:2}}>
                   <span style={{visibility:'hidden'}}>{search}</span>{suggestion.slice(search.length)}
                 </div>
               )}
             </div>
             <button onClick={()=>{setEditingB(null);setNeuOpen(true)}}
-              style={{padding:'8px 14px',fontSize:13,fontWeight:500,border:'1px solid var(--border)',borderRadius:5,background:'var(--bg-2)',color:'var(--text-2)',cursor:'pointer',fontFamily:'DM Sans,sans-serif',display:'flex',alignItems:'center',gap:6,transition:'background 0.15s',flexShrink:0}}
+              style={{padding:'8px 14px',fontSize:13,fontWeight:500,border:'1px solid var(--border)',borderRadius:5,background:'var(--bg-2)',color:'var(--text-2)',cursor:'pointer',fontFamily:'Inter,sans-serif',display:'flex',alignItems:'center',gap:6,transition:'background 0.15s',flexShrink:0}}
               onMouseOver={e=>e.currentTarget.style.background='var(--bg-3)'}
               onMouseOut={e=>e.currentTarget.style.background='var(--bg-2)'}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -505,7 +505,7 @@ export default function Bausteine() {
             <select
               value={activeCat||''}
               onChange={e=>{setActiveCat(e.target.value||null); e.target.blur()}}
-              style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'6px 40px 6px 14px',fontSize:14,lineHeight:1.5,fontFamily:'DM Sans,sans-serif',color:'var(--text)',fontWeight:600,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
+              style={{width:'100%',appearance:'none',WebkitAppearance:'none',padding:'6px 40px 6px 14px',fontSize:14,lineHeight:1.5,fontFamily:'Inter,sans-serif',color:'var(--text)',fontWeight:600,cursor:'pointer',boxSizing:'border-box',border:'none',borderRadius:0,background:'transparent',outline:'none'}}>
               <option value="">Alle Kategorien</option>
               <option value="Favoriten">★ Favoriten</option>
               <option value="MeineBausteine">✎ Meine Bausteine</option>
@@ -538,7 +538,7 @@ export default function Bausteine() {
         <div ref={rightRef} className="bausteine-right">
 
           {/* Preview */}
-          <div style={{padding:'0 0 16px 0',flex:1,minHeight:0,overflowY:'auto'}}>
+          <div style={{padding:'0 0 12px 0',flex:1,minHeight:0,overflow:'hidden',display:'flex',flexDirection:'column'}}>
             {!selected && (
               <div style={{padding:'32px 0',minHeight:260,display:'flex',flexDirection:'column',gap:20,maxWidth:420}}>
                 <div style={{fontSize:14,color:'var(--text-2)',lineHeight:1.6}}>
@@ -551,7 +551,7 @@ export default function Bausteine() {
                       <button
                         key={c}
                         onClick={() => setActiveCat(c === 'Favoriten' ? 'Favoriten' : c)}
-                        style={{padding:'6px 12px',borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--text-2)',fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'DM Sans,sans-serif',transition:'color 0.15s, border-color 0.15s'}}
+                        style={{padding:'6px 12px',borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--text-2)',fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'Inter,sans-serif',transition:'color 0.15s, border-color 0.15s'}}
                         onMouseOver={e=>{e.currentTarget.style.color='var(--orange)'; e.currentTarget.style.borderColor='var(--orange)'}}
                         onMouseOut={e=>{e.currentTarget.style.color='var(--text-2)'; e.currentTarget.style.borderColor='var(--border)'}}>
                         {c === 'Favoriten' ? '★ Favoriten' : c}
@@ -562,7 +562,7 @@ export default function Bausteine() {
               </div>
             )}
             {selected && (
-              <div>
+              <div style={{display:'flex',flexDirection:'column',maxHeight:'100%'}}>
                 <div className="baustein-preview-header">
                   <div>
                     <div className="baustein-preview-title">{selected.title}</div>
@@ -584,8 +584,8 @@ export default function Bausteine() {
                 </div>
                 <div ref={previewRef} className="baustein-preview-text" contentEditable suppressContentEditableWarning spellCheck={false}
                   onClick={handlePreviewClick}
-                  style={{outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)'}} />
-                <div style={{display:'flex',gap:8,marginTop:16,justifyContent:'center'}}>
+                  style={{outline:'none',lineHeight:1.8,fontSize:14,color:'var(--text-2)',flex:1,overflowY:'auto',minHeight:0}} />
+                <div style={{display:'flex',gap:8,paddingTop:16,justifyContent:'center',flexShrink:0,marginBottom:12}}>
                   <button className="btn-secondary btn-secondary-orange" onClick={copyBaustein} style={{justifyContent:'center',display:'flex',gap:6,borderColor:'var(--orange)',color:'var(--orange)'}}>
                     {copied
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
