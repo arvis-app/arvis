@@ -62,9 +62,9 @@ function markdownToHtml(md) {
       const copyBtn = `<button data-copy-sec="${sid}" title="Abschnitt kopieren" style="flex-shrink:0;background:none;border:none;padding:3px 4px;cursor:pointer;color:var(--text-3);border-radius:4px;display:flex;align-items:center;opacity:0.6;margin-right:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`
       if (/nicht.übersehen/i.test(text)) {
         text = text.replace(/^[⚠️\s]+/, '')
-        html += `<div data-sec="${sid}" style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;display:flex;align-items:center;justify-content:space-between;gap:8px;"><span style="display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#FEF08A;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>${text}</span>${copyBtn}</div>`
+        html += `<div data-sec="${sid}" style="font-size:14px;font-weight:600;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;display:flex;align-items:center;justify-content:space-between;gap:8px;"><span style="display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#FEF08A;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>${text}</span>${copyBtn}</div>`
       } else {
-        html += `<div data-sec="${sid}" style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;display:flex;align-items:center;justify-content:space-between;"><span>${text}</span>${copyBtn}</div>`
+        html += `<div data-sec="${sid}" style="font-size:14px;font-weight:600;color:var(--text);margin-top:${mt};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;display:flex;align-items:center;justify-content:space-between;"><span>${text}</span>${copyBtn}</div>`
       }
       html += `<div data-sec-body="${sid}">`
       inSectionBody = true
@@ -73,7 +73,7 @@ function markdownToHtml(md) {
       secActive = false; secBg = 'transparent'; secColor = 'var(--text-2)'; secBorder = 'var(--border)'
       const text = escHtml(line).replace(/\*\*(.+?)\*\*/g, '$1').replace(/:(\S)/g, ': $1')
       const mt2 = html === '' ? '0' : '22px'
-      html += `<div style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt2};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;">${text}</div>`
+      html += `<div style="font-size:14px;font-weight:600;color:var(--text);margin-top:${mt2};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;">${text}</div>`
     } else if (/^(🔴|🟡|🟢)/.test(line.trim())) {
       // Colored sub-section header: "🔴 Kritisch" / "🟡 Wichtig" / "🟢 Beachten"
       if (inList) { html += '</div>'; inList = false }
@@ -86,7 +86,7 @@ function markdownToHtml(md) {
       secActive = true
       dot = `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-right:9px;"></span>`
       const mt3 = html === '' ? '0' : '14px'
-      html += `<div style="font-size:14px;font-weight:800;color:${secColor};margin-top:${mt3};margin-bottom:6px;display:flex;align-items:center;">${dot}<span>${label}</span></div>`
+      html += `<div style="font-size:13px;font-weight:600;color:${secColor};margin-top:${mt3};margin-bottom:6px;display:flex;align-items:center;">${dot}<span>${label}</span></div>`
     } else if (/^\|.+\|/.test(line.trim())) {
       if (inList) { html += '</div>'; inList = false }
       if (/^\|[\s\-:|]+\|$/.test(line.trim())) { i++; continue }
