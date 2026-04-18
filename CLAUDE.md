@@ -1,5 +1,5 @@
 # CLAUDE.md — Arvis
-_Dernière mise à jour : 17 avril 2026_
+_Dernière mise à jour : 18 avril 2026_
 
 > **Conventions critiques à ne pas oublier :**
 > - Toujours travailler sur `main` — pas de branches
@@ -111,10 +111,7 @@ Arvis est conçu pour **réduire la charge administrative des médecins hospital
 **Règle centrale** : l'orange `--orange` (`#B24E24`, terracotta désaturé) occupe **≤10% de la surface visible**. Accent uniquement (boutons, liens, focus), jamais en fond de section ou bandeau.
 
 **Priorités de refonte** :
-1. Landing page `public/landing_page.html` — premier trust signal
-2. Scan — pilote du design system (en cours, cf. case study dans BRAND.md)
-3. Briefassistent
-4. Chat, Bausteine, Uebersetzung, Profil
+1. **Landing page** `public/landing_page.html` — seule page restante (toutes les pages app sont ✅ — cf. case studies dans BRAND.md section 15)
 
 **Tous les détails** (tokens CSS complets, patterns composants, anti-patterns, règles boutons, historique des refontes par page) sont dans **[BRAND.md](./BRAND.md)** — source de vérité du système visuel. À ouvrir avant toute modification de style.
 
