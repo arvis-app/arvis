@@ -475,7 +475,7 @@ export default function Briefassistent() {
           </div>
 
           {state === 'empty' && (
-            <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 440 }}>
+            <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 440, opacity: 0.6 }}>
               <div style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6 }}>
                 Tippen, diktieren oder <strong>Bausteine</strong> einfügen — die KI bringt den Text auf Facharzt-Niveau. Zwei Modi stehen zur Verfügung:
               </div>
