@@ -1093,16 +1093,8 @@ export default function Scan() {
                   <div className="scan-mode-desc">Reiner Textexport zum Kopieren</div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Result card */}
-          <div className="scan-result-card" id="resultCard">
-            {/* Header: ERGEBNIS label + action buttons */}
-            <div className="scan-result-card-header">
-              <span className="scan-result-label">Ergebnis</span>
               {!isAnalyzing && ((mode === 'ai' && aiHtml) || (mode === 'ocr' && ocrText)) && (
-                <div className="result-actions">
+                <div className="result-actions" style={{ marginLeft: 'auto', alignSelf: 'center', paddingBottom: 4 }}>
                   <button className="result-action-btn" aria-label="Ergebnis kopieren" onClick={copyResult} title="Kopieren" style={copied ? { color: 'var(--orange)' } : {}}>
                     {copied
                       ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
@@ -1116,6 +1108,10 @@ export default function Scan() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Result card */}
+          <div className="scan-result-card" id="resultCard">
             {/* Empty */}
             {!isAnalyzing && !errorMsg && ((mode === 'ai' && !aiHtml) || (mode === 'ocr' && !ocrText)) && (
               <div className="scan-result-empty">
