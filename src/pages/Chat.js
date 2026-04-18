@@ -268,7 +268,7 @@ export default function Chat() {
 
         {/* Empty state */}
         {messages.length === 0 && !loading && (
-          <div style={{ maxWidth: 620, margin: '48px auto 0', padding: '0 20px' }}>
+          <div style={{ maxWidth: 620, margin: '48px auto 0', padding: '0 20px', opacity: 0.6 }}>
             <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 14 }}>
               Beispielfragen
             </div>
@@ -303,7 +303,7 @@ export default function Chat() {
               ))}
             </div>
             <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 20, lineHeight: 1.6 }}>
-              Fachsprache erwünscht — der Assistent antwortet auf Facharztniveau. Antworten dienen ausschließlich der Orientierung und ersetzen keine klinische Beurteilung.
+              Der Assistent antwortet auf Facharztniveau. Antworten dienen ausschließlich der Orientierung und ersetzen keine klinische Beurteilung.
             </div>
           </div>
         )}
