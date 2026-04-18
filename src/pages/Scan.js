@@ -1001,27 +1001,21 @@ export default function Scan() {
                   </label>
                 </div>
               </div>
-              {/* PDF nav */}
-              {pdfDocRef.current && (
-                <div id="pdfNav" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, marginBottom: 10, justifyContent: 'center' }}>
-                  <button className="btn-secondary" aria-label="Vorherige Seite" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => changePdfPage(-1)}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                  </button>
-                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Seite {pdfPage} / {pdfTotal}</span>
-                  <button className="btn-secondary" aria-label="Nächste Seite" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => changePdfPage(1)}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                  </button>
-                </div>
-              )}
-              {/* Toolbar */}
-              <div className="scan-viewer-toolbar">
-                <button onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 5, fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
-                  Schwärzen
-                </button>
-                <button className="btn-secondary" aria-label="Schwärzung rückgängig machen" onClick={undoBlackout} title="Rückgängig" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
-                </button>
+              {/* Navigation row: PDF nav (if multi-page) + zoom, both segmented, centered together */}
+              <div id="scanNavRow" style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', marginTop: 10, marginBottom: 10 }}>
+                {pdfDocRef.current && (
+                  <div className="scan-toolbar-zoom">
+                    <button aria-label="Vorherige Seite" title="Vorherige Seite" onClick={() => changePdfPage(-1)}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <button className="seg-label" style={{ cursor: 'default' }} tabIndex={-1}>
+                      Seite {pdfPage} / {pdfTotal}
+                    </button>
+                    <button aria-label="Nächste Seite" title="Nächste Seite" onClick={() => changePdfPage(1)}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                  </div>
+                )}
                 <div className="scan-toolbar-zoom">
                   <button aria-label="Verkleinern" onClick={() => setZoom(z => Math.max(1, z - 0.25))} title="Verkleinern">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
@@ -1033,11 +1027,21 @@ export default function Scan() {
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
                   </button>
                 </div>
+              </div>
+              {/* Toolbar: actions only */}
+              <div className="scan-viewer-toolbar">
+                <button onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 5, fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
+                  Schwärzen
+                </button>
+                <button className="btn-secondary" aria-label="Schwärzung rückgängig machen" onClick={undoBlackout} title="Rückgängig" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
+                </button>
                 {(() => {
                   const hasAnyBlackout = blackouts.length > 0 || Object.values(blackoutsByPageRef.current).some(a => a && a.length > 0)
                   const canProceed = hasAnyBlackout || noDataConfirmed
                   return (
-                    <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} disabled={!canProceed} title={!canProceed ? 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind' : ''} style={{ height: 32, padding: '0 16px', fontSize: 13, fontWeight: 500, background: 'var(--orange)', color: 'white', border: '1px solid var(--orange)', borderRadius: 5, cursor: canProceed ? 'pointer' : 'not-allowed', opacity: canProceed ? 1 : 0.4, transition: 'opacity 0.15s' }}>
+                    <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} disabled={!canProceed} title={!canProceed ? 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind' : ''} style={{ height: 32, padding: '0 16px', fontSize: 13, fontWeight: 500, background: 'var(--orange)', color: 'white', border: '1px solid var(--orange)', borderRadius: 5, cursor: canProceed ? 'pointer' : 'not-allowed', opacity: canProceed ? 1 : 0.4, transition: 'opacity 0.15s', marginLeft: 'auto' }}>
                       Analysieren
                     </button>
                   )
