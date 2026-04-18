@@ -914,6 +914,10 @@ select.form-input { appearance: none; -webkit-appearance: none; height: auto; }
 .scan-right { min-width:0; padding-left:32px; border-left:1px solid var(--border); min-height:340px; display:flex; flex-direction:column; }
 .scan-panel { background:transparent; border:none; border-radius:0; overflow:visible; display:flex; flex-direction:column; flex:1; }
 .scan-viewer-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:8px 0; border-bottom:1px solid var(--border); border-top:none; margin-top:12px; }
+.scan-tools-overlay { position:absolute; top:10px; right:10px; display:flex; gap:4px; z-index:10; background:var(--bg-2); border:1px solid var(--border); border-radius:5px; padding:3px; }
+.scan-analyze-cta { width:100%; height:40px; padding:0 16px; background:var(--orange); color:white; border:1px solid var(--orange); border-radius:5px; font-size:14px; font-weight:500; font-family:'Inter',sans-serif; cursor:pointer; margin-top:12px; flex-shrink:0; transition:opacity 0.15s, background 0.15s; box-sizing:border-box; }
+.scan-analyze-cta:hover:not(:disabled) { background:var(--orange-dark); border-color:var(--orange-dark); }
+.scan-analyze-cta:disabled { opacity:0.4; cursor:not-allowed; }
 .scan-toolbar-zoom { display:inline-flex; align-items:center; height:32px; border:1px solid var(--border); border-radius:5px; overflow:hidden; background:var(--bg-2); box-sizing:border-box; }
 .scan-toolbar-zoom > button { height:32px; min-width:32px; padding:0 8px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--text-2); font-family:'Inter',sans-serif; font-size:13px; font-weight:500; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background 0.12s, color 0.12s; box-sizing:border-box; }
 .scan-toolbar-zoom > button:last-child { border-right:none; }

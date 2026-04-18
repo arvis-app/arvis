@@ -1001,6 +1001,40 @@ export default function Scan() {
                   </label>
                 </div>
               </div>
+              {/* Document viewer with floating tools overlay */}
+              <div id="cropContainer" ref={viewerRef} onMouseDown={startPan} onTouchStart={startPan} style={{ height: viewerHeight > 0 ? viewerHeight : 'auto', cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none', position: 'relative' }}>
+                <div id="cropInner" ref={cropInnerRef} style={{ position: 'relative', width: '100%', transformOrigin: 'top left', transform: `translate(${panX}px,${panY}px) scale(${zoom})` }}>
+                  <img ref={imgRef} style={{ width: '100%', display: 'block', background: 'var(--bg-2)' }} alt="" onLoad={handleImageLoad} onClick={() => setSelectedBk(null)} />
+                  <canvas id="cropCanvas" style={{ display: 'none' }} />
+                  {/* Blackout boxes */}
+                  {blackouts.map(box => (
+                    <div key={box.id} onMouseDown={e => startDragBlackout(e, box)} onTouchStart={e => startDragBlackout(e, box)}
+                      style={{ position: 'absolute', background: '#000', boxSizing: 'border-box', left: box.x, top: box.y, width: box.w, height: box.h, border: selectedBk === box.id ? '2px solid var(--error)' : '2px solid transparent', cursor: 'move', minWidth: 20, minHeight: 10, userSelect: 'none' }}>
+                      {selectedBk === box.id && (
+                        <>
+                          <div onMouseDown={e => e.stopPropagation()} onClick={() => deleteBlackout(box.id)}
+                            style={{ position: 'absolute', top: -10, right: -10, width: 20, height: 20, borderRadius: '50%', background: 'var(--error)', color: 'white', fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>×</div>
+                          <div onMouseDown={e => startResizeBlackout(e, box)} onTouchStart={e => startResizeBlackout(e, box)}
+                            style={{ position: 'absolute', bottom: -9, right: -9, width: 18, height: 18, background: 'var(--error)', borderRadius: '50%', cursor: 'se-resize', zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'scaleY(-1)' }}><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="crop-overlay" id="cropOverlay" style={{ display: 'none' }} />
+                {/* Floating tools overlay — top-right of viewer */}
+                <div className="scan-tools-overlay" onMouseDown={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
+                  <button onClick={addBlackout} title="Schwärzen" style={{ height: 28, padding: '0 10px', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 4, fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
+                    Schwärzen
+                  </button>
+                  <button className="btn-secondary" aria-label="Schwärzung rückgängig machen" onClick={undoBlackout} title="Rückgängig" style={{ height: 28, width: 28, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: 4 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
+                  </button>
+                </div>
+              </div>
               {/* Navigation row: PDF nav (if multi-page) + zoom, both segmented, centered together */}
               <div id="scanNavRow" style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', marginTop: 10, marginBottom: 10 }}>
                 {pdfDocRef.current && (
@@ -1028,49 +1062,16 @@ export default function Scan() {
                   </button>
                 </div>
               </div>
-              {/* Toolbar: actions only */}
-              <div className="scan-viewer-toolbar">
-                <button onClick={addBlackout} style={{ height: 32, padding: '0 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', background: 'var(--text)', color: 'white', border: 'none', borderRadius: 5, fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
-                  Schwärzen
-                </button>
-                <button className="btn-secondary" aria-label="Schwärzung rückgängig machen" onClick={undoBlackout} title="Rückgängig" style={{ height: 32, width: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" /></svg>
-                </button>
-                {(() => {
-                  const hasAnyBlackout = blackouts.length > 0 || Object.values(blackoutsByPageRef.current).some(a => a && a.length > 0)
-                  const canProceed = hasAnyBlackout || noDataConfirmed
-                  return (
-                    <button className="scan-toolbar-weiter" onClick={proceedToAnalysis} disabled={!canProceed} title={!canProceed ? 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind' : ''} style={{ height: 32, padding: '0 16px', fontSize: 13, fontWeight: 500, background: 'var(--orange)', color: 'white', border: '1px solid var(--orange)', borderRadius: 5, cursor: canProceed ? 'pointer' : 'not-allowed', opacity: canProceed ? 1 : 0.4, transition: 'opacity 0.15s', marginLeft: 'auto' }}>
-                      Analysieren
-                    </button>
-                  )
-                })()}
-              </div>
-              {/* Document viewer */}
-              <div id="cropContainer" ref={viewerRef} onMouseDown={startPan} onTouchStart={startPan} style={{ height: viewerHeight > 0 ? viewerHeight : 'auto', cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none' }}>
-                <div id="cropInner" ref={cropInnerRef} style={{ position: 'relative', width: '100%', transformOrigin: 'top left', transform: `translate(${panX}px,${panY}px) scale(${zoom})` }}>
-                  <img ref={imgRef} style={{ width: '100%', display: 'block', background: 'var(--bg-2)' }} alt="" onLoad={handleImageLoad} onClick={() => setSelectedBk(null)} />
-                  <canvas id="cropCanvas" style={{ display: 'none' }} />
-                  {/* Blackout boxes */}
-                  {blackouts.map(box => (
-                    <div key={box.id} onMouseDown={e => startDragBlackout(e, box)} onTouchStart={e => startDragBlackout(e, box)}
-                      style={{ position: 'absolute', background: '#000', boxSizing: 'border-box', left: box.x, top: box.y, width: box.w, height: box.h, border: selectedBk === box.id ? '2px solid var(--error)' : '2px solid transparent', cursor: 'move', minWidth: 20, minHeight: 10, userSelect: 'none' }}>
-                      {selectedBk === box.id && (
-                        <>
-                          <div onMouseDown={e => e.stopPropagation()} onClick={() => deleteBlackout(box.id)}
-                            style={{ position: 'absolute', top: -10, right: -10, width: 20, height: 20, borderRadius: '50%', background: 'var(--error)', color: 'white', fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>×</div>
-                          <div onMouseDown={e => startResizeBlackout(e, box)} onTouchStart={e => startResizeBlackout(e, box)}
-                            style={{ position: 'absolute', bottom: -9, right: -9, width: 18, height: 18, background: 'var(--error)', borderRadius: '50%', cursor: 'se-resize', zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'scaleY(-1)' }}><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div className="crop-overlay" id="cropOverlay" style={{ display: 'none' }} />
-              </div>
+              {/* Analysieren CTA — full width, sticky bottom of panel */}
+              {(() => {
+                const hasAnyBlackout = blackouts.length > 0 || Object.values(blackoutsByPageRef.current).some(a => a && a.length > 0)
+                const canProceed = hasAnyBlackout || noDataConfirmed
+                return (
+                  <button className="scan-analyze-cta" onClick={proceedToAnalysis} disabled={!canProceed} title={!canProceed ? 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind' : ''}>
+                    Analysieren
+                  </button>
+                )
+              })()}
             </div>
           )}
         </div>
