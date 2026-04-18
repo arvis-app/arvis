@@ -542,9 +542,20 @@ Le prompt Korrektur est dans `src/pages/Briefassistent.js` (`buildPrompt()`, mod
 
 ## MobileScan — UX
 
-- Flow : QR code → scan photo(s) → **"Weiter zur Anonymisierung"** (bouton noir `#1C1C1E`) → transfert → anonymisation sur le PC → analyse
+- Flow : QR code → scan photo(s) → **"Weiter zur Anonymisierung"** (bouton noir `#1C1C1E`) → **anonymisation SUR le téléphone** (écran Schwärzen) → transfert au PC (photos déjà noircies) → page Scan (juste confirmation finale) → analyse
 - Le bouton "Weiter" a été renommé et mis en noir pour clarifier que l'anonymisation intervient AVANT l'envoi (évite la confusion "ça va uploader directement")
 - Tant que aucune photo n'est prise : bouton label caméra orange "Foto aufnehmen" → après 1+ photos : label orange outline "Weitere Seite aufnehmen" + bouton noir "Weiter zur Anonymisierung"
+- **Critique DSGVO** : l'anonymisation côté téléphone est obligatoire car les photos transitent par le bucket Supabase Storage avant d'arriver sur le PC — sans noircissement côté téléphone, des données patients seraient stockées en clair côté serveur.
+
+### Détection côté Scan.js (fromMobileScan)
+
+- State `fromMobileScan` (boolean, persisté `arvis_scan_fromMobile`) détecté via `file.name.startsWith('mobile_scan')` dans `loadFile()`
+- Les fichiers issus du flow mobile sont créés avec `new File([...], 'mobile_scan.jpg' | 'mobile_scan.pdf', ...)` (vs `'scan.jpg' | 'scan.pdf'` pour upload classique)
+- Si `fromMobileScan === true` sur la page Anonymisieren :
+  - Warning reformulé : *"Dokument wurde auf dem Smartphone geschwärzt. Bitte vor der Analyse final prüfen."*
+  - Checkbox reformulée : *"Ich bestätige: Alle Patientendaten wurden geschwärzt."*
+  - Le bouton Schwärzen reste disponible en safety net (au cas où un truc est passé à travers)
+  - La checkbox reste bloquante avant Analysieren (pas de raccourci)
 
 ## Bausteine — Placeholders éditables
 

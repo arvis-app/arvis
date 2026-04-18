@@ -204,6 +204,7 @@ export default function Scan() {
   const [blackouts, setBlackouts] = useState([])
   const [selectedBk, setSelectedBk] = useState(null)
   const [noDataConfirmed, setNoDataConfirmed] = useState(false)
+  const [fromMobileScan, setFromMobileScan] = useState(() => sessionStorage.getItem('arvis_scan_fromMobile') === 'true')
   const [copied, setCopied] = useState(false)
   const [limitReached, setLimitReached] = useState(() => sessionStorage.getItem('arvis_scan_limitReached') === 'true')
   const [scanHistory, setScanHistory] = useState(() => {
@@ -262,6 +263,7 @@ export default function Scan() {
   useEffect(() => { sessionStorage.setItem('arvis_scan_aiHtml', aiHtml) }, [aiHtml])
   useEffect(() => { sessionStorage.setItem('arvis_scan_ocrText', ocrText) }, [ocrText])
   useEffect(() => { sessionStorage.setItem('arvis_scan_limitReached', limitReached) }, [limitReached])
+  useEffect(() => { sessionStorage.setItem('arvis_scan_fromMobile', fromMobileScan) }, [fromMobileScan])
   useEffect(() => {
     sessionStorage.setItem('arvis_scan_history', JSON.stringify(scanHistory))
     window.dispatchEvent(new CustomEvent('arvis:history-change', { detail: { tab: 'scan' } }))
@@ -431,6 +433,7 @@ export default function Scan() {
 
   // ── File loading ───────────────────────────────────────────────────────────
   async function loadFile(file) {
+    setFromMobileScan(file.name.startsWith('mobile_scan'))
     if (file.type === 'application/pdf') {
       const reader = new FileReader()
       reader.onload = async (e) => {
@@ -675,7 +678,7 @@ export default function Scan() {
     if (pdfDocRef.current) blackoutsByPageRef.current[pdfPageRef.current] = blackouts.map(b => ({ ...b }))
     const hasAnyBlackout = blackouts.length > 0 || Object.values(blackoutsByPageRef.current).some(a => a && a.length > 0)
     if (!hasAnyBlackout && !noDataConfirmed) {
-      setErrorMsg('Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind.')
+      setErrorMsg(fromMobileScan ? 'Bitte bestätigen, dass alle Patientendaten geschwärzt wurden.' : 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind.')
       return
     }
     goStep(3)
@@ -993,11 +996,17 @@ export default function Scan() {
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={noDataConfirmed ? 'var(--text-3)' : 'var(--error)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2, transition: 'stroke 0.15s' }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
                   <span style={{ fontSize: 13, fontWeight: 500, color: noDataConfirmed ? 'var(--text-2)' : 'var(--error)', lineHeight: 1.5, transition: 'color 0.15s' }}>
-                    Bitte alle Patientendaten schwärzen{pdfTotal > 1 ? ` — auf allen ${pdfTotal} Seiten anwenden` : ''}.
+                    {fromMobileScan
+                      ? 'Dokument wurde auf dem Smartphone geschwärzt. Bitte vor der Analyse final prüfen.'
+                      : `Bitte alle Patientendaten schwärzen${pdfTotal > 1 ? ` — auf allen ${pdfTotal} Seiten anwenden` : ''}.`}
                   </span>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', userSelect: 'none' }}>
                     <input type="checkbox" checked={noDataConfirmed} onChange={e => setNoDataConfirmed(e.target.checked)} style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--orange)', margin: 0, flexShrink: 0 }} />
-                    <span style={{ fontSize: 12.5, color: 'var(--text-2)' }}>oder bestätigen: Keine Patientendaten auf {pdfTotal > 1 ? 'allen Seiten' : 'dem Dokument'}.</span>
+                    <span style={{ fontSize: 12.5, color: 'var(--text-2)' }}>
+                      {fromMobileScan
+                        ? 'Ich bestätige: Alle Patientendaten wurden geschwärzt.'
+                        : `oder bestätigen: Keine Patientendaten auf ${pdfTotal > 1 ? 'allen Seiten' : 'dem Dokument'}.`}
+                    </span>
                   </label>
                 </div>
               </div>
@@ -1006,7 +1015,7 @@ export default function Scan() {
                 const hasAnyBlackout = blackouts.length > 0 || Object.values(blackoutsByPageRef.current).some(a => a && a.length > 0)
                 const canProceed = hasAnyBlackout || noDataConfirmed
                 return (
-                  <button className="scan-analyze-cta" onClick={proceedToAnalysis} disabled={!canProceed} title={!canProceed ? 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind' : ''}>
+                  <button className="scan-analyze-cta" onClick={proceedToAnalysis} disabled={!canProceed} title={!canProceed ? (fromMobileScan ? 'Bitte bestätigen, dass alle Patientendaten geschwärzt wurden' : 'Bitte zuerst schwärzen oder bestätigen, dass keine Patientendaten vorhanden sind') : ''}>
                     Analysieren
                   </button>
                 )
