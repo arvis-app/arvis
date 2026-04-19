@@ -210,11 +210,21 @@ export default function Scan() {
   const [scanHistory, setScanHistory] = useState(() => {
     try {
       const raw = JSON.parse(sessionStorage.getItem('arvis_scan_history') || '[]')
-      return raw.map(it => ({
-        ...it,
-        ts: it.ts || Date.now(),
-        label: (it.label || '').replace(/^\d{1,2}:\d{2}\s*·\s*/, '').trim() || (it.mode === 'ocr' ? 'OCR' : 'Scan'),
-      }))
+      return raw.map(it => {
+        let ts = it.ts
+        if (!ts && it.time && /^\d{1,2}:\d{2}$/.test(it.time)) {
+          const [h, m] = it.time.split(':').map(Number)
+          const d = new Date()
+          d.setHours(h, m, 0, 0)
+          ts = d.getTime()
+        }
+        if (!ts) ts = Date.now()
+        return {
+          ...it,
+          ts,
+          label: (it.label || '').replace(/^\d{1,2}:\d{2}\s*·\s*/, '').trim() || (it.mode === 'ocr' ? 'OCR' : 'Scan'),
+        }
+      })
     } catch { return [] }
   })
   const [currentScanMeta, setCurrentScanMeta] = useState(() => {
