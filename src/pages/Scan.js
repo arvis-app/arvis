@@ -140,17 +140,17 @@ function markdownToHtml(md) {
       html += `<div style="font-size:17px;font-weight:800;color:var(--text);margin-top:${mt2};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--orange);letter-spacing:0.01em;">${escHtml(line.trim())}</div>`
     } else {
       if (inList) { html += '</div>'; inList = false }
-      const text = escHtml(line).replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text);font-weight:700;">$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/:(\S)/g, ': $1').replace(/\b([A-ZÄÖÜ][^:<]{1,40}):/g, '<strong style="color:var(--text);font-weight:700;">$1:</strong>')
+      const text = escHtml(line).replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/:(\S)/g, ': $1').replace(/^([A-ZÄÖÜ][a-zA-ZäöüÄÖÜß\s\-]{1,30}):/, '<strong style="font-weight:700;">$1:</strong>')
       const subs2 = []
       while (i + 1 < lines.length && /^\* /.test(lines[i + 1])) {
         i++
-        subs2.push(escHtml(lines[i].replace(/^\* /, '').trim()).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/:(\S)/g, ': $1'))
+        subs2.push(escHtml(lines[i].replace(/^\* /, '').trim()).replace(/\*\*(.+?)\*\*/g, '$1').replace(/:(\S)/g, ': $1'))
       }
       if (subs2.length > 0) {
         const subs2Html = subs2.map(s => `<div data-subitem="1" style="margin-left:12px;">${s}</div>`).join('')
-        html += `<div data-type="item" style="font-size:12.5px;font-weight:600;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:4px 10px;line-height:1.5;margin-top:2px;">${text}<div data-type="subs" style="margin-top:2px;font-size:12px;font-weight:400;color:var(--text-2);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subs2Html}</div></div>`
+        html += `<div data-type="item" style="font-size:12.5px;font-weight:600;color:var(--text);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:4px 10px;line-height:1.5;margin-top:2px;">${text}<div data-type="subs" style="margin-top:2px;font-size:12px;font-weight:400;color:var(--text-2);display:flex;flex-direction:column;gap:1px;line-height:1.5;">${subs2Html}</div></div>`
       } else {
-        html += `<div style="font-size:12.5px;color:var(--text-2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:4px 10px;line-height:1.5;margin-top:2px;">${text}</div>`
+        html += `<div style="font-size:12.5px;font-weight:600;color:var(--text);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:4px 10px;line-height:1.5;margin-top:2px;">${text}</div>`
       }
     }
     i++
