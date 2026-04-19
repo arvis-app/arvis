@@ -217,6 +217,9 @@ export default function Scan() {
       }))
     } catch { return [] }
   })
+  const [currentScanMeta, setCurrentScanMeta] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('arvis_scan_current_meta') || 'null') } catch { return null }
+  })
 
   // Mobile multi-photo state
   const [mobilePhotos, setMobilePhotos] = useState([]) // { file, preview }[]
@@ -275,6 +278,10 @@ export default function Scan() {
     sessionStorage.setItem('arvis_scan_history', JSON.stringify(scanHistory))
     window.dispatchEvent(new CustomEvent('arvis:history-change', { detail: { tab: 'scan' } }))
   }, [scanHistory])
+  useEffect(() => {
+    if (currentScanMeta) sessionStorage.setItem('arvis_scan_current_meta', JSON.stringify(currentScanMeta))
+    else sessionStorage.removeItem('arvis_scan_current_meta')
+  }, [currentScanMeta])
 
   // Restauration via sidebar : écoute arvis:restore-request pour 'scan' + click direct
   useEffect(() => {
@@ -297,6 +304,7 @@ export default function Scan() {
     setAiHtml(item.aiHtml || '')
     setOcrText(item.ocrText || '')
     setMode(item.mode || 'ai')
+    setCurrentScanMeta({ ts: item.ts, label: item.label })
     goStep(4)
   }
 
@@ -726,6 +734,7 @@ export default function Scan() {
         const txt = await runVisionOCR(imageDataUrls)
         setOcrText(txt)
         setScanHistory(prev => [{ id: crypto.randomUUID(), ts, label: 'OCR', aiHtml: '', ocrText: txt, mode: 'ocr', thumb }, ...prev].slice(0, 50))
+        setCurrentScanMeta({ ts, label: 'OCR' })
       } else {
         const analysis = await runAIAnalysis(imageDataUrls)
         const html = markdownToHtml(analysis)
@@ -734,6 +743,7 @@ export default function Scan() {
         setOcrText('')
         const rawLabel = extractScanLabel(analysis)
         setScanHistory(prev => [{ id: crypto.randomUUID(), ts, label: rawLabel, aiHtml: html, ocrText: '', mode: 'ai', thumb }, ...prev].slice(0, 50))
+        setCurrentScanMeta({ ts, label: rawLabel })
       }
       goStep(4)
     } catch (err) {
@@ -766,6 +776,7 @@ export default function Scan() {
     setAiHtml('')
     setOcrText('')
     setZoom(1); setPanX(0); setPanY(0); setIsDragging(false); setViewerHeight(0); setErrorMsg(''); setLimitReached(false)
+    setCurrentScanMeta(null)
     goStep(1);
     // UI state (non-PHI) → localStorage
     ;['arvis_scan_step','arvis_scan_panel','arvis_scan_mode','arvis_scan_limitReached'].forEach(k => localStorage.removeItem(k))
@@ -926,7 +937,7 @@ export default function Scan() {
 
           {/* Left-panel top row: panel label left + Zurücksetzen right (fusionnés) */}
           <div className="scan-left-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexShrink: 0 }}>
-            <span className="scan-panel-title">{panel === 'crop' ? 'Anonymisieren' : 'Dokument laden'}</span>
+            <span className="scan-panel-title">{step === 4 ? 'Dokument' : (panel === 'crop' ? 'Anonymisieren' : 'Dokument laden')}</span>
             <button className="btn-secondary" id="scanResetBtn" onClick={resetScan} style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, padding: '6px 12px', fontSize: 13 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
               <span className="btn-label" style={{ lineHeight: 1 }}>Zurücksetzen</span>
@@ -998,6 +1009,15 @@ export default function Scan() {
           {/* Crop panel */}
           {panel === 'crop' && (
             <div className="scan-panel" id="panelCrop">
+              {step === 4 && currentScanMeta && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '10px 14px', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', background: 'var(--bg-3)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>{currentScanMeta.label}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                    {new Date(currentScanMeta.ts).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} · {new Date(currentScanMeta.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              )}
+              {step !== 4 && (<>
               {/* Warning + checkbox (merged) */}
               <div id="anonWarning" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: noDataConfirmed ? 'var(--bg-3)' : 'rgba(193,58,43,0.07)', borderTop: `1px solid ${noDataConfirmed ? 'var(--border)' : 'rgba(193,58,43,0.2)'}`, borderBottom: `1px solid ${noDataConfirmed ? 'var(--border)' : 'rgba(193,58,43,0.2)'}`, padding: '10px 14px', transition: 'background 0.15s, border-color 0.15s' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={noDataConfirmed ? 'var(--text-3)' : 'var(--error)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2, transition: 'stroke 0.15s' }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
@@ -1061,6 +1081,7 @@ export default function Scan() {
                   </button>
                 </div>
               </div>
+              </>)}
               {/* Document viewer */}
               <div id="cropContainer" ref={viewerRef} onMouseDown={startPan} onTouchStart={startPan} style={{ height: viewerHeight > 0 ? viewerHeight : 'auto', cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none', position: 'relative' }}>
                 <div id="cropInner" ref={cropInnerRef} style={{ position: 'relative', width: '100%', transformOrigin: 'top left', transform: `translate(${panX}px,${panY}px) scale(${zoom})` }}>
