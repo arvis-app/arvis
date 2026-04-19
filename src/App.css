@@ -4,6 +4,7 @@
 ═══════════════════════════════════ */
 
 :root {
+  color-scheme: light;
   /* Accent — Terracotta médical, désaturé ≈30% vs #D94B0A */
   --orange: #B24E24;
   --orange-light: #C4552A;
